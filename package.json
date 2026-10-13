@@ -1,0 +1,17 @@
+{
+  "name": "changelens-parser-engine",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test",
+    "analyze:sample": "node scripts/analyze-sample.js",
+    "parsers:warm": "node scripts/warm-parsers.js"
+  },
+  "dependencies": {
+    "@xberg-io/tree-sitter-language-pack-wasm": "1.22.1"
+  }
+}
