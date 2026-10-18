@@ -8,10 +8,18 @@
   },
   "scripts": {
     "test": "node --test",
+    "api": "node --watch api/server.js",
+    "frontend:dev": "npm run dev --prefix frontend",
+    "frontend:build": "npm run build --prefix frontend",
     "analyze:sample": "node scripts/analyze-sample.js",
+    "analyze:impact": "node scripts/analyze-impact.js",
+    "analyze:diff": "node scripts/analyze-git-diff.js",
     "parsers:warm": "node scripts/warm-parsers.js"
   },
   "dependencies": {
-    "@xberg-io/tree-sitter-language-pack-wasm": "1.22.1"
+    "@xberg-io/tree-sitter-language-pack-wasm": "1.22.1",
+    "cors": "^2.8.6",
+    "elkjs": "^0.12.0",
+    "express": "^5.3.0"
   }
 }
