@@ -416,24 +416,49 @@ export const authController = {
         });
       }
 
-      const { name } = req.body || {};
-      if (!name || typeof name !== "string" || name.trim().length < 2) {
+      const { name, avatar } = req.body || {};
+      const updates = {};
+
+      if (name !== undefined) {
+        if (typeof name !== "string" || name.trim().length < 2) {
+          return res.status(400).json({
+            success: false,
+            error: { code: "VALIDATION_ERROR", message: "Name must be at least 2 characters long." },
+          });
+        }
+        if (name.trim().length > 100) {
+          return res.status(400).json({
+            success: false,
+            error: { code: "VALIDATION_ERROR", message: "Name must not exceed 100 characters." },
+          });
+        }
+        updates.name = name.trim();
+      }
+
+      if (avatar !== undefined) {
+        if (avatar !== null && typeof avatar !== "string") {
+          return res.status(400).json({
+            success: false,
+            error: { code: "VALIDATION_ERROR", message: "Avatar must be a valid image string or null." },
+          });
+        }
+        if (avatar && avatar.length > 3 * 1024 * 1024) {
+          return res.status(400).json({
+            success: false,
+            error: { code: "VALIDATION_ERROR", message: "Avatar image is too large. Max size 2MB." },
+          });
+        }
+        updates.avatar = avatar;
+      }
+
+      if (Object.keys(updates).length === 0) {
         return res.status(400).json({
           success: false,
-          error: { code: "VALIDATION_ERROR", message: "Name must be at least 2 characters long." },
+          error: { code: "VALIDATION_ERROR", message: "No profile updates provided." },
         });
       }
 
-      if (name.trim().length > 100) {
-        return res.status(400).json({
-          success: false,
-          error: { code: "VALIDATION_ERROR", message: "Name must not exceed 100 characters." },
-        });
-      }
-
-      const updatedUser = await userRepository.updateProfile(req.user.id, {
-        name: name.trim(),
-      });
+      const updatedUser = await userRepository.updateProfile(req.user.id, updates);
 
       if (!updatedUser) {
         return res.status(404).json({

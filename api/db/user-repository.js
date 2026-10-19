@@ -22,6 +22,7 @@ export function toSafeUser(user) {
     id: String(safe.id || safe._id),
     name: safe.name,
     email: safe.email,
+    avatar: safe.avatar || null,
     auth_provider: safe.auth_provider || safe.authProvider || "local",
     google_id: safe.google_id || safe.googleId || null,
     is_email_verified: Boolean(safe.is_email_verified ?? safe.isEmailVerified),
@@ -36,6 +37,7 @@ function formatUserDoc(doc) {
     id: doc._id.toString(),
     name: doc.name,
     email: doc.email,
+    avatar: doc.avatar || null,
     password_hash: doc.passwordHash,
     auth_provider: doc.authProvider,
     google_id: doc.googleId,
@@ -161,11 +163,15 @@ export const userRepository = {
     return user || null;
   },
 
-  async updateProfile(id, { name }) {
+  async updateProfile(id, { name, avatar }) {
+    const updateData = {};
+    if (name !== undefined) updateData.name = name.trim();
+    if (avatar !== undefined) updateData.avatar = avatar;
+
     if (isMongoConnected()) {
       const doc = await User.findByIdAndUpdate(
         id,
-        { name: name.trim() },
+        updateData,
         { new: true }
       );
       return formatUserDoc(doc);
@@ -173,7 +179,8 @@ export const userRepository = {
 
     const user = memoryUsers.get(id);
     if (user) {
-      user.name = name.trim();
+      if (name !== undefined) user.name = name.trim();
+      if (avatar !== undefined) user.avatar = avatar;
       user.updated_at = new Date().toISOString();
     }
     return user || null;

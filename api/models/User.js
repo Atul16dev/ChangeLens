@@ -39,6 +39,10 @@ const UserSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    avatar: {
+      type: String,
+      default: null,
+    },
   },
   {
     timestamps: true,
@@ -50,6 +54,7 @@ UserSchema.methods.toSafeObject = function () {
     id: this._id.toString(),
     name: this.name,
     email: this.email,
+    avatar: this.avatar || null,
     auth_provider: this.authProvider,
     google_id: this.googleId,
     is_email_verified: this.isEmailVerified,

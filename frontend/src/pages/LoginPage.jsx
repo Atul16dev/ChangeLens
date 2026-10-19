@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
-import { Activity, Mail, Lock, Eye, EyeOff, AlertCircle, ArrowRight, RefreshCw } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, AlertCircle, ArrowRight, RefreshCw } from 'lucide-react';
+import { BrandLogo } from '../components/BrandLogo.jsx';
 
 export function LoginPage() {
   const { login } = useAuth();
@@ -56,10 +57,8 @@ export function LoginPage() {
 
       {/* Brand Header */}
       <div className="flex flex-col items-center mb-8 relative z-10">
-        <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-cyan-600 via-indigo-600 to-rose-500 p-0.5 shadow-xl shadow-cyan-500/20 mb-3">
-          <div className="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center">
-            <Activity className="w-6 h-6 text-cyan-400" />
-          </div>
+        <div className="mb-3">
+          <BrandLogo size="lg" />
         </div>
         <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">
           Welcome back to ChangeLens

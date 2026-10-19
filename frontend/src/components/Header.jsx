@@ -11,6 +11,7 @@ import {
   History,
 } from 'lucide-react';
 import { UserProfileMenu } from './UserProfileMenu.jsx';
+import { BrandLogo } from './BrandLogo.jsx';
 
 export function Header({
   onAnalyze,
@@ -50,11 +51,7 @@ export function Header({
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         {/* Brand, Status & Compact History Button */}
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-600 via-indigo-600 to-rose-500 p-0.5 shadow-lg shadow-cyan-500/10 shrink-0">
-            <div className="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
-              <Activity className="w-5 h-5 text-cyan-400 animate-pulse" />
-            </div>
-          </div>
+          <BrandLogo size="md" />
 
           <div>
             <div className="flex items-center gap-2 flex-wrap">

@@ -86,10 +86,8 @@ export function ResetPasswordPage() {
 
       {/* Brand Header */}
       <div className="flex flex-col items-center mb-6 relative z-10 text-center">
-        <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-rose-600 via-amber-600 to-indigo-600 p-0.5 shadow-xl shadow-rose-500/20 mb-3">
-          <div className="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center">
-            <KeyRound className="w-6 h-6 text-rose-400" />
-          </div>
+        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 via-indigo-600 to-violet-700 p-0.5 shadow-xl shadow-indigo-500/25 border border-indigo-400/30 flex items-center justify-center mb-3">
+          <KeyRound className="w-6 h-6 text-white" />
         </div>
         <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">
           {resetToken ? 'Set New Password' : 'Verify Reset Code'}

@@ -426,23 +426,36 @@ test("ChangeLens Authentication System Test Suite", async (t) => {
     });
     assert.equal(invalidRes.status, 400);
 
-    // Update with valid new name
+    // Update with valid new name and avatar data URL
+    const fakeAvatar = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
     const updateRes = await fetch(`${baseUrl}/api/v1/auth/profile`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json", Cookie: sessionCookie },
-      body: JSON.stringify({ name: "Dave Architect" }),
+      body: JSON.stringify({ name: "Dave Architect", avatar: fakeAvatar }),
     });
     assert.equal(updateRes.status, 200);
     const updateBody = await updateRes.json();
     assert.equal(updateBody.success, true);
     assert.equal(updateBody.data.user.name, "Dave Architect");
+    assert.equal(updateBody.data.user.avatar, fakeAvatar);
 
-    // Verify GET /me reflects updated name
+    // Verify GET /me reflects updated name and avatar
     const meRes = await fetch(`${baseUrl}/api/v1/auth/me`, {
       headers: { Cookie: sessionCookie },
     });
     assert.equal(meRes.status, 200);
     const meBody = await meRes.json();
     assert.equal(meBody.data.user.name, "Dave Architect");
+    assert.equal(meBody.data.user.avatar, fakeAvatar);
+
+    // Remove avatar
+    const removeAvatarRes = await fetch(`${baseUrl}/api/v1/auth/profile`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", Cookie: sessionCookie },
+      body: JSON.stringify({ avatar: null }),
+    });
+    assert.equal(removeAvatarRes.status, 200);
+    const removeBody = await removeAvatarRes.json();
+    assert.equal(removeBody.data.user.avatar, null);
   });
 });

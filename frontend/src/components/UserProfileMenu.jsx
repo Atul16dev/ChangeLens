@@ -3,7 +3,6 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { ProfileModal } from './ProfileModal.jsx';
 import {
-  User,
   LogOut,
   ChevronDown,
   LayoutDashboard,
@@ -79,23 +78,32 @@ export function UserProfileMenu({ compact = false }) {
         <button
           type="button"
           onClick={() => setDropdownOpen(!dropdownOpen)}
-          className={`group flex items-center gap-2 p-0.5 rounded-full hover:ring-2 hover:ring-cyan-500/50 focus:outline-none transition-all ${
-            dropdownOpen ? 'ring-2 ring-cyan-500 shadow-lg shadow-cyan-500/20' : ''
+          className={`group flex items-center gap-2 p-0.5 rounded-full hover:ring-2 hover:ring-indigo-500/40 focus:outline-none transition-all ${
+            dropdownOpen ? 'ring-2 ring-indigo-500 shadow-lg shadow-indigo-500/20' : ''
           }`}
           aria-haspopup="true"
           aria-expanded={dropdownOpen}
           aria-label="User profile menu"
           title={`${user.name || user.email} (Account settings)`}
         >
-          <div className="relative">
-            {/* Circular Avatar Container with Gradient Border */}
-            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gradient-to-tr from-cyan-500 via-indigo-500 to-rose-500 p-0.5 shadow-md flex items-center justify-center">
-              <div className="w-full h-full bg-slate-950 rounded-full flex items-center justify-center text-xs font-bold text-white tracking-wider group-hover:scale-105 transition-transform">
-                {initials}
-              </div>
+          <div className="relative shrink-0">
+            {/* Circular Avatar Container with Refined Indigo Border */}
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-indigo-400/40 shadow-sm overflow-hidden bg-slate-900 flex items-center justify-center">
+              {user.avatar ? (
+                <img
+                  src={user.avatar}
+                  alt={user.name}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-indigo-950 via-slate-900 to-slate-950 flex items-center justify-center text-xs font-bold text-indigo-200 tracking-wider group-hover:scale-105 transition-transform">
+                  {initials}
+                </div>
+              )}
             </div>
-            {/* Green Online Dot */}
-            <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-400 ring-2 ring-slate-900 shadow-sm" />
+
+            {/* Green Online Status Dot */}
+            <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-400 ring-2 ring-slate-950 shadow-sm" />
           </div>
 
           {!compact && (
@@ -113,10 +121,18 @@ export function UserProfileMenu({ compact = false }) {
             {/* User Profile Header Card */}
             <div className="px-4 py-3 border-b border-slate-800/80 bg-slate-950/40">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-cyan-500 via-indigo-500 to-rose-500 p-0.5 shrink-0">
-                  <div className="w-full h-full bg-slate-950 rounded-full flex items-center justify-center text-xs font-bold text-white">
-                    {initials}
-                  </div>
+                <div className="w-10 h-10 rounded-full border border-indigo-400/40 overflow-hidden bg-slate-900 flex items-center justify-center shrink-0">
+                  {user.avatar ? (
+                    <img
+                      src={user.avatar}
+                      alt={user.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-indigo-950 via-slate-900 to-slate-950 flex items-center justify-center text-xs font-bold text-indigo-200">
+                      {initials}
+                    </div>
+                  )}
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-semibold text-white truncate">{user.name}</p>
@@ -142,8 +158,8 @@ export function UserProfileMenu({ compact = false }) {
                 }}
                 className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-medium text-slate-200 hover:text-white hover:bg-slate-800/80 transition-colors text-left"
               >
-                <UserCog className="w-4 h-4 text-cyan-400 shrink-0" />
-                <span>Edit Profile</span>
+                <UserCog className="w-4 h-4 text-indigo-400 shrink-0" />
+                <span>Edit Profile & Photo</span>
               </button>
 
               {/* Option 2: Contextual Navigation */}
@@ -168,7 +184,7 @@ export function UserProfileMenu({ compact = false }) {
                   }}
                   className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-medium text-slate-200 hover:text-white hover:bg-slate-800/80 transition-colors text-left"
                 >
-                  <LayoutDashboard className="w-4 h-4 text-cyan-400 shrink-0" />
+                  <LayoutDashboard className="w-4 h-4 text-indigo-400 shrink-0" />
                   <span>Launch Workspace</span>
                 </button>
               )}

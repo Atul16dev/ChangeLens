@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Activity, ArrowUp } from 'lucide-react';
+import { ArrowUp } from 'lucide-react';
+import { BrandLogo } from '../BrandLogo.jsx';
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
@@ -30,11 +31,7 @@ export function Footer() {
           {/* Brand info */}
           <div className="space-y-4 md:col-span-1">
             <Link to="/" onClick={scrollToTop} className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-cyan-600 to-indigo-600 p-0.5 shadow-md">
-                <div className="w-full h-full bg-slate-950 rounded-[7px] flex items-center justify-center">
-                  <Activity className="w-4 h-4 text-cyan-400" />
-                </div>
-              </div>
+              <BrandLogo size="sm" />
               <span className="text-lg font-bold text-white tracking-tight">ChangeLens</span>
             </Link>
             <p className="text-slate-400 leading-relaxed text-xs">

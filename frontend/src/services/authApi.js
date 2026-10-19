@@ -73,10 +73,10 @@ export async function getCurrentUser() {
   });
 }
 
-export async function updateUserProfile({ name }) {
+export async function updateUserProfile(payload) {
   return authFetch(`${AUTH_BASE}/profile`, {
     method: 'PATCH',
-    body: JSON.stringify({ name }),
+    body: JSON.stringify(payload),
   });
 }
 

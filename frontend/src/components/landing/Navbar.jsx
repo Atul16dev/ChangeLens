@@ -9,6 +9,7 @@ import {
   LayoutDashboard,
 } from 'lucide-react';
 import { UserProfileMenu } from '../UserProfileMenu.jsx';
+import { BrandLogo } from '../BrandLogo.jsx';
 
 export function Navbar() {
   const { user, isAuthenticated } = useAuth();
@@ -55,11 +56,7 @@ export function Navbar() {
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
             className="flex items-center gap-3 group focus:outline-none"
           >
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-600 via-indigo-600 to-rose-500 p-0.5 shadow-lg shadow-cyan-500/10 group-hover:shadow-cyan-500/25 transition-all">
-              <div className="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
-                <Activity className="w-5 h-5 text-cyan-400 group-hover:scale-110 transition-transform" />
-              </div>
-            </div>
+            <BrandLogo size="md" />
             <div className="flex items-center gap-2">
               <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">
                 ChangeLens
