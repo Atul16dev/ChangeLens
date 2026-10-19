@@ -1,0 +1,54 @@
+name: ChangeLens PR Impact Analysis
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  analyze-pr-impact:
+    name: 🔍 Blast Radius & Dependency Impact
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout Repository (Full History)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🟢 Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: 📦 Install Dependencies
+        run: npm ci || npm install
+
+      - name: ⚡ Warm AST Language Pack
+        run: npm run parsers:warm
+
+      - name: 🚀 Run ChangeLens CI Impact Analysis
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_BASE_REF: ${{ github.base_ref || 'main' }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          npm run ci:analyze -- \
+            --base="origin/${{ github.base_ref || 'main' }}" \
+            --fail-on-critical \
+            --comment \
+            --output-file="changelens-pr-report.md"
+
+      - name: 📎 Upload Impact Analysis Report Artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: changelens-impact-report
+          path: changelens-pr-report.md
+          if-no-files-found: ignore

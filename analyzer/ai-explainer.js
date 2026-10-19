@@ -98,9 +98,10 @@ export function formatPRMarkdownComment({ impactAnalysis, changes = [], riskLeve
     lines.push(`| :--- | :---: | :--- |`);
 
     for (const entry of blastRadius) {
+      const fileName = entry.affectedFile || entry.file;
       const depthBadge = entry.depth === 1 ? "**Depth 1 (Direct)**" : `Depth ${entry.depth} (Transitive)`;
       const routeStr = entry.path ? entry.path.map((p) => `\`${p.split("/").pop()}\``).join(" ➔ ") : "-";
-      lines.push(`| \`${entry.file}\` | ${depthBadge} | ${routeStr} |`);
+      lines.push(`| \`${fileName}\` | ${depthBadge} | ${routeStr} |`);
     }
 
     lines.push("");
