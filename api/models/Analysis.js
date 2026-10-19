@@ -14,12 +14,20 @@ const AnalysisSchema = new mongoose.Schema(
       default: null,
       index: true,
     },
+    title: {
+      type: String,
+      default: null,
+    },
     targetDir: {
       type: String,
       default: null,
     },
     changedFiles: {
       type: [String],
+      default: [],
+    },
+    changes: {
+      type: [Object],
       default: [],
     },
     status: {
@@ -49,6 +57,7 @@ const AnalysisSchema = new mongoose.Schema(
   }
 );
 
+AnalysisSchema.index({ user: 1, createdAt: -1 });
 AnalysisSchema.index({ createdAt: -1 });
 
 export const Analysis = mongoose.models.Analysis || mongoose.model("Analysis", AnalysisSchema);

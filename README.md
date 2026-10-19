@@ -19,6 +19,10 @@ ChangeLens is an enterprise-grade code change blast radius analysis and static i
    - HttpOnly, SameSite, Secure session cookies with session rotation on login/verification.
    - Two-step Password Reset via 6-digit OTP challenge, single-use reset authorization token, and multi-device session invalidation.
    - Brute-force IP rate limiting and timing-safe authentication error envelopes.
+6. **Cloud-Persisted Analysis History & Saved Reports (MongoDB CRUD)**:
+   - Automated persistence of blast radius graph topologies, broken symbol diagnostics, and AI reviews in MongoDB Atlas.
+   - User-scoped history drawer with real-time text search, pagination, and ownership enforcement.
+   - Instant one-click workspace rehydration to reload any previous analysis without re-parsing files.
 
 ---
 
@@ -89,6 +93,21 @@ All 135 tests execute synchronously in under 2.5 seconds with zero external netw
 | `POST` | `/api/v1/auth/reset-password` | Update password with reset token; invalidates active sessions | Public (Rate-limited) |
 | `GET` | `/api/v1/auth/google` | Initiate Google OAuth 2.0 authorization code flow | Public |
 | `GET` | `/api/v1/auth/google/callback` | Validate OAuth state and code, issue authenticated session | Public |
+
+---
+
+## Analysis & History API Reference
+
+| Method | Endpoint | Description | Guard |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/api/v1/analyze` | Trigger repository scan & AST blast radius analysis | Public (Session-attributed) |
+| `GET` | `/api/v1/analyses/history` | List user's saved analysis reports (search & pagination) | `requireAuth` |
+| `DELETE` | `/api/v1/analyses/:id` | Remove a saved analysis run from MongoDB | `requireAuth` (Owner only) |
+| `GET` | `/api/v1/analyses/:id/graph` | Return ELK layered React Flow visual graph nodes and edges | Public |
+| `GET` | `/api/v1/analyses/:id/impact` | Return symbol blast radius findings, broken imports, and scores | Public |
+| `GET` | `/api/v1/analyses/:id/explain` | Return Gemini AI PR risk explanation & markdown comment | Public |
+| `POST` | `/api/v1/analyses/:id/simulate` | Run live What-If blast radius simulation on any file | Public |
+| `POST` | `/api/v1/analyses/:id/chat` | Query contextual AI assistant about graph or symbols | Public |
 
 ---
 

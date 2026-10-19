@@ -3,6 +3,7 @@ import { Header } from '../components/Header.jsx';
 import { GraphViewer } from '../components/GraphViewer.jsx';
 import { ImpactSidebar } from '../components/ImpactSidebar.jsx';
 import { ChatAssistant } from '../components/ChatAssistant.jsx';
+import { HistoryDrawer } from '../components/HistoryDrawer.jsx';
 import {
   checkBackendHealth,
   runImpactAnalysis,
@@ -24,9 +25,42 @@ export function DashboardPage() {
   const [explanationData, setExplanationData] = useState(null);
   const [selectedNodeId, setSelectedNodeId] = useState(null);
 
+  // History Drawer state
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+
   // What-If Simulator state
   const [simulationData, setSimulationData] = useState(null);
   const [isSimulating, setIsSimulating] = useState(false);
+
+  // Load a previously saved analysis directly from MongoDB / cache
+  const loadSavedAnalysis = useCallback(async (analysisId) => {
+    setLoading(true);
+    setError(null);
+    try {
+      setCurrentAnalysisId(analysisId);
+      const [graphRes, impactRes, explanationRes] = await Promise.all([
+        getAnalysisGraph(analysisId),
+        getAnalysisImpact(analysisId),
+        getAnalysisExplanation(analysisId).catch((err) => {
+          console.warn('AI explanation unavailable:', err);
+          return null;
+        }),
+      ]);
+
+      setGraphData(graphRes);
+      setImpactData(impactRes);
+      setExplanationData(explanationRes);
+      setSelectedNodeId(null);
+      setSimulationData(null);
+      setIsSimulating(false);
+      setBackendStatus('online');
+    } catch (err) {
+      console.error('Failed to load saved analysis:', err);
+      setError(err.message || 'Failed to load saved analysis report');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   // Trigger analysis pipeline
   const executeAnalysis = useCallback(async (options = {}) => {
@@ -126,6 +160,7 @@ export function DashboardPage() {
         isSimulating={isSimulating}
         simulatedFile={simulationData?.simulatedFile}
         onExitSimulation={handleExitSimulation}
+        onOpenHistory={() => setIsHistoryOpen(true)}
       />
 
       {/* Error Notification Banner */}
@@ -187,6 +222,14 @@ export function DashboardPage() {
           onExitSimulation={handleExitSimulation}
         />
       </div>
+
+      {/* Slide-over Analysis History & Saved Reports Drawer */}
+      <HistoryDrawer
+        isOpen={isHistoryOpen}
+        onClose={() => setIsHistoryOpen(false)}
+        onLoadAnalysis={loadSavedAnalysis}
+        currentAnalysisId={currentAnalysisId}
+      />
     </div>
   );
 }

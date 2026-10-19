@@ -13,6 +13,7 @@ import {
   X,
   LogOut,
   User,
+  History,
 } from 'lucide-react';
 
 export function Header({
@@ -23,6 +24,7 @@ export function Header({
   isSimulating,
   simulatedFile,
   onExitSimulation,
+  onOpenHistory,
 }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -173,6 +175,15 @@ export function Header({
           <div className="flex items-center gap-2.5 pl-3 border-l border-slate-800/80">
             {user ? (
               <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={onOpenHistory}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-cyan-400 hover:text-cyan-300 border border-slate-700/80 transition-colors shadow-sm"
+                  title="View Saved Reports & History"
+                >
+                  <History className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">History</span>
+                </button>
                 <div
                   className="w-8 h-8 rounded-lg bg-gradient-to-tr from-cyan-600 to-indigo-600 flex items-center justify-center text-xs font-bold text-white shadow-sm"
                   title={`${user.name} (${user.email})`}

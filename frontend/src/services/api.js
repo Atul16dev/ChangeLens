@@ -10,7 +10,10 @@ const API_BASE = '/api/v1';
  */
 async function fetchWithRetry(url, options = {}, retries = 2, delay = 400) {
   try {
-    const res = await fetch(url, options);
+    const res = await fetch(url, {
+      credentials: 'include',
+      ...options,
+    });
     return res;
   } catch (err) {
     if (retries > 0) {
@@ -114,4 +117,30 @@ export async function simulateImpact(analysisId, { simulatedFile, changeType = '
   }
   return data.data;
 }
+
+export async function getAnalysisHistory({ search = '', page = 1, limit = 20 } = {}) {
+  const params = new URLSearchParams();
+  if (search) params.append('search', search);
+  if (page) params.append('page', page);
+  if (limit) params.append('limit', limit);
+
+  const res = await fetchWithRetry(`${API_BASE}/analyses/history?${params.toString()}`);
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error?.message || 'Failed to fetch analysis history');
+  }
+  return data.data;
+}
+
+export async function deleteAnalysis(analysisId) {
+  const res = await fetchWithRetry(`${API_BASE}/analyses/${analysisId}`, {
+    method: 'DELETE',
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error?.message || 'Failed to delete analysis');
+  }
+  return data;
+}
+
 

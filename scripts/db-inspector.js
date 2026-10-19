@@ -78,6 +78,25 @@ async function inspectMongoDB() {
       );
     }
 
+    const analysesCol = conn.connection.collection("analyses");
+    const analysesDocs = await analysesCol.find().sort({ createdAt: -1 }).limit(5).toArray();
+
+    console.log("\n📊 SAVED BLAST RADIUS ANALYSES:");
+    if (analysesDocs.length === 0) {
+      console.log("   (No analyses persisted in MongoDB yet)\n");
+    } else {
+      console.table(
+        analysesDocs.map((a) => ({
+          ID: a.analysisId,
+          Title: a.title || "Analysis",
+          Risk: a.summary?.riskLevel || "LOW",
+          Impacted: a.summary?.affectedFilesCount ?? 0,
+          "User ID": a.user ? String(a.user).slice(0, 10) + "..." : "Public",
+          Date: a.createdAt ? new Date(a.createdAt).toISOString() : "N/A",
+        }))
+      );
+    }
+
     await mongoose.connection.close();
   } catch (err) {
     console.error("❌ MongoDB Inspection Error:", err.message);

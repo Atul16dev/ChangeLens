@@ -110,7 +110,7 @@ export async function performAnalysis({
   changedFiles: userChangedFiles,
   baseRef,
   maxDepth = 10,
-} = {}) {
+} = {}, userId = null) {
   // Default to sample mern repository if no path is passed
   const targetDir = repoPath
     ? path.resolve(repoPath)
@@ -204,7 +204,7 @@ export async function performAnalysis({
     allFiles,
   };
 
-  analysesStore.save(analysisId, analysisRecord);
+  await analysesStore.save(analysisId, analysisRecord, userId);
   return analysisRecord;
 }
 
@@ -212,7 +212,7 @@ export async function performAnalysis({
  * Helper to fetch analysis record or auto-seed if store is empty.
  */
 async function getAnalysisRecord(id) {
-  let analysis = analysesStore.get(id);
+  let analysis = await analysesStore.get(id);
   if (analysis) return analysis;
 
   analysis = analysesStore.getLatest();
@@ -233,7 +233,8 @@ async function getAnalysisRecord(id) {
  */
 export async function runAnalysis(req, res, next) {
   try {
-    const analysisRecord = await performAnalysis(req.body || {});
+    const userId = req.user?.id || null;
+    const analysisRecord = await performAnalysis(req.body || {}, userId);
 
     res.status(201).json({
       success: true,
@@ -352,11 +353,65 @@ export async function getAnalysisImpact(req, res, next) {
  * GET /api/v1/analyses
  * Lists recent analysis runs.
  */
-export function listAnalyses(_req, res) {
-  res.status(200).json({
-    success: true,
-    data: analysesStore.list(),
-  });
+export async function listAnalyses(_req, res, next) {
+  try {
+    const list = await analysesStore.list();
+    res.status(200).json({
+      success: true,
+      data: list,
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
+ * GET /api/v1/analyses/history
+ * Lists historical analysis runs scoped to the authenticated user with search and pagination.
+ */
+export async function getAnalysisHistory(req, res, next) {
+  try {
+    const userId = req.user?.id || null;
+    const { search = "", limit = 20, page = 1 } = req.query || {};
+    const result = await analysesStore.listByUser(userId, { search, limit, page });
+
+    res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
+ * DELETE /api/v1/analyses/:id
+ * Deletes an analysis run if owned by the requesting user.
+ */
+export async function deleteAnalysisRecord(req, res, next) {
+  try {
+    const { id } = req.params;
+    const userId = req.user?.id || null;
+
+    const success = await analysesStore.delete(id, userId);
+    if (!success) {
+      return res.status(403).json({
+        success: false,
+        error: {
+          code: "FORBIDDEN",
+          message: "You do not have permission to delete this analysis report.",
+          requestId: req.id,
+        },
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Analysis report removed successfully.",
+    });
+  } catch (err) {
+    next(err);
+  }
 }
 
 /**

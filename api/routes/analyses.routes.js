@@ -8,15 +8,24 @@ import {
   handleAnalysisChat,
   simulateAnalysisImpact,
   listAnalyses,
+  getAnalysisHistory,
+  deleteAnalysisRecord,
 } from "../controllers/analyses.controller.js";
+import { requireAuth } from "../middleware/auth.js";
 
 const router = Router();
 
 // Run new analysis
 router.post("/analyze", runAnalysis);
 
+// List user analysis history (search, pagination)
+router.get("/analyses/history", requireAuth, getAnalysisHistory);
+
 // List recent analyses
 router.get("/analyses", listAnalyses);
+
+// Delete an analysis record (owner only)
+router.delete("/analyses/:id", requireAuth, deleteAnalysisRecord);
 
 // Get analysis details by ID
 router.get("/analyses/:id", getAnalysis);
