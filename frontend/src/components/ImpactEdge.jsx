@@ -164,6 +164,13 @@ export const ImpactEdge = memo(({
                   </div>
                 )}
 
+                {data.importedNames && data.importedNames.length > 0 && (
+                  <div className="pt-1 text-[10px] text-slate-400 border-t border-slate-800/80">
+                    <span className="text-slate-500">Symbols: </span>
+                    <span className="text-indigo-300 font-semibold">{data.importedNames.join(', ')}</span>
+                  </div>
+                )}
+
                 <div className="pt-1 text-[10px] text-slate-400 leading-tight">
                   {mode === 'impact'
                     ? `Change in ${importedBasename} affects ${importerBasename} because ${importerBasename} imports it.`

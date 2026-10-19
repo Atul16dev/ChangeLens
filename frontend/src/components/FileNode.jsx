@@ -142,11 +142,19 @@ export const FileNode = memo(({ data, selected }) => {
 
       {/* Middle/Bottom Row: Directory Path + Depth Badge */}
       <div className="flex items-center justify-between text-[10px] text-slate-400 font-mono pt-1 border-t border-slate-800/60">
-        <div className="flex items-center gap-1 truncate max-w-[180px]">
+        <div className="flex items-center gap-1.5 truncate max-w-[170px]">
           <Folder className="w-3 h-3 text-slate-500 shrink-0" />
           <span className="truncate" title={dirName || 'root'}>
             {dirName || '.'}
           </span>
+          {data.publicSymbols?.length > 0 && (
+            <span
+              className="text-[9px] px-1 py-0.2 rounded bg-indigo-950/80 text-indigo-300 border border-indigo-700/50 shrink-0 font-mono"
+              title={`Exported symbols: ${data.publicSymbols.join(', ')}`}
+            >
+              {data.publicSymbols.length} fx
+            </span>
+          )}
         </div>
 
         {isChanged ? (

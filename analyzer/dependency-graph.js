@@ -128,7 +128,8 @@ export function calculateBlastRadius({
   const transitiveDependents = new Set();
 
   for (const changedFile of changedFiles) {
-    const normalizedChanged = changedFile.split("\\").join("/").replace(/^\.\//, "");
+    const rawPath = typeof changedFile === "string" ? changedFile : changedFile?.path || "";
+    const normalizedChanged = rawPath.split("\\").join("/").replace(/^\.\//, "");
 
     // Queue entries: { file, depth, pathHistory }
     const queue = [

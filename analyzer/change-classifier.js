@@ -9,6 +9,10 @@
  */
 
 import { calculateBlastRadius } from "./dependency-graph.js";
+import {
+  detectBrokenSymbolReferences,
+  calculateSymbolBlastRadius,
+} from "./symbol-analyzer.js";
 
 /**
  * Severities used for prioritizing findings in developer and PR reports.
@@ -28,6 +32,9 @@ export const IMPACT_SEVERITY = {
  * @param {Array<object>} params.changes - Array of parsed git changes from diff-parser.js
  * @param {object} params.graph - Dependency graph from dependency-graph.js
  * @param {number} [params.maxDepth=10] - Maximum traversal depth for modified files
+ * @param {Array<object>} [params.unresolvedDependencies=[]] - Unresolved local imports
+ * @param {Array<object>} [params.resolvedDependencies=[]] - All resolved internal dependencies
+ * @param {object} [params.symbolTable=null] - Symbol table from buildSymbolTable()
  * @returns {object} Comprehensive categorized impact report
  */
 export function classifyImpactPolicies({
@@ -35,6 +42,8 @@ export function classifyImpactPolicies({
   graph,
   maxDepth = 10,
   unresolvedDependencies = [],
+  resolvedDependencies = [],
+  symbolTable = null,
 }) {
   if (!graph || typeof graph.getDependents !== "function") {
     throw new TypeError("A valid dependency graph instance is required.");
@@ -45,6 +54,12 @@ export function classifyImpactPolicies({
   const staleRenameFindings = [];
   const addedFileFindings = [];
   const modifiedFileChanges = [];
+
+  // Policy 0A: BROKEN SYMBOL REFERENCES (🚨 CRITICAL MISSING EXPORT CHECK)
+  const brokenSymbolFindings = symbolTable && resolvedDependencies.length > 0
+    ? detectBrokenSymbolReferences({ resolvedDependencies, symbolTable })
+    : [];
+
 
   // Policy 0: UNRESOLVED LOCAL IMPORTS (Detected directly from AST scan)
   if (Array.isArray(unresolvedDependencies)) {
@@ -144,7 +159,10 @@ export function classifyImpactPolicies({
 
     // Policy 4: MODIFIED and UNTRACKED Files (BLAST RADIUS BFS)
     else if (status === "modified" || status === "untracked") {
-      modifiedFileChanges.push(filePath);
+      const entry = change.symbols && Array.isArray(change.symbols) && change.symbols.length > 0
+        ? { path: filePath, symbols: change.symbols }
+        : filePath;
+      modifiedFileChanges.push(entry);
     }
   }
 
@@ -155,8 +173,34 @@ export function classifyImpactPolicies({
     maxDepth,
   });
 
+  // If symbolTable is present, compute symbol-level blast radius and enrich findings
+  const symbolBlastResult = symbolTable
+    ? calculateSymbolBlastRadius({
+        graph,
+        symbolTable,
+        changedFiles: modifiedFileChanges,
+        maxDepth,
+      })
+    : null;
+
+  const symbolImpactMap = new Map();
+  if (symbolBlastResult) {
+    for (const sf of symbolBlastResult.allFindings) {
+      const key = `${sf.changedFile}->${sf.affectedFile}`;
+      symbolImpactMap.set(key, sf.symbolImpact);
+    }
+  }
+
+  const hasSymbolFilter = modifiedFileChanges.some(
+    (m) => typeof m === "object" && Array.isArray(m.symbols) && m.symbols.length > 0
+  );
+
+  const rawFindings = hasSymbolFilter && symbolBlastResult
+    ? symbolBlastResult.allFindings
+    : blastRadiusResult.findings;
+
   // Assign severities and actionable recommendations to blast radius findings
-  const prioritizedBlastRadiusFindings = blastRadiusResult.findings.map((f) => {
+  const prioritizedBlastRadiusFindings = rawFindings.map((f) => {
     let severity = IMPACT_SEVERITY.LOW;
     if (f.depth === 1) {
       severity = IMPACT_SEVERITY.HIGH;
@@ -164,9 +208,19 @@ export function classifyImpactPolicies({
       severity = IMPACT_SEVERITY.MEDIUM;
     }
 
+    const key = `${f.changedFile}->${f.affectedFile}`;
+    const symbolImpact = f.symbolImpact || symbolImpactMap.get(key) || null;
+
+    let explanation = f.explanation;
+    if (symbolImpact?.impactedSymbols?.length > 0 && !explanation.includes("Consumed symbol")) {
+      explanation += ` Consumed symbol(s): [${symbolImpact.impactedSymbols.join(", ")}].`;
+    }
+
     return {
       ...f,
       severity,
+      symbolImpact,
+      explanation,
       recommendation:
         f.depth === 1
           ? `Direct consumer of changed file. Inspect integration call sites and run related unit tests.`
@@ -185,25 +239,43 @@ export function classifyImpactPolicies({
 
   const allPrioritizedFindings = [
     ...brokenImportFindings,
+    ...brokenSymbolFindings,
     ...staleRenameFindings,
     ...prioritizedBlastRadiusFindings,
     ...addedFileFindings,
   ].sort((a, b) => (severityRank[a.severity] || 99) - (severityRank[b.severity] || 99));
 
+  const impactedCount = hasSymbolFilter && symbolBlastResult
+    ? symbolBlastResult.summary.totalImpactedFiles
+    : blastRadiusResult.summary.totalImpactedFiles;
+
+  const directCount = hasSymbolFilter && symbolBlastResult
+    ? symbolBlastResult.summary.directDependentsCount
+    : blastRadiusResult.summary.directDependentsCount;
+
+  const transitiveCount = hasSymbolFilter && symbolBlastResult
+    ? symbolBlastResult.summary.transitiveDependentsCount
+    : blastRadiusResult.summary.transitiveDependentsCount;
+
   return {
     summary: {
       totalChanges: changes.length,
       brokenImportsCount: brokenImportFindings.length,
+      brokenSymbolsCount: brokenSymbolFindings.length,
       staleRenamesCount: staleRenameFindings.length,
-      impactedFilesCount: blastRadiusResult.summary.totalImpactedFiles,
-      directDependentsCount: blastRadiusResult.summary.directDependentsCount,
-      transitiveDependentsCount: blastRadiusResult.summary.transitiveDependentsCount,
-      criticalAlerts: brokenImportFindings.length > 0,
+      impactedFilesCount: impactedCount,
+      directDependentsCount: directCount,
+      transitiveDependentsCount: transitiveCount,
+      isolatedConsumersCount: symbolBlastResult?.summary?.isolatedConsumersCount || 0,
+      criticalAlerts: brokenImportFindings.length > 0 || brokenSymbolFindings.length > 0,
     },
     brokenImports: brokenImportFindings,
+    brokenSymbols: brokenSymbolFindings,
     staleRenames: staleRenameFindings,
     blastRadius: prioritizedBlastRadiusFindings,
+    isolatedFindings: symbolBlastResult?.isolatedFindings || [],
     addedFiles: addedFileFindings,
     allFindings: allPrioritizedFindings,
   };
 }
+

@@ -7,13 +7,14 @@ import { generateImpactExplanation } from "../../analyzer/ai-explainer.js";
 import { computeGraphLayout } from "../../analyzer/graph-layout.js";
 import { isGitRepository, getWorkingTreeChanges, getCommitDiff, getGitRoot } from "../../analyzer/local-git.js";
 import { generateAnalysisChatResponse } from "../../services/chat-assistant.js";
+import { buildSymbolTable } from "../../analyzer/symbol-analyzer.js";
 import { analysesStore } from "../store.js";
 
 /**
  * Formats in-memory graph nodes and edges using ELK.js layered layout.
  * Provides deterministic positions, crossing minimization, and rich semantic edge metadata.
  */
-async function formatReactFlowGraph(graph, impactAnalysis, changedFilesSet) {
+async function formatReactFlowGraph(graph, impactAnalysis, changedFilesSet, symbolTable = null) {
   const impactedFilesMap = new Map();
   for (const f of impactAnalysis.allFindings) {
     if (f.affectedFile) {
@@ -30,6 +31,7 @@ async function formatReactFlowGraph(graph, impactAnalysis, changedFilesSet) {
     const isChanged = changedFilesSet.has(nodePath);
     const impactInfo = impactedFilesMap.get(nodePath);
     const isImpacted = Boolean(impactInfo);
+    const symbolInfo = symbolTable?.get(nodePath);
 
     return {
       id: nodePath,
@@ -41,6 +43,8 @@ async function formatReactFlowGraph(graph, impactAnalysis, changedFilesSet) {
         isImpacted,
         severity: impactInfo?.severity || (isChanged ? "CHANGED" : "NONE"),
         depth: impactInfo?.depth || 0,
+        publicSymbols: symbolInfo ? Array.from(symbolInfo.publicSymbols) : [],
+        declarationsCount: symbolInfo ? symbolInfo.declarations.size : 0,
       },
       position: { x: 50, y: 50 },
     };
@@ -66,6 +70,7 @@ async function formatReactFlowGraph(graph, impactAnalysis, changedFilesSet) {
         importer: edge.source,
         imported: edge.target,
         specifier: edge.specifier,
+        importedNames: edge.importedNames || [],
         isImpacted: isEdgeImpacted,
         isDirectImpact,
         impactLevel: isDirectImpact ? "direct" : isEdgeImpacted ? "transitive" : "none",
@@ -157,23 +162,26 @@ export async function performAnalysis({
   // 2. Scan repository ASTs
   const scanReport = await scanRepository(targetDir);
 
-  // 3. Resolve module dependencies
+  // 3. Resolve module dependencies & Build Symbol Table
   const dependencies = resolveRepositoryDependencies(scanReport);
+  const symbolTable = buildSymbolTable(scanReport.files);
 
   // 4. Build directed dependency graph
   const allFiles = scanReport.files.map((f) => f.path.split(path.sep).join("/"));
   const graph = buildDependencyGraph(dependencies, allFiles);
 
-  // 5. Apply change status impact policies (Reverse BFS)
+  // 5. Apply change status impact policies (Reverse BFS & Symbol Analysis)
   const impactAnalysis = classifyImpactPolicies({
     changes,
     graph,
     maxDepth,
     unresolvedDependencies: dependencies.filter((d) => d.resolutionStatus === "unresolved-local"),
+    resolvedDependencies: dependencies,
+    symbolTable,
   });
 
-  // 6. Generate React Flow visual graph
-  const reactFlowGraph = await formatReactFlowGraph(graph, impactAnalysis, changedFilesSet);
+  // 6. Generate React Flow visual graph with symbol metadata
+  const reactFlowGraph = await formatReactFlowGraph(graph, impactAnalysis, changedFilesSet, symbolTable);
 
   // 7. Store analysis run
   const analysisId = `analysis_${Date.now()}`;
@@ -192,6 +200,7 @@ export async function performAnalysis({
     impactAnalysis,
     dependencyGraph: graph,
     dependencies,
+    symbolTable,
     allFiles,
   };
 
@@ -437,7 +446,7 @@ export async function handleAnalysisChat(req, res, next) {
 export async function simulateAnalysisImpact(req, res, next) {
   try {
     const { id } = req.params;
-    const { simulatedFile, changeType = "modified" } = req.body || {};
+    const { simulatedFile, changeType = "modified", simulatedSymbols = [] } = req.body || {};
 
     if (!simulatedFile || typeof simulatedFile !== "string" || simulatedFile.trim().length === 0) {
       return res.status(400).json({
@@ -460,17 +469,18 @@ export async function simulateAnalysisImpact(req, res, next) {
       });
     }
 
-    // Retrieve or rebuild in-memory dependency graph
+    // Retrieve or rebuild in-memory dependency graph & symbol table
     let graph = analysis.dependencyGraph;
     if (!graph && analysis.dependencies && analysis.allFiles) {
       graph = buildDependencyGraph(analysis.dependencies, analysis.allFiles);
     }
-    if (!graph) {
+    if (!graph || !analysis.symbolTable) {
       const scanReport = await scanRepository(analysis.targetDir || "tests/fixtures/mern-sample");
       const dependencies = resolveRepositoryDependencies(scanReport);
       const allFiles = scanReport.files.map((f) => f.path.split(path.sep).join("/"));
       graph = buildDependencyGraph(dependencies, allFiles);
       analysis.dependencyGraph = graph;
+      analysis.symbolTable = buildSymbolTable(scanReport.files);
     }
 
     const cleanSimulatedPath = simulatedFile.split("\\").join("/").replace(/^\.\//, "");
@@ -479,6 +489,7 @@ export async function simulateAnalysisImpact(req, res, next) {
         path: cleanSimulatedPath,
         status: changeType,
         statusCode: changeType === "deleted" ? "D" : "M",
+        symbols: Array.isArray(simulatedSymbols) && simulatedSymbols.length > 0 ? simulatedSymbols : undefined,
       },
     ];
 
@@ -487,12 +498,15 @@ export async function simulateAnalysisImpact(req, res, next) {
       graph,
       maxDepth: 10,
       unresolvedDependencies: [],
+      resolvedDependencies: analysis.dependencies || [],
+      symbolTable: analysis.symbolTable || null,
     });
 
     const simulatedGraph = await formatReactFlowGraph(
       graph,
       simulatedImpact,
-      new Set([cleanSimulatedPath])
+      new Set([cleanSimulatedPath]),
+      analysis.symbolTable || null
     );
 
     const simulatedExplanation = generateImpactExplanation({
@@ -505,8 +519,10 @@ export async function simulateAnalysisImpact(req, res, next) {
       data: {
         analysisId: id,
         simulatedFile: cleanSimulatedPath,
+        simulatedSymbols: Array.isArray(simulatedSymbols) ? simulatedSymbols : [],
         changeType,
         summary: simulatedImpact.summary,
+        brokenSymbols: simulatedImpact.brokenSymbols || [],
         impactAnalysis: simulatedImpact,
         graph: simulatedGraph,
         explanation: simulatedExplanation,

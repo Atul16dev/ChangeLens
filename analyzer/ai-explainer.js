@@ -16,9 +16,14 @@
  * @returns {"CRITICAL" | "HIGH" | "MEDIUM" | "LOW"}
  */
 export function calculateRiskLevel(summary = {}) {
-  const { brokenImportsCount = 0, directDependentsCount = 0, transitiveDependentsCount = 0 } = summary;
+  const {
+    brokenImportsCount = 0,
+    brokenSymbolsCount = 0,
+    directDependentsCount = 0,
+    transitiveDependentsCount = 0,
+  } = summary;
 
-  if (brokenImportsCount > 0) return "CRITICAL";
+  if (brokenImportsCount > 0 || brokenSymbolsCount > 0) return "CRITICAL";
   if (directDependentsCount > 0) return "HIGH";
   if (transitiveDependentsCount > 0) return "MEDIUM";
   return "LOW";
@@ -36,12 +41,13 @@ export function calculateRiskLevel(summary = {}) {
 export function formatPRMarkdownComment({ impactAnalysis, changes = [], riskLevel }) {
   const summary = impactAnalysis?.summary || {};
   const brokenImports = impactAnalysis?.brokenImports || [];
+  const brokenSymbols = impactAnalysis?.brokenSymbols || [];
   const staleRenames = impactAnalysis?.staleRenames || [];
   const blastRadius = impactAnalysis?.blastRadius || [];
   const allFindings = impactAnalysis?.allFindings || [];
 
   const riskBadge = {
-    CRITICAL: "🚨 **CRITICAL RISK** — Broken Imports Detected",
+    CRITICAL: "🚨 **CRITICAL RISK** — Broken Imports or Missing Symbols Detected",
     HIGH: "⚠️ **HIGH RISK** — Direct Downstream Dependents Impacted",
     MEDIUM: "🔶 **MEDIUM RISK** — Transitive Downstream Impact",
     LOW: "✅ **LOW RISK** — Isolated Changes with Minimal Blast Radius",
@@ -60,18 +66,35 @@ export function formatPRMarkdownComment({ impactAnalysis, changes = [], riskLeve
   lines.push(`| :--- | :---: | :--- |`);
   lines.push(`| **Root Changed Files** | \`${changes.length || summary.totalChangedFiles || 0}\` | ${changes.length > 0 ? "Changes Inspected" : "Baseline"} |`);
   lines.push(`| **Broken Imports** | \`${summary.brokenImportsCount || brokenImports.length}\` | ${brokenImports.length > 0 ? "🚨 Immediate Fix Required" : "✅ Clean"} |`);
+  if (summary.brokenSymbolsCount > 0 || brokenSymbols.length > 0) {
+    lines.push(`| **Broken Symbols** | \`${summary.brokenSymbolsCount || brokenSymbols.length}\` | 🚨 Missing Functions/Exports |`);
+  }
   lines.push(`| **Direct Dependents (Depth 1)** | \`${summary.directDependentsCount || 0}\` | ${summary.directDependentsCount > 0 ? "⚠️ Needs Testing" : "✅ None"} |`);
   lines.push(`| **Transitive Dependents (Depth 2+)** | \`${summary.transitiveDependentsCount || 0}\` | ${summary.transitiveDependentsCount > 0 ? "🔶 Downstream Flow" : "✅ None"} |`);
   lines.push(`| **Total Blast Radius** | \`${summary.impactedFilesCount || 0}\` | Total impacted files |`);
   lines.push("");
 
-  // Critical Alerts (if any)
+  // Critical Alerts: Broken Imports (if any)
   if (brokenImports.length > 0) {
     lines.push(`> [!CAUTION]`);
     lines.push(`> **CRITICAL BROKEN IMPORTS DETECTED (${brokenImports.length})**`);
     lines.push(`> The following files import files that were deleted in this branch. Merging will cause compile failures or runtime crashes:`);
     for (const b of brokenImports) {
       lines.push(`> - In \`${b.affectedFile}\`: imports deleted \`${b.deletedFile}\` at line ${b.evidence?.location?.startLine || 1}`);
+      if (b.evidence?.rawSource) {
+        lines.push(`>   \`\`\`javascript\n>   ${b.evidence.rawSource}\n>   \`\`\``);
+      }
+    }
+    lines.push("");
+  }
+
+  // Critical Alerts: Broken Symbols (if any)
+  if (brokenSymbols.length > 0) {
+    lines.push(`> [!CAUTION]`);
+    lines.push(`> **CRITICAL BROKEN SYMBOL REFERENCES DETECTED (${brokenSymbols.length})**`);
+    lines.push(`> The following files import symbols (functions, classes, or exports) that are not defined in the target module:`);
+    for (const b of brokenSymbols) {
+      lines.push(`> - In \`${b.affectedFile}\`: imports missing symbol \`${b.missingSymbol}\` from \`${b.targetFile}\` at line ${b.evidence?.location?.startLine || 1}`);
       if (b.evidence?.rawSource) {
         lines.push(`>   \`\`\`javascript\n>   ${b.evidence.rawSource}\n>   \`\`\``);
       }
@@ -94,14 +117,17 @@ export function formatPRMarkdownComment({ impactAnalysis, changes = [], riskLeve
     lines.push(`<details>`);
     lines.push(`<summary><strong>🔎 Detailed Dependency Blast Radius (${blastRadius.length} files)</strong></summary>`);
     lines.push("");
-    lines.push(`| Impacted File | Depth | Path Route |`);
-    lines.push(`| :--- | :---: | :--- |`);
+    lines.push(`| Impacted File | Depth | Impacted Symbols | Path Route |`);
+    lines.push(`| :--- | :---: | :--- | :--- |`);
 
     for (const entry of blastRadius) {
       const fileName = entry.affectedFile || entry.file;
       const depthBadge = entry.depth === 1 ? "**Depth 1 (Direct)**" : `Depth ${entry.depth} (Transitive)`;
       const routeStr = entry.path ? entry.path.map((p) => `\`${p.split("/").pop()}\``).join(" ➔ ") : "-";
-      lines.push(`| \`${fileName}\` | ${depthBadge} | ${routeStr} |`);
+      const symStr = entry.symbolImpact?.impactedSymbols?.length
+        ? entry.symbolImpact.impactedSymbols.map((s) => `\`${s}\``).join(", ")
+        : "All";
+      lines.push(`| \`${fileName}\` | ${depthBadge} | ${symStr} | ${routeStr} |`);
     }
 
     lines.push("");
@@ -113,6 +139,9 @@ export function formatPRMarkdownComment({ impactAnalysis, changes = [], riskLeve
   lines.push(`### 📋 Reviewer & Author Checklist`);
   if (brokenImports.length > 0) {
     lines.push(`- [ ] 🚨 **Fix broken imports** in consumers referencing deleted modules before merging.`);
+  }
+  if (brokenSymbols.length > 0) {
+    lines.push(`- [ ] 🚨 **Fix missing symbol exports** referenced by dependent consumers before merging.`);
   }
   if (summary.directDependentsCount > 0) {
     lines.push(`- [ ] ⚠️ **Run integration tests** for all ${summary.directDependentsCount} direct consumer(s).`);

@@ -43,6 +43,7 @@ export function ImpactSidebar({
     totalChangedFiles: rawSummary.totalChanges ?? rawSummary.totalChangedFiles ?? 0,
     totalImpactedFiles: rawSummary.impactedFilesCount ?? rawSummary.totalImpactedFiles ?? 0,
     brokenImportsCount: rawSummary.brokenImportsCount ?? 0,
+    brokenSymbolsCount: rawSummary.brokenSymbolsCount ?? 0,
     directImpactCount: rawSummary.directDependentsCount ?? rawSummary.directImpactCount ?? 0,
     transitiveImpactCount: rawSummary.transitiveDependentsCount ?? rawSummary.transitiveImpactCount ?? 0,
   };
@@ -466,10 +467,24 @@ export function ImpactSidebar({
                             Line {line}{column !== null ? `:${column}` : ''}
                           </span>
                         )}
+
+                        {finding.missingSymbol && (
+                          <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-rose-950 text-rose-300 border border-rose-600/80 flex items-center gap-1">
+                            <AlertOctagon className="w-2.5 h-2.5 text-rose-400" />
+                            Missing: {finding.missingSymbol}
+                          </span>
+                        )}
+
+                        {finding.symbolImpact?.impactedSymbols?.length > 0 && (
+                          <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-indigo-950/80 text-indigo-300 border border-indigo-700/60 flex items-center gap-1">
+                            <Zap className="w-2.5 h-2.5 text-indigo-400" />
+                            Symbols: {finding.symbolImpact.impactedSymbols.join(', ')}
+                          </span>
+                        )}
                       </div>
 
                       <span className="text-[11px] font-mono text-slate-400">
-                        {finding.depth ? `Depth Lv ${finding.depth}` : (isBrokenImport ? 'Broken Import' : 'Direct')}
+                        {finding.depth ? `Depth Lv ${finding.depth}` : (finding.missingSymbol ? 'Broken Symbol' : isBrokenImport ? 'Broken Import' : 'Direct')}
                       </span>
                     </div>
 
