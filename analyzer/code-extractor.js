@@ -42,19 +42,50 @@ function mapAndFree(items, mapItem) {
 }
 
 function extractModuleSpecifier(source, language) {
-  if (!["javascript", "typescript", "tsx"].includes(language)) {
+  if (!source || typeof source !== "string") {
     return null;
   }
 
-  const fromClause = source.match(/\bfrom\s*(['"])([^\\'"\r\n]+)\1/);
-  if (fromClause) {
-    return fromClause[2];
+  // 1. JavaScript / TypeScript / TSX
+  if (["javascript", "typescript", "tsx"].includes(language)) {
+    const fromClause = source.match(/\bfrom\s*(['"])([^\\'"\r\n]+)\1/);
+    if (fromClause) {
+      return fromClause[2];
+    }
+
+    const sideEffectImport = source.match(
+      /^\s*import\s*(['"])([^\\'"\r\n]+)\1/,
+    );
+    return sideEffectImport?.[2] ?? null;
   }
 
-  const sideEffectImport = source.match(
-    /^\s*import\s*(['"])([^\\'"\r\n]+)\1/,
-  );
-  return sideEffectImport?.[2] ?? null;
+  // 2. Python
+  if (language === "python") {
+    const fromMatch = source.match(/^\s*from\s+([.\w]+)\s+import/);
+    if (fromMatch) {
+      return fromMatch[1];
+    }
+    const importMatch = source.match(/^\s*import\s+([.\w]+)/);
+    if (importMatch) {
+      return importMatch[1];
+    }
+    return null;
+  }
+
+  // 3. Go
+  if (language === "go") {
+    const quoteMatch = source.match(/["']([^"']+)["']/);
+    if (quoteMatch) {
+      return quoteMatch[1];
+    }
+    const trimmed = source.trim();
+    if (trimmed.startsWith('"') && trimmed.endsWith('"')) {
+      return trimmed.slice(1, -1);
+    }
+    return null;
+  }
+
+  return null;
 }
 
 function normalizeImport(item, language) {
