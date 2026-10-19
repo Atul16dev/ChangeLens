@@ -25,29 +25,27 @@ export function FeaturesGrid() {
   const [activeAstTab, setActiveAstTab] = useState('js');
 
   return (
-    <section id="features" className="py-20 md:py-32 relative bg-slate-950 overflow-hidden">
-      {/* Background subtle radial glow with continuous breathing animation */}
+    <section id="features" className="py-14 sm:py-20 md:py-32 relative bg-slate-950 overflow-hidden">
+      {/* Background subtle radial glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[600px] bg-indigo-600/10 blur-[160px] pointer-events-none rounded-full animate-pulse-glow" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        {/* Section Header with Scroll Reveal */}
-        <ScrollReveal animation="fade-up" duration={750} className="text-center max-w-3xl mx-auto space-y-4 mb-16 sm:mb-20">
+        {/* Section Header */}
+        <ScrollReveal animation="fade-up" duration={750} className="text-center max-w-3xl mx-auto space-y-3 sm:space-y-4 mb-10 sm:mb-20">
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-semibold uppercase tracking-wider">
             <Sparkles className="w-3.5 h-3.5 animate-pulse" />
             <span>Platform Capabilities</span>
           </div>
-          <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white leading-tight">
+          <h2 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-white leading-tight">
             Complete Code Impact Intelligence.
           </h2>
-          <p className="text-base sm:text-lg text-slate-400">
+          <p className="text-sm sm:text-base md:text-lg text-slate-400 max-w-2xl mx-auto">
             From low-level WebAssembly AST token extraction to interactive dependency graph rendering and automated AI PR risk scoring.
           </p>
         </ScrollReveal>
 
-        {/* 12-Column Asymmetric Bento Grid: 10 Items, 100% Geometry, Zero Gaps */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-6">
-          {/* ================= ROW 1 (12 COLS: 7 + 5) ================= */}
-
+        {/* ================= DESKTOP & TABLET VIEW: 12-Column Asymmetric Bento Grid (md: and above) ================= */}
+        <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-12 gap-6">
           {/* Feature 1: Multi-Language WASM AST (Hero Card: lg:col-span-7, md:col-span-2) */}
           <ScrollReveal
             animation="fade-up"
@@ -113,7 +111,7 @@ export function FeaturesGrid() {
               </p>
             </div>
 
-            {/* Visual Micro-Terminal: Parsed AST Node Representation */}
+            {/* Visual Micro-Terminal */}
             <div className="mt-6 pt-5 border-t border-slate-800/80">
               <div className="p-3.5 rounded-xl bg-slate-950/90 border border-slate-800 font-mono text-xs">
                 {activeAstTab === 'js' && (
@@ -193,7 +191,6 @@ export function FeaturesGrid() {
               </p>
             </div>
 
-            {/* Visual Micro-Card: Symbol Isolation */}
             <div className="mt-6 pt-4 border-t border-slate-800/60">
               <div className="space-y-2 font-mono text-xs">
                 <div className="p-2.5 rounded-lg bg-slate-950 border border-slate-800 flex items-center justify-between">
@@ -214,8 +211,6 @@ export function FeaturesGrid() {
               </div>
             </div>
           </ScrollReveal>
-
-          {/* ================= ROW 2 (12 COLS: 4 + 4 + 4) ================= */}
 
           {/* Feature 3: Interactive Graph (lg:col-span-4, md:col-span-1) */}
           <ScrollReveal
@@ -243,7 +238,6 @@ export function FeaturesGrid() {
               </p>
             </div>
 
-            {/* Visual Micro-Card: DAG Mini Flow */}
             <div className="mt-6 pt-4 border-t border-slate-800/60">
               <div className="flex items-center justify-between gap-1.5 font-mono text-[11px] bg-slate-950 p-2.5 rounded-xl border border-slate-800/80">
                 <span className="px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-800/50">Origin</span>
@@ -281,7 +275,6 @@ export function FeaturesGrid() {
               </p>
             </div>
 
-            {/* Visual Micro-Card: Severity Meter */}
             <div className="mt-6 pt-4 border-t border-slate-800/60">
               <div className="flex items-center justify-between text-xs font-mono mb-1.5">
                 <span className="text-slate-400">Blast Radius Index</span>
@@ -319,7 +312,6 @@ export function FeaturesGrid() {
               </p>
             </div>
 
-            {/* Visual Micro-Card: Broken Symbol Tag */}
             <div className="mt-6 pt-4 border-t border-slate-800/60">
               <div className="p-2 rounded-lg bg-rose-950/40 border border-rose-500/30 font-mono text-[11px] text-rose-300 flex items-center justify-between">
                 <span>⚠️ Missing: hashPassword()</span>
@@ -327,8 +319,6 @@ export function FeaturesGrid() {
               </div>
             </div>
           </ScrollReveal>
-
-          {/* ================= ROW 3 (12 COLS: 4 + 4 + 4) ================= */}
 
           {/* Feature 6: What-If Simulator (lg:col-span-4, md:col-span-1) */}
           <ScrollReveal
@@ -356,7 +346,6 @@ export function FeaturesGrid() {
               </p>
             </div>
 
-            {/* Visual Micro-Card: What-If Simulation */}
             <div className="mt-6 pt-4 border-t border-slate-800/60">
               <div className="p-2 rounded-lg bg-purple-950/40 border border-purple-800/50 font-mono text-[11px] text-purple-300 flex items-center justify-between">
                 <span>Simulate: routes/user.js</span>
@@ -391,7 +380,6 @@ export function FeaturesGrid() {
               </p>
             </div>
 
-            {/* Visual Micro-Card: Git Status Pill */}
             <div className="mt-6 pt-4 border-t border-slate-800/60">
               <div className="flex items-center justify-between font-mono text-[11px] text-slate-400 bg-slate-950 p-2 rounded-lg border border-slate-800">
                 <span>git diff --cached</span>
@@ -426,7 +414,6 @@ export function FeaturesGrid() {
               </p>
             </div>
 
-            {/* Visual Micro-Card: CLI Command */}
             <div className="mt-6 pt-4 border-t border-slate-800/60">
               <div className="font-mono text-[11px] text-teal-300 bg-slate-950 p-2 rounded-lg border border-slate-800 flex items-center justify-between">
                 <span>$ npx changelens-ci --check</span>
@@ -434,8 +421,6 @@ export function FeaturesGrid() {
               </div>
             </div>
           </ScrollReveal>
-
-          {/* ================= ROW 4 (12 COLS: 6 + 6) ================= */}
 
           {/* Feature 9: AI PR Explanations (lg:col-span-6, md:col-span-1) */}
           <ScrollReveal
@@ -469,7 +454,6 @@ export function FeaturesGrid() {
               </p>
             </div>
 
-            {/* Visual Micro-Card: Gemini AI Markdown Preview */}
             <div className="mt-6 pt-4 border-t border-slate-800/80">
               <div className="p-3 rounded-xl bg-slate-950/90 border border-slate-800 font-mono text-xs space-y-1 text-slate-300">
                 <div className="text-[11px] text-purple-400 flex items-center justify-between border-b border-slate-800/60 pb-1">
@@ -518,7 +502,6 @@ export function FeaturesGrid() {
               </p>
             </div>
 
-            {/* Visual Micro-Card: History Snapshot */}
             <div className="mt-6 pt-4 border-t border-slate-800/80">
               <div className="grid grid-cols-2 gap-2 font-mono text-[11px]">
                 <div className="p-2 rounded-lg bg-slate-950/90 border border-slate-800 flex items-center justify-between">
@@ -533,8 +516,224 @@ export function FeaturesGrid() {
             </div>
           </ScrollReveal>
         </div>
+
+        {/* ================= MOBILE ADAPTIVE VIEW (< md screens): 3 Compact Hero Cards + Concise Capabilities Matrix ================= */}
+        <div className="md:hidden space-y-4">
+          {/* Mobile Hero Card 1: WASM AST Parser */}
+          <ScrollReveal animation="fade-up" duration={600} className="p-4 sm:p-5 rounded-xl bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950/30 border border-indigo-500/30 shadow-lg">
+            <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-lg bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center text-indigo-400 shrink-0">
+                  <Code2 className="w-5 h-5" />
+                </div>
+                <div>
+                  <span className="text-[9px] font-mono uppercase font-bold px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                    WASM Grammars
+                  </span>
+                  <h3 className="text-base font-bold text-white mt-0.5">
+                    Multi-Language AST Parsing
+                  </h3>
+                </div>
+              </div>
+
+              {/* Language Switcher Tabs */}
+              <div className="flex items-center gap-1 bg-slate-950/90 p-0.5 rounded-lg border border-slate-800 text-[10px]">
+                <button
+                  type="button"
+                  onClick={() => setActiveAstTab('js')}
+                  className={`px-2 py-0.5 rounded font-mono ${activeAstTab === 'js' ? 'bg-indigo-600 text-white font-bold' : 'text-slate-400'}`}
+                >
+                  JS/TS
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveAstTab('py')}
+                  className={`px-2 py-0.5 rounded font-mono ${activeAstTab === 'py' ? 'bg-indigo-600 text-white font-bold' : 'text-slate-400'}`}
+                >
+                  Py
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveAstTab('go')}
+                  className={`px-2 py-0.5 rounded font-mono ${activeAstTab === 'go' ? 'bg-indigo-600 text-white font-bold' : 'text-slate-400'}`}
+                >
+                  Go
+                </button>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-300 leading-relaxed mb-3">
+              Deterministic Tree-Sitter WebAssembly parsers extract concrete syntax trees offline in sub-milliseconds.
+            </p>
+
+            <div className="p-2.5 rounded-lg bg-slate-950/90 border border-slate-800 font-mono text-[11px] text-slate-300">
+              {activeAstTab === 'js' && (
+                <div>
+                  <div className="flex items-center justify-between text-[10px] text-emerald-400 pb-1 border-b border-slate-800/80">
+                    <span>tree-sitter-typescript.wasm</span>
+                    <span>✓ 1,280 tokens (0.8ms)</span>
+                  </div>
+                  <div className="pt-1.5 text-slate-400">
+                    <span className="text-purple-400">export function</span> <span className="text-cyan-300">verifySession</span>()
+                  </div>
+                </div>
+              )}
+              {activeAstTab === 'py' && (
+                <div>
+                  <div className="flex items-center justify-between text-[10px] text-emerald-400 pb-1 border-b border-slate-800/80">
+                    <span>tree-sitter-python.wasm</span>
+                    <span>✓ 940 tokens (0.6ms)</span>
+                  </div>
+                  <div className="pt-1.5 text-slate-400">
+                    <span className="text-purple-400">def</span> <span className="text-cyan-300">execute_query</span>(pool)
+                  </div>
+                </div>
+              )}
+              {activeAstTab === 'go' && (
+                <div>
+                  <div className="flex items-center justify-between text-[10px] text-emerald-400 pb-1 border-b border-slate-800/80">
+                    <span>tree-sitter-go.wasm</span>
+                    <span>✓ 810 tokens (0.5ms)</span>
+                  </div>
+                  <div className="pt-1.5 text-slate-400">
+                    <span className="text-purple-400">func</span> <span className="text-cyan-300">AcquireConnection</span>()
+                  </div>
+                </div>
+              )}
+            </div>
+          </ScrollReveal>
+
+          {/* Mobile Hero Card 2: Deterministic Blast Radius */}
+          <ScrollReveal animation="fade-up" delay={50} duration={600} className="p-4 sm:p-5 rounded-xl bg-slate-900/80 border border-amber-500/30 shadow-lg">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+                  <Radiation className="w-5 h-5 animate-pulse" />
+                </div>
+                <div>
+                  <span className="text-[9px] font-mono uppercase font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                    Reverse BFS
+                  </span>
+                  <h3 className="text-base font-bold text-white mt-0.5">
+                    Deterministic Blast Radius
+                  </h3>
+                </div>
+              </div>
+              <span className="text-xs font-mono font-bold text-amber-400 bg-amber-950/60 px-2 py-0.5 rounded border border-amber-800/40">
+                Score: 78/100
+              </span>
+            </div>
+
+            <p className="text-xs text-slate-300 leading-relaxed mb-3">
+              Traces transitive downstream ripple effects through infinite hops to accurately compute regression risk.
+            </p>
+
+            <div className="w-full h-2 rounded-full bg-slate-950 overflow-hidden border border-slate-800">
+              <div className="h-full bg-gradient-to-r from-cyan-500 via-amber-500 to-rose-500 rounded-full w-[78%]" />
+            </div>
+          </ScrollReveal>
+
+          {/* Mobile Hero Card 3: AI PR Explanations */}
+          <ScrollReveal animation="fade-up" delay={100} duration={600} className="p-4 sm:p-5 rounded-xl bg-gradient-to-br from-slate-900 via-slate-900 to-purple-950/25 border border-purple-500/30 shadow-lg">
+            <div className="flex items-center gap-2.5 mb-2">
+              <div className="w-9 h-9 rounded-lg bg-purple-500/15 border border-purple-500/30 flex items-center justify-center text-purple-400 shrink-0">
+                <Sparkles className="w-5 h-5 animate-pulse" />
+              </div>
+              <div>
+                <span className="text-[9px] font-mono uppercase font-bold px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                  Gemini 2.5 Flash
+                </span>
+                <h3 className="text-base font-bold text-white mt-0.5">
+                  AI PR Review Explanations
+                </h3>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-300 leading-relaxed mb-3">
+              Synthesizes human-readable risk summaries, suggested unit tests, and security checklist reviews.
+            </p>
+
+            <div className="p-2.5 rounded-lg bg-slate-950/90 border border-slate-800 font-mono text-[11px] text-slate-300">
+              <div className="text-purple-400 text-[10px] pb-1 border-b border-slate-800/80 flex items-center justify-between">
+                <span>Gemini PR Suggestion</span>
+                <span className="text-emerald-400">94% Confidence</span>
+              </div>
+              <p className="pt-1.5 text-slate-400 text-[10px]">
+                "Target <code className="text-slate-200">user.js</code> impacts auth. Run <code className="text-cyan-300">npm test tests/auth.test.js</code> before merging."
+              </p>
+            </div>
+          </ScrollReveal>
+
+          {/* Compact Capabilities Bullet Matrix (Replaces other 7 cards to eliminate mobile scroll trap) */}
+          <ScrollReveal animation="fade-up" delay={150} duration={600} className="p-4 sm:p-5 rounded-xl bg-slate-900/70 border border-slate-800 space-y-3">
+            <div className="flex items-center justify-between border-b border-slate-800/80 pb-2.5">
+              <span className="text-xs font-bold text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
+                <Layers className="w-3.5 h-3.5 text-cyan-400" />
+                Additional Engine Capabilities
+              </span>
+              <span className="text-[10px] font-mono text-cyan-400">7 Subsystems</span>
+            </div>
+
+            <ul className="grid grid-cols-1 gap-2.5 text-xs">
+              <li className="flex items-start gap-2.5 p-2 rounded-lg bg-slate-950/60 border border-slate-800/60">
+                <Binary className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
+                <div className="flex-1 min-w-0">
+                  <strong className="text-slate-100 font-semibold block text-[11px]">Symbol-Level Isolation</strong>
+                  <p className="text-slate-400 text-[10px]">Maps exact function & class declarations to callers, ignoring untouched symbols.</p>
+                </div>
+              </li>
+
+              <li className="flex items-start gap-2.5 p-2 rounded-lg bg-slate-950/60 border border-slate-800/60">
+                <Share2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                <div className="flex-1 min-w-0">
+                  <strong className="text-slate-100 font-semibold block text-[11px]">ELK.js Interactive Graph</strong>
+                  <p className="text-slate-400 text-[10px]">Layered DAG canvas with crossing minimization, dynamic pan/zoom, and depth filtering.</p>
+                </div>
+              </li>
+
+              <li className="flex items-start gap-2.5 p-2 rounded-lg bg-slate-950/60 border border-slate-800/60">
+                <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                <div className="flex-1 min-w-0">
+                  <strong className="text-slate-100 font-semibold block text-[11px]">Broken Symbol Detection</strong>
+                  <p className="text-slate-400 text-[10px]">Catches missing export identifiers and altered function signatures pre-merge.</p>
+                </div>
+              </li>
+
+              <li className="flex items-start gap-2.5 p-2 rounded-lg bg-slate-950/60 border border-slate-800/60">
+                <Zap className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
+                <div className="flex-1 min-w-0">
+                  <strong className="text-slate-100 font-semibold block text-[11px]">What-If Sandbox Simulator</strong>
+                  <p className="text-slate-400 text-[10px]">Test hypothetical code modifications directly in UI without modifying any files.</p>
+                </div>
+              </li>
+
+              <li className="flex items-start gap-2.5 p-2 rounded-lg bg-slate-950/60 border border-slate-800/60">
+                <GitCompare className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" />
+                <div className="flex-1 min-w-0">
+                  <strong className="text-slate-100 font-semibold block text-[11px]">Git Diff & Working Tree Scanner</strong>
+                  <p className="text-slate-400 text-[10px]">Automatically analyzes staged index diffs, commit ranges, and untracked changes.</p>
+                </div>
+              </li>
+
+              <li className="flex items-start gap-2.5 p-2 rounded-lg bg-slate-950/60 border border-slate-800/60">
+                <Terminal className="w-4 h-4 text-teal-400 shrink-0 mt-0.5" />
+                <div className="flex-1 min-w-0">
+                  <strong className="text-slate-100 font-semibold block text-[11px]">CI/CD Automation Runner</strong>
+                  <p className="text-slate-400 text-[10px]">Headless CLI (<code className="text-teal-300">changelens-ci</code>) blocks high-risk PRs in GitHub Actions.</p>
+                </div>
+              </li>
+
+              <li className="flex items-start gap-2.5 p-2 rounded-lg bg-slate-950/60 border border-slate-800/60">
+                <Database className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                <div className="flex-1 min-w-0">
+                  <strong className="text-slate-100 font-semibold block text-[11px]">Persistent Cloud Audit History</strong>
+                  <p className="text-slate-400 text-[10px]">Auto-deletes unpinned runs after 30 days to stay lean; pinned runs stay permanent.</p>
+                </div>
+              </li>
+            </ul>
+          </ScrollReveal>
+        </div>
       </div>
     </section>
   );
 }
-

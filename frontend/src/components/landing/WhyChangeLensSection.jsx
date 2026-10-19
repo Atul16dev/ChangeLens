@@ -12,40 +12,40 @@ import { ScrollReveal } from './ScrollReveal.jsx';
 
 export function WhyChangeLensSection() {
   return (
-    <section id="why-changelens" className="py-20 md:py-32 relative bg-slate-950/70 border-t border-slate-900 overflow-hidden">
-      {/* Background ambient glow with continuous breathing animation */}
+    <section id="why-changelens" className="py-14 sm:py-20 md:py-32 relative bg-slate-950/70 border-t border-slate-900 overflow-hidden">
+      {/* Background ambient glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[850px] h-[500px] bg-emerald-950/15 blur-[160px] rounded-full pointer-events-none animate-pulse-glow" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        {/* Section Header with Scroll Reveal */}
-        <ScrollReveal animation="fade-up" duration={750} className="text-center max-w-3xl mx-auto space-y-4 mb-16 sm:mb-20">
+        {/* Section Header */}
+        <ScrollReveal animation="fade-up" duration={750} className="text-center max-w-3xl mx-auto space-y-3 sm:space-y-4 mb-10 sm:mb-20">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold uppercase tracking-wider">
             <TrendingUp className="w-3.5 h-3.5" />
             Why ChangeLens?
           </div>
-          <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white">
+          <h2 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-white">
             Built for Velocity Without Regressions.
           </h2>
-          <p className="text-base sm:text-lg text-slate-400">
+          <p className="text-sm sm:text-base md:text-lg text-slate-400 max-w-2xl mx-auto">
             Compare manual code change guesswork with deterministic AST dependency intelligence.
           </p>
         </ScrollReveal>
 
-        {/* Comparison Matrix with Staggered Scroll Reveal */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+        {/* Comparison Matrix */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8 mb-10 sm:mb-16">
           {/* Traditional Way */}
-          <ScrollReveal animation="fade-up" delay={100} duration={700} className="p-7 sm:p-8 rounded-2xl bg-rose-950/10 border border-rose-900/30 space-y-5">
+          <ScrollReveal animation="fade-up" delay={100} duration={700} className="p-4 sm:p-8 rounded-2xl bg-rose-950/10 border border-rose-900/30 space-y-3.5 sm:space-y-5">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center shrink-0">
                 <XCircle className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-slate-200">The Traditional Workflow</h3>
-                <p className="text-xs text-rose-300">Blind PRs & manual dependency tracing</p>
+                <h3 className="text-base sm:text-lg font-bold text-slate-200">The Traditional Workflow</h3>
+                <p className="text-[11px] sm:text-xs text-rose-300">Blind PRs & manual dependency tracing</p>
               </div>
             </div>
 
-            <ul className="space-y-3.5 text-sm text-slate-400">
+            <ul className="space-y-2.5 sm:space-y-3.5 text-xs sm:text-sm text-slate-400">
               <li className="flex items-start gap-2.5">
                 <XCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
                 <span>Engineers have to mentally trace call stacks across dozens of files.</span>
@@ -66,20 +66,20 @@ export function WhyChangeLensSection() {
           </ScrollReveal>
 
           {/* ChangeLens Way */}
-          <ScrollReveal animation="fade-up" delay={200} duration={700} className="p-7 sm:p-8 rounded-2xl bg-gradient-to-b from-cyan-950/30 to-slate-900/90 border border-cyan-500/40 shadow-xl shadow-cyan-950/20 space-y-5 relative overflow-hidden group">
+          <ScrollReveal animation="fade-up" delay={200} duration={700} className="p-4 sm:p-8 rounded-2xl bg-gradient-to-b from-cyan-950/30 to-slate-900/90 border border-cyan-500/40 shadow-xl shadow-cyan-950/20 space-y-3.5 sm:space-y-5 relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/10 rounded-full blur-2xl pointer-events-none group-hover:bg-cyan-500/20 transition-colors" />
 
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center shrink-0">
                 <CheckCircle2 className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-white">The ChangeLens Way</h3>
-                <p className="text-xs text-cyan-400">Automated blast radius intelligence</p>
+                <h3 className="text-base sm:text-lg font-bold text-white">The ChangeLens Way</h3>
+                <p className="text-[11px] sm:text-xs text-cyan-400">Automated blast radius intelligence</p>
               </div>
             </div>
 
-            <ul className="space-y-3.5 text-sm text-slate-300">
+            <ul className="space-y-2.5 sm:space-y-3.5 text-xs sm:text-sm text-slate-300">
               <li className="flex items-start gap-2.5">
                 <CheckCircle2 className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" />
                 <span>Instant visual DAG graph shows exact direct and transitive consumers.</span>
@@ -94,39 +94,42 @@ export function WhyChangeLensSection() {
               </li>
               <li className="flex items-start gap-2.5">
                 <CheckCircle2 className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" />
-                <span>Historical persistence in MongoDB Atlas gives teams searchable audit trails.</span>
+                <span>Historical persistence in MongoDB gives teams searchable audit trails.</span>
               </li>
             </ul>
           </ScrollReveal>
         </div>
 
-        {/* 4 Value Pillar Cards with Staggered Scroll Reveal */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <ScrollReveal animation="fade-up" delay={100} duration={650} className="p-6 rounded-xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 transition-colors group">
-            <ShieldCheck className="w-6 h-6 text-cyan-400 mb-3 group-hover:scale-110 transition-transform" />
-            <h4 className="text-base font-bold text-slate-100 mb-1.5">Zero Regressions</h4>
-            <p className="text-xs text-slate-400 leading-relaxed">
+        {/* 4 Value Pillar Cards (Compact 2x2 grid on mobile instead of 4 huge single-column blocks!) */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+          <ScrollReveal animation="fade-up" delay={100} duration={650} className="p-3.5 sm:p-6 rounded-xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 transition-colors group">
+            <ShieldCheck className="w-5 h-5 sm:w-6 sm:h-6 text-cyan-400 mb-2 sm:mb-3 group-hover:scale-110 transition-transform" />
+            <h4 className="text-sm sm:text-base font-bold text-slate-100 mb-1">Zero Regressions</h4>
+            <p className="text-[11px] sm:text-xs text-slate-400 leading-relaxed">
               Identify breaking changes before they merge into main and reach production users.
             </p>
           </ScrollReveal>
-          <ScrollReveal animation="fade-up" delay={200} duration={650} className="p-6 rounded-xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 transition-colors group">
-            <Zap className="w-6 h-6 text-amber-400 mb-3 group-hover:scale-110 transition-transform" />
-            <h4 className="text-base font-bold text-slate-100 mb-1.5">5x Faster Reviews</h4>
-            <p className="text-xs text-slate-400 leading-relaxed">
+
+          <ScrollReveal animation="fade-up" delay={180} duration={650} className="p-3.5 sm:p-6 rounded-xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 transition-colors group">
+            <Zap className="w-5 h-5 sm:w-6 sm:h-6 text-amber-400 mb-2 sm:mb-3 group-hover:scale-110 transition-transform" />
+            <h4 className="text-sm sm:text-base font-bold text-slate-100 mb-1">5x Faster Reviews</h4>
+            <p className="text-[11px] sm:text-xs text-slate-400 leading-relaxed">
               Reviewers immediately grasp downstream impact without tracing call hierarchies.
             </p>
           </ScrollReveal>
-          <ScrollReveal animation="fade-up" delay={300} duration={650} className="p-6 rounded-xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 transition-colors group">
-            <Cpu className="w-6 h-6 text-indigo-400 mb-3 group-hover:scale-110 transition-transform" />
-            <h4 className="text-base font-bold text-slate-100 mb-1.5">Targeted Testing</h4>
-            <p className="text-xs text-slate-400 leading-relaxed">
+
+          <ScrollReveal animation="fade-up" delay={260} duration={650} className="p-3.5 sm:p-6 rounded-xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 transition-colors group">
+            <Cpu className="w-5 h-5 sm:w-6 sm:h-6 text-indigo-400 mb-2 sm:mb-3 group-hover:scale-110 transition-transform" />
+            <h4 className="text-sm sm:text-base font-bold text-slate-100 mb-1">Targeted Testing</h4>
+            <p className="text-[11px] sm:text-xs text-slate-400 leading-relaxed">
               Execute only the test suites mapped to affected files, saving CI/CD compute hours.
             </p>
           </ScrollReveal>
-          <ScrollReveal animation="fade-up" delay={400} duration={650} className="p-6 rounded-xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 transition-colors group">
-            <Clock className="w-6 h-6 text-emerald-400 mb-3 group-hover:scale-110 transition-transform" />
-            <h4 className="text-base font-bold text-slate-100 mb-1.5">Sub-Second Speed</h4>
-            <p className="text-xs text-slate-400 leading-relaxed">
+
+          <ScrollReveal animation="fade-up" delay={340} duration={650} className="p-3.5 sm:p-6 rounded-xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 transition-colors group">
+            <Clock className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-400 mb-2 sm:mb-3 group-hover:scale-110 transition-transform" />
+            <h4 className="text-sm sm:text-base font-bold text-slate-100 mb-1">Sub-Second Speed</h4>
+            <p className="text-[11px] sm:text-xs text-slate-400 leading-relaxed">
               Tree-Sitter WASM parsers analyze thousands of AST tokens in milliseconds locally.
             </p>
           </ScrollReveal>
