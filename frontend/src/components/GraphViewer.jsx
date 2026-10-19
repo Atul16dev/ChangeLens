@@ -27,7 +27,11 @@ import {
   HelpCircle,
   Zap,
   X,
+  Camera,
+  Download,
+  Check,
 } from 'lucide-react';
+import { exportGraphToPng, exportGraphToSvg } from '../utils/export.js';
 
 function GraphViewerInternal({
   graphData,
@@ -37,6 +41,38 @@ function GraphViewerInternal({
   simulatedFile,
   onExitSimulation,
 }) {
+  const containerRef = useRef(null);
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportSuccess, setExportSuccess] = useState(null); // 'png' | 'svg'
+
+  const handleExportPng = async () => {
+    if (!containerRef.current || isExporting) return;
+    setIsExporting(true);
+    try {
+      await exportGraphToPng(containerRef.current, `changelens-graph-${Date.now()}.png`);
+      setExportSuccess('png');
+      setTimeout(() => setExportSuccess(null), 2000);
+    } catch (err) {
+      console.error('Failed to export graph as PNG:', err);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleExportSvg = async () => {
+    if (!containerRef.current || isExporting) return;
+    setIsExporting(true);
+    try {
+      await exportGraphToSvg(containerRef.current, `changelens-graph-${Date.now()}.svg`);
+      setExportSuccess('svg');
+      setTimeout(() => setExportSuccess(null), 2000);
+    } catch (err) {
+      console.error('Failed to export graph as SVG:', err);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   const nodeTypes = useMemo(() => ({ fileNode: FileNode }), []);
   const edgeTypes = useMemo(() => ({ impactEdge: ImpactEdge }), []);
   const { fitView } = useReactFlow();
@@ -199,7 +235,7 @@ function GraphViewerInternal({
   }, [edges, neighborhood]);
 
   return (
-    <div className="w-full h-full relative bg-slate-950 overflow-hidden select-none">
+    <div ref={containerRef} className="w-full h-full relative bg-slate-950 overflow-hidden select-none">
       <ReactFlow
         nodes={displayNodes}
         edges={displayEdges}
@@ -303,6 +339,45 @@ function GraphViewerInternal({
             >
               <RotateCcw className={`w-3.5 h-3.5 ${isLayoutComputing ? 'animate-spin text-cyan-400' : ''}`} />
             </button>
+
+            {/* Graph Snapshot Export (PNG & SVG) */}
+            <div className="flex items-center bg-slate-950 p-0.5 rounded-lg border border-slate-800">
+              <button
+                onClick={handleExportPng}
+                disabled={isExporting}
+                className={`px-2.5 py-1 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all active:scale-95 ${
+                  exportSuccess === 'png'
+                    ? 'bg-emerald-950 text-emerald-300'
+                    : 'text-slate-300 hover:text-cyan-300 hover:bg-slate-900'
+                }`}
+                title="Save high-resolution PNG snapshot of graph"
+              >
+                {exportSuccess === 'png' ? (
+                  <Check className="w-3.5 h-3.5 text-emerald-400" />
+                ) : (
+                  <Camera className="w-3.5 h-3.5 text-cyan-400" />
+                )}
+                <span>{exportSuccess === 'png' ? 'Saved!' : 'PNG'}</span>
+              </button>
+
+              <button
+                onClick={handleExportSvg}
+                disabled={isExporting}
+                className={`px-2.5 py-1 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all active:scale-95 border-l border-slate-800 ${
+                  exportSuccess === 'svg'
+                    ? 'bg-emerald-950 text-emerald-300'
+                    : 'text-slate-300 hover:text-purple-300 hover:bg-slate-900'
+                }`}
+                title="Save vector SVG of graph"
+              >
+                {exportSuccess === 'svg' ? (
+                  <Check className="w-3.5 h-3.5 text-emerald-400" />
+                ) : (
+                  <Download className="w-3.5 h-3.5 text-purple-400" />
+                )}
+                <span>{exportSuccess === 'svg' ? 'Saved!' : 'SVG'}</span>
+              </button>
+            </div>
 
             {/* What-If Simulation Mode Indicator */}
             {isSimulating && (

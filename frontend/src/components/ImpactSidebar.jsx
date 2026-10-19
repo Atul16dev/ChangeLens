@@ -18,7 +18,11 @@ import {
   ShieldCheck,
   FileText,
   Zap,
+  Download,
+  Printer,
+  FileDown,
 } from 'lucide-react';
+import { downloadText, downloadJson, printOrSavePDF } from '../utils/export.js';
 
 export function ImpactSidebar({
   impactData,
@@ -68,6 +72,36 @@ export function ImpactSidebar({
     } catch (err) {
       console.error('Failed to copy markdown:', err);
     }
+  };
+
+  const handleDownloadMarkdown = () => {
+    if (!explanationData?.prCommentMarkdown) return;
+    downloadText(
+      explanationData.prCommentMarkdown,
+      `changelens-pr-report-${Date.now()}.md`,
+      'text/markdown'
+    );
+  };
+
+  const handleDownloadJson = () => {
+    if (!impactData) return;
+    const exportPayload = {
+      timestamp: new Date().toISOString(),
+      summary,
+      riskLevel: explanationData?.riskLevel || 'LOW',
+      findings: impactData.allFindings || [],
+      explanation: explanationData,
+    };
+    downloadJson(exportPayload, `changelens-analysis-${Date.now()}.json`);
+  };
+
+  const handlePrintPDF = () => {
+    printOrSavePDF({
+      title: 'ChangeLens Architecture Impact Report',
+      markdown: explanationData?.prCommentMarkdown || 'No report generated.',
+      summary,
+      riskLevel: explanationData?.riskLevel || 'LOW',
+    });
   };
 
   const getRiskBadge = (risk) => {
@@ -333,9 +367,18 @@ export function ImpactSidebar({
 
           {/* Filter Bar */}
           <div className="px-4 py-2 bg-slate-950/60 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
-            <span>
-              Showing <strong>{filteredFindings.length}</strong> findings
-            </span>
+            <div className="flex items-center gap-2">
+              <span>
+                Showing <strong>{filteredFindings.length}</strong> findings
+              </span>
+              <button
+                onClick={handleDownloadJson}
+                className="p-1 rounded text-slate-400 hover:text-purple-300 hover:bg-slate-800 transition-colors"
+                title="Download AST findings as JSON (.json)"
+              >
+                <Download className="w-3 h-3" />
+              </button>
+            </div>
             <div className="flex items-center gap-1">
               <button
                 onClick={() => setActiveFilterTab('all')}
@@ -584,6 +627,39 @@ export function ImpactSidebar({
             <pre className="p-3 bg-slate-900/90 border border-slate-800 rounded-lg text-[10px] font-mono text-slate-300 overflow-x-auto max-h-48 overflow-y-auto whitespace-pre-wrap select-all">
               {explanationData?.prCommentMarkdown || 'Generating markdown...'}
             </pre>
+
+            {/* Quick Export Actions */}
+            <div className="mt-3 pt-3 border-t border-slate-800/80 flex items-center justify-between gap-2 flex-wrap">
+              <span className="text-[11px] font-semibold text-slate-400">Export Report:</span>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <button
+                  onClick={handleDownloadMarkdown}
+                  className="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700/80 text-[11px] font-medium flex items-center gap-1 transition-all active:scale-95"
+                  title="Download report as Markdown file (.md)"
+                >
+                  <FileDown className="w-3 h-3 text-cyan-400" />
+                  <span>Markdown</span>
+                </button>
+
+                <button
+                  onClick={handleDownloadJson}
+                  className="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700/80 text-[11px] font-medium flex items-center gap-1 transition-all active:scale-95"
+                  title="Download full analysis data as JSON (.json)"
+                >
+                  <Download className="w-3 h-3 text-purple-400" />
+                  <span>JSON</span>
+                </button>
+
+                <button
+                  onClick={handlePrintPDF}
+                  className="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700/80 text-[11px] font-medium flex items-center gap-1 transition-all active:scale-95"
+                  title="Print or save report as PDF"
+                >
+                  <Printer className="w-3 h-3 text-emerald-400" />
+                  <span>PDF / Print</span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
