@@ -218,11 +218,13 @@ function GraphViewerInternal({ graphData, onSelectNode, selectedNodeId }) {
         <Background color="#1e293b" gap={28} size={1.5} />
 
         <Controls
+          position="bottom-left"
           showInteractive={false}
-          className="!bg-slate-900/95 !border-slate-800 !rounded-xl !shadow-2xl !fill-slate-300 [&>button]:!bg-slate-900 [&>button]:!border-slate-800 [&>button]:!text-slate-300 hover:[&>button]:!bg-slate-800"
+          className="!bg-slate-900/95 !border-slate-800 !rounded-xl !shadow-2xl !fill-slate-300 [&>button]:!bg-slate-900 [&>button]:!border-slate-800 [&>button]:!text-slate-300 hover:[&>button]:!bg-slate-800 !bottom-4 !left-4"
         />
 
         <MiniMap
+          position="top-right"
           nodeColor={(n) => {
             if (n.data?.isChanged) return '#f59e0b';
             if (n.data?.severity === 'CRITICAL') return '#ef4444';
@@ -233,7 +235,7 @@ function GraphViewerInternal({ graphData, onSelectNode, selectedNodeId }) {
           maskColor="rgba(11, 15, 25, 0.85)"
           pannable={true}
           zoomable={true}
-          className="!bg-slate-900 !border-slate-800 !rounded-xl !shadow-2xl !bottom-4 !right-4 !w-44 !h-32"
+          className="!bg-slate-900 !border-slate-800 !rounded-xl !shadow-2xl !top-4 !right-4 !w-44 !h-32"
         />
 
         {/* TOP-LEFT TOOLBAR: CONTROLS, MODES & FILTERS */}
@@ -295,9 +297,9 @@ function GraphViewerInternal({ graphData, onSelectNode, selectedNodeId }) {
           </div>
         </Panel>
 
-        {/* BOTTOM-LEFT: REFINED COLOR & TIER LEGEND */}
-        <Panel position="bottom-left" className="m-4">
-          <div className="bg-slate-900/95 backdrop-blur-md border border-slate-800 rounded-xl px-3.5 py-2 shadow-2xl flex flex-wrap items-center gap-4 text-xs text-slate-300">
+        {/* BOTTOM-LEFT: REFINED COLOR & TIER LEGEND (SHIFTED RIGHT OF ZOOM CONTROLS) */}
+        <Panel position="bottom-left" className="!mb-4 !ml-16 sm:!ml-[72px]">
+          <div className="bg-slate-900/95 backdrop-blur-md border border-slate-800 rounded-xl px-3.5 py-2 shadow-2xl flex flex-wrap items-center gap-3.5 text-xs text-slate-300">
             <span className="font-bold text-slate-400 flex items-center gap-1 border-r border-slate-800 pr-3 text-[11px]">
               <Layers className="w-3.5 h-3.5 text-cyan-400" />
               Impact Legend

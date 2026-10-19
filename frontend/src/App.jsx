@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Header } from './components/Header.jsx';
 import { GraphViewer } from './components/GraphViewer.jsx';
 import { ImpactSidebar } from './components/ImpactSidebar.jsx';
+import { ChatAssistant } from './components/ChatAssistant.jsx';
 import {
   checkBackendHealth,
   runImpactAnalysis,
@@ -55,21 +56,6 @@ export default function App() {
       setLoading(false);
     }
   }, []);
-
-  // Regenerate explanation with optional Gemini API Key
-  const handleRegenerateAI = useCallback(async (apiKey) => {
-    if (!currentAnalysisId) return;
-    try {
-      setLoading(true);
-      const updatedExplanation = await getAnalysisExplanation(currentAnalysisId, { apiKey });
-      setExplanationData(updatedExplanation);
-    } catch (err) {
-      console.error('Failed to regenerate AI review:', err);
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  }, [currentAnalysisId]);
 
   // Check health and run initial analysis on component mount
   useEffect(() => {
@@ -132,6 +118,12 @@ export default function App() {
             selectedNodeId={selectedNodeId}
             onSelectNode={setSelectedNodeId}
           />
+
+          {/* Context-Aware AI Chatbot docked inside Graph Workspace */}
+          <ChatAssistant
+            analysisId={currentAnalysisId}
+            selectedNodeId={selectedNodeId}
+          />
         </main>
 
         <ImpactSidebar
@@ -139,7 +131,6 @@ export default function App() {
           explanationData={explanationData}
           selectedNodeId={selectedNodeId}
           onSelectNode={setSelectedNodeId}
-          onRegenerateAI={handleRegenerateAI}
         />
       </div>
     </div>

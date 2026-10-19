@@ -21,6 +21,15 @@ export const analysesStore = {
     return analyses.get(analysisId) || null;
   },
 
+  getLatest() {
+    const all = Array.from(analyses.values());
+    return all.length > 0 ? all[all.length - 1] : null;
+  },
+
+  size() {
+    return analyses.size;
+  },
+
   list() {
     return Array.from(analyses.values()).map((a) => ({
       id: a.id,

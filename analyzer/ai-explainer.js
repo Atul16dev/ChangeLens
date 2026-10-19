@@ -168,65 +168,18 @@ export function buildDeterministicNarrative({ impactAnalysis, changes = [], risk
   };
 }
 
-/**
- * Calls Google Gemini REST API to enrich the technical explanation using an LLM.
- * 
- * @param {object} params
- * @param {string} params.apiKey - Google Gemini API Key
- * @param {string} params.prompt - Structured prompt
- * @param {string} [params.model="gemini-1.5-flash"] - Model name
- * @returns {Promise<string>} LLM text output
- */
-export async function callGeminiAPI({ apiKey, prompt, model = "gemini-1.5-flash" }) {
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-
-  const payload = {
-    contents: [
-      {
-        parts: [
-          {
-            text: prompt,
-          },
-        ],
-      },
-    ],
-    generationConfig: {
-      temperature: 0.2,
-      maxOutputTokens: 1024,
-    },
-  };
-
-  const response = await fetch(endpoint, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-
-  if (!response.ok) {
-    const errText = await response.text();
-    throw new Error(`Gemini API error [${response.status}]: ${errText}`);
-  }
-
-  const data = await response.json();
-  const textOutput = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-
-  if (!textOutput) {
-    throw new Error("No response text returned from Gemini API.");
-  }
-
-  return textOutput;
-}
+// Re-export reusable Gemini client for backward compatibility and future chatbot usage
+export { callGeminiAPI, isGeminiAvailable } from "../services/gemini.js";
 
 /**
- * Main entry point: Generates a complete impact explanation and PR comment.
+ * Main entry point: Generates a complete deterministic impact explanation and PR comment.
  * 
  * @param {object} params
  * @param {object} params.impactAnalysis - Output from classifyImpactPolicies
  * @param {Array<object>} [params.changes=[]] - Parsed git changes
- * @param {object} [params.options={}] - Options (apiKey, provider, model)
- * @returns {Promise<object>} Complete explanation result
+ * @returns {object} Complete deterministic explanation result
  */
-export async function generateImpactExplanation({ impactAnalysis, changes = [], options = {} }) {
+export function generateImpactExplanation({ impactAnalysis, changes = [] } = {}) {
   if (!impactAnalysis || !impactAnalysis.summary) {
     throw new TypeError("Valid impactAnalysis object is required.");
   }
@@ -235,43 +188,10 @@ export async function generateImpactExplanation({ impactAnalysis, changes = [], 
   const prCommentMarkdown = formatPRMarkdownComment({ impactAnalysis, changes, riskLevel });
   const deterministicNarrative = buildDeterministicNarrative({ impactAnalysis, changes, riskLevel });
 
-  let aiEnhanced = false;
-  let aiNarrative = null;
-
-  const apiKey = options.apiKey || process.env.GEMINI_API_KEY;
-
-  // If an API key is available and provider is not forced to 'mock', call LLM
-  if (apiKey && options.provider !== "mock") {
-    try {
-      const prompt = `You are a Senior Software Architect reviewing a Pull Request.
-You are given the deterministic blast radius data computed by the ChangeLens AST analyzer:
-
-Risk Level: ${riskLevel}
-Summary: ${JSON.stringify(impactAnalysis.summary)}
-Broken Imports: ${JSON.stringify(impactAnalysis.brokenImports)}
-Blast Radius Files: ${JSON.stringify(impactAnalysis.blastRadius)}
-
-In 2 short paragraphs:
-1. Explain the technical root cause of this risk to the PR reviewer.
-2. Outline the exact testing strategy and potential regression bugs downstream.
-Keep your response concise, professional, and code-centric.`;
-
-      aiNarrative = await callGeminiAPI({
-        apiKey,
-        prompt,
-        model: options.model || "gemini-1.5-flash",
-      });
-      aiEnhanced = true;
-    } catch (err) {
-      console.warn("[ChangeLens AI Explainer] Gemini API call skipped or failed, using deterministic narrative:", err.message);
-    }
-  }
-
   return {
     riskLevel,
     executiveSummary: deterministicNarrative.executiveSummary,
-    aiNarrative: aiNarrative || deterministicNarrative.executiveSummary,
-    aiEnhanced,
+    aiNarrative: deterministicNarrative.executiveSummary,
     actionItems: deterministicNarrative.actionItems,
     prCommentMarkdown,
     metrics: impactAnalysis.summary,

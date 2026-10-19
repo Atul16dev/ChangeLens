@@ -5,8 +5,24 @@
 
 const API_BASE = '/api/v1';
 
+/**
+ * Resilient fetch wrapper with automatic retry on momentary connection drops.
+ */
+async function fetchWithRetry(url, options = {}, retries = 2, delay = 400) {
+  try {
+    const res = await fetch(url, options);
+    return res;
+  } catch (err) {
+    if (retries > 0) {
+      await new Promise((resolve) => setTimeout(resolve, delay));
+      return fetchWithRetry(url, options, retries - 1, delay * 1.5);
+    }
+    throw err;
+  }
+}
+
 export async function checkBackendHealth() {
-  const res = await fetch(`${API_BASE}/health`);
+  const res = await fetchWithRetry(`${API_BASE}/health`);
   if (!res.ok) throw new Error(`Health check failed: ${res.statusText}`);
   return res.json();
 }
@@ -18,7 +34,7 @@ export async function runImpactAnalysis({ repoPath, changedFiles, baseRef, maxDe
   if (baseRef) payload.baseRef = baseRef;
   if (maxDepth) payload.maxDepth = maxDepth;
 
-  const res = await fetch(`${API_BASE}/analyze`, {
+  const res = await fetchWithRetry(`${API_BASE}/analyze`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -34,7 +50,7 @@ export async function runImpactAnalysis({ repoPath, changedFiles, baseRef, maxDe
 }
 
 export async function getAnalysisGraph(analysisId) {
-  const res = await fetch(`${API_BASE}/analyses/${analysisId}/graph`);
+  const res = await fetchWithRetry(`${API_BASE}/analyses/${analysisId}/graph`);
   const data = await res.json();
   if (!res.ok) {
     throw new Error(data.error?.message || `Failed to fetch graph data`);
@@ -43,7 +59,7 @@ export async function getAnalysisGraph(analysisId) {
 }
 
 export async function getAnalysisImpact(analysisId) {
-  const res = await fetch(`${API_BASE}/analyses/${analysisId}/impact`);
+  const res = await fetchWithRetry(`${API_BASE}/analyses/${analysisId}/impact`);
   const data = await res.json();
   if (!res.ok) {
     throw new Error(data.error?.message || `Failed to fetch impact data`);
@@ -52,7 +68,7 @@ export async function getAnalysisImpact(analysisId) {
 }
 
 export async function listRecentAnalyses() {
-  const res = await fetch(`${API_BASE}/analyses`);
+  const res = await fetchWithRetry(`${API_BASE}/analyses`);
   const data = await res.json();
   if (!res.ok) {
     throw new Error(data.error?.message || `Failed to fetch recent analyses`);
@@ -60,17 +76,26 @@ export async function listRecentAnalyses() {
   return data.data;
 }
 
-export async function getAnalysisExplanation(analysisId, { apiKey, model, provider } = {}) {
-  const params = new URLSearchParams();
-  if (apiKey) params.append('apiKey', apiKey);
-  if (model) params.append('model', model);
-  if (provider) params.append('provider', provider);
-
-  const query = params.toString() ? `?${params.toString()}` : '';
-  const res = await fetch(`${API_BASE}/analyses/${analysisId}/explain${query}`);
+export async function getAnalysisExplanation(analysisId) {
+  const res = await fetchWithRetry(`${API_BASE}/analyses/${analysisId}/explain`);
   const data = await res.json();
   if (!res.ok) {
     throw new Error(data.error?.message || `Failed to fetch AI explanation`);
+  }
+  return data.data;
+}
+
+export async function sendAnalysisChatMessage(analysisId, { message, history = [], selectedNodeId = null } = {}) {
+  const res = await fetchWithRetry(`${API_BASE}/analyses/${analysisId}/chat`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ message, history, selectedNodeId }),
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error?.message || `Chat request failed with status ${res.status}`);
   }
   return data.data;
 }

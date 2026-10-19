@@ -5,6 +5,7 @@ import {
   getAnalysisGraph,
   getAnalysisImpact,
   getAnalysisExplanation,
+  handleAnalysisChat,
   listAnalyses,
 } from "../controllers/analyses.controller.js";
 
@@ -27,5 +28,8 @@ router.get("/analyses/:id/impact", getAnalysisImpact);
 
 // Get AI explanation, risk score, and PR comment markdown
 router.get("/analyses/:id/explain", getAnalysisExplanation);
+
+// Context-aware AI Chatbot query
+router.post("/analyses/:id/chat", handleAnalysisChat);
 
 export const analysesRoutes = router;

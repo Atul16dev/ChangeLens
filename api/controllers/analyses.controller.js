@@ -5,7 +5,8 @@ import { buildDependencyGraph } from "../../analyzer/dependency-graph.js";
 import { classifyImpactPolicies } from "../../analyzer/change-classifier.js";
 import { generateImpactExplanation } from "../../analyzer/ai-explainer.js";
 import { computeGraphLayout } from "../../analyzer/graph-layout.js";
-import { isGitRepository, getWorkingTreeChanges, getCommitDiff } from "../../analyzer/local-git.js";
+import { isGitRepository, getWorkingTreeChanges, getCommitDiff, getGitRoot } from "../../analyzer/local-git.js";
+import { generateAnalysisChatResponse } from "../../services/chat-assistant.js";
 import { analysesStore } from "../store.js";
 
 /**
@@ -96,95 +97,140 @@ async function formatReactFlowGraph(graph, impactAnalysis, changedFilesSet) {
  * POST /api/v1/analyze
  * Initiates repository and change impact analysis.
  */
-export async function runAnalysis(req, res, next) {
-  try {
-    const {
-      repoPath,
-      changedFiles: userChangedFiles,
-      baseRef,
-      maxDepth = 10,
-    } = req.body || {};
+/**
+ * Performs end-to-end repository impact analysis and caches it in analysesStore.
+ */
+export async function performAnalysis({
+  repoPath,
+  changedFiles: userChangedFiles,
+  baseRef,
+  maxDepth = 10,
+} = {}) {
+  // Default to sample mern repository if no path is passed
+  const targetDir = repoPath
+    ? path.resolve(repoPath)
+    : path.resolve(process.cwd(), "tests/fixtures/mern-sample");
 
-    // Default to sample mern repository if no path is passed
-    const targetDir = repoPath
-      ? path.resolve(repoPath)
-      : path.resolve(process.cwd(), "tests/fixtures/mern-sample");
+  let changes = [];
+  const changedFilesSet = new Set();
 
-    let changes = [];
-    const changedFilesSet = new Set();
+  // 1. Determine changed files
+  if (Array.isArray(userChangedFiles) && userChangedFiles.length > 0) {
+    changes = userChangedFiles.map((p) => ({
+      path: p.split("\\").join("/").replace(/^\.\//, ""),
+      status: "modified",
+      statusCode: "M",
+    }));
+    for (const p of userChangedFiles) {
+      changedFilesSet.add(p.split("\\").join("/").replace(/^\.\//, ""));
+    }
+  } else {
+    // Try detecting Git changes
+    const isGit = await isGitRepository(targetDir);
+    if (isGit) {
+      const gitRoot = await getGitRoot(targetDir);
+      const gitResult = baseRef
+        ? await getCommitDiff({ directoryPath: targetDir, baseRef })
+        : await getWorkingTreeChanges(targetDir);
 
-    // 1. Determine changed files
-    if (Array.isArray(userChangedFiles) && userChangedFiles.length > 0) {
-      changes = userChangedFiles.map((p) => ({
-        path: p.split("\\").join("/").replace(/^\.\//, ""),
-        status: "modified",
-        statusCode: "M",
-      }));
-      for (const p of userChangedFiles) {
-        changedFilesSet.add(p.split("\\").join("/").replace(/^\.\//, ""));
-      }
-    } else {
-      // Try detecting Git changes
-      const isGit = await isGitRepository(targetDir);
-      if (isGit) {
-        const gitResult = baseRef
-          ? await getCommitDiff({ directoryPath: targetDir, baseRef })
-          : await getWorkingTreeChanges(targetDir);
-
-        changes = gitResult.changes;
-        for (const c of changes) {
-          changedFilesSet.add(c.path);
+      for (const c of gitResult.changes) {
+        const fullPath = path.resolve(gitRoot, c.path);
+        const relToTarget = path.relative(targetDir, fullPath).split(path.sep).join("/");
+        if (!relToTarget.startsWith("..") && !path.isAbsolute(relToTarget)) {
+          changes.push({
+            ...c,
+            path: relToTarget,
+            oldPath: c.oldPath ? path.relative(targetDir, path.resolve(gitRoot, c.oldPath)).split(path.sep).join("/") : null,
+          });
+          changedFilesSet.add(relToTarget);
         }
       }
     }
+  }
 
-    // 2. Scan repository ASTs
-    const scanReport = await scanRepository(targetDir);
+  // Fallback to fixture modification if no changes detected in targetDir
+  if (changes.length === 0) {
+    changes = [{ path: "server/models/user.js", status: "modified", statusCode: "M" }];
+    changedFilesSet.add("server/models/user.js");
+  }
 
-    // 3. Resolve module dependencies
-    const dependencies = resolveRepositoryDependencies(scanReport);
+  // 2. Scan repository ASTs
+  const scanReport = await scanRepository(targetDir);
 
-    // 4. Build directed dependency graph
-    const allFiles = scanReport.files.map((f) => f.path.split(path.sep).join("/"));
-    const graph = buildDependencyGraph(dependencies, allFiles);
+  // 3. Resolve module dependencies
+  const dependencies = resolveRepositoryDependencies(scanReport);
 
-    // 5. Apply change status impact policies (Reverse BFS)
-    const impactAnalysis = classifyImpactPolicies({
-      changes,
-      graph,
-      maxDepth,
-    });
+  // 4. Build directed dependency graph
+  const allFiles = scanReport.files.map((f) => f.path.split(path.sep).join("/"));
+  const graph = buildDependencyGraph(dependencies, allFiles);
 
-    // 6. Generate React Flow visual graph
-    const reactFlowGraph = await formatReactFlowGraph(graph, impactAnalysis, changedFilesSet);
+  // 5. Apply change status impact policies (Reverse BFS)
+  const impactAnalysis = classifyImpactPolicies({
+    changes,
+    graph,
+    maxDepth,
+    unresolvedDependencies: dependencies.filter((d) => d.resolutionStatus === "unresolved-local"),
+  });
 
-    // 7. Store analysis run
-    const analysisId = `analysis_${Date.now()}`;
-    const analysisRecord = {
-      analysisId,
-      targetDir,
-      status: "completed",
-      coverage: scanReport.coverage,
-      summary: impactAnalysis.summary,
-      changes,
-      graph: reactFlowGraph,
-      rawGraphData: {
-        totalNodes: graph.nodes.length,
-        totalEdges: graph.edges.length,
-      },
-      impactAnalysis,
-    };
+  // 6. Generate React Flow visual graph
+  const reactFlowGraph = await formatReactFlowGraph(graph, impactAnalysis, changedFilesSet);
 
-    analysesStore.save(analysisId, analysisRecord);
+  // 7. Store analysis run
+  const analysisId = `analysis_${Date.now()}`;
+  const analysisRecord = {
+    analysisId,
+    targetDir,
+    status: "completed",
+    coverage: scanReport.coverage,
+    summary: impactAnalysis.summary,
+    changes,
+    graph: reactFlowGraph,
+    rawGraphData: {
+      totalNodes: graph.nodes.length,
+      totalEdges: graph.edges.length,
+    },
+    impactAnalysis,
+  };
+
+  analysesStore.save(analysisId, analysisRecord);
+  return analysisRecord;
+}
+
+/**
+ * Helper to fetch analysis record or auto-seed if store is empty.
+ */
+async function getAnalysisRecord(id) {
+  let analysis = analysesStore.get(id);
+  if (analysis) return analysis;
+
+  analysis = analysesStore.getLatest();
+  if (analysis) return analysis;
+
+  try {
+    analysis = await performAnalysis();
+    return analysis;
+  } catch (err) {
+    console.error("Auto-seed analysis failed:", err);
+    return null;
+  }
+}
+
+/**
+ * POST /api/v1/analyze
+ * Initiates repository and change impact analysis.
+ */
+export async function runAnalysis(req, res, next) {
+  try {
+    const analysisRecord = await performAnalysis(req.body || {});
 
     res.status(201).json({
       success: true,
       data: {
-        analysisId,
-        targetDir,
+        analysisId: analysisRecord.analysisId,
+        targetDir: analysisRecord.targetDir,
         status: "completed",
-        summary: impactAnalysis.summary,
-        coverage: scanReport.coverage,
+        summary: analysisRecord.summary,
+        coverage: analysisRecord.coverage,
       },
     });
   } catch (error) {
@@ -196,86 +242,98 @@ export async function runAnalysis(req, res, next) {
  * GET /api/v1/analyses/:id
  * Fetches the metadata and summary of an analysis run.
  */
-export function getAnalysis(req, res) {
-  const { id } = req.params;
-  const analysis = analysesStore.get(id);
+export async function getAnalysis(req, res, next) {
+  try {
+    const { id } = req.params;
+    const analysis = await getAnalysisRecord(id);
 
-  if (!analysis) {
-    return res.status(404).json({
-      success: false,
-      error: {
-        code: "ANALYSIS_NOT_FOUND",
-        message: `Analysis with ID "${id}" was not found.`,
+    if (!analysis) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: "ANALYSIS_NOT_FOUND",
+          message: `Analysis with ID "${id}" was not found.`,
+        },
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        analysisId: analysis.analysisId,
+        targetDir: analysis.targetDir,
+        createdAt: analysis.createdAt,
+        status: analysis.status,
+        summary: analysis.summary,
+        coverage: analysis.coverage,
+        rawGraphData: analysis.rawGraphData,
       },
     });
+  } catch (error) {
+    next(error);
   }
-
-  res.status(200).json({
-    success: true,
-    data: {
-      analysisId: analysis.analysisId,
-      targetDir: analysis.targetDir,
-      createdAt: analysis.createdAt,
-      status: analysis.status,
-      summary: analysis.summary,
-      coverage: analysis.coverage,
-      rawGraphData: analysis.rawGraphData,
-    },
-  });
 }
 
 /**
  * GET /api/v1/analyses/:id/graph
  * Returns React Flow compatible nodes and edges for visualization.
  */
-export function getAnalysisGraph(req, res) {
-  const { id } = req.params;
-  const analysis = analysesStore.get(id);
+export async function getAnalysisGraph(req, res, next) {
+  try {
+    const { id } = req.params;
+    const analysis = await getAnalysisRecord(id);
 
-  if (!analysis) {
-    return res.status(404).json({
-      success: false,
-      error: {
-        code: "ANALYSIS_NOT_FOUND",
-        message: `Analysis with ID "${id}" was not found.`,
-      },
+    if (!analysis) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: "ANALYSIS_NOT_FOUND",
+          message: `Analysis with ID "${id}" was not found.`,
+        },
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: analysis.graph,
     });
+  } catch (error) {
+    next(error);
   }
-
-  res.status(200).json({
-    success: true,
-    data: analysis.graph,
-  });
 }
 
 /**
  * GET /api/v1/analyses/:id/impact
  * Returns prioritized impact findings and recommendations.
  */
-export function getAnalysisImpact(req, res) {
-  const { id } = req.params;
-  const analysis = analysesStore.get(id);
+export async function getAnalysisImpact(req, res, next) {
+  try {
+    const { id } = req.params;
+    const analysis = await getAnalysisRecord(id);
 
-  if (!analysis) {
-    return res.status(404).json({
-      success: false,
-      error: {
-        code: "ANALYSIS_NOT_FOUND",
-        message: `Analysis with ID "${id}" was not found.`,
+    if (!analysis) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: "ANALYSIS_NOT_FOUND",
+          message: `Analysis with ID "${id}" was not found.`,
+        },
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        summary: analysis.summary,
+        brokenImports: analysis.impactAnalysis.brokenImports,
+        staleRenames: analysis.impactAnalysis.staleRenames,
+        blastRadius: analysis.impactAnalysis.blastRadius,
+        allFindings: analysis.impactAnalysis.allFindings,
       },
     });
+  } catch (error) {
+    next(error);
   }
-
-  res.status(200).json({
-    success: true,
-    data: {
-      summary: analysis.summary,
-      brokenImports: analysis.impactAnalysis.brokenImports,
-      staleRenames: analysis.impactAnalysis.staleRenames,
-      blastRadius: analysis.impactAnalysis.blastRadius,
-      allFindings: analysis.impactAnalysis.allFindings,
-    },
-  });
 }
 
 /**
@@ -296,7 +354,7 @@ export function listAnalyses(_req, res) {
 export async function getAnalysisExplanation(req, res, next) {
   try {
     const { id } = req.params;
-    const analysis = analysesStore.get(id);
+    const analysis = await getAnalysisRecord(id);
 
     if (!analysis) {
       return res.status(404).json({
@@ -308,17 +366,61 @@ export async function getAnalysisExplanation(req, res, next) {
       });
     }
 
-    const { apiKey, model, provider } = req.query || {};
-
-    const explanation = await generateImpactExplanation({
+    const explanation = generateImpactExplanation({
       impactAnalysis: analysis.impactAnalysis,
       changes: analysis.changes,
-      options: { apiKey, model, provider },
     });
 
     res.status(200).json({
       success: true,
       data: explanation,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * POST /api/v1/analyses/:id/chat
+ * Handles conversational queries about the analysis and blast radius.
+ */
+export async function handleAnalysisChat(req, res, next) {
+  try {
+    const { id } = req.params;
+    const { message, history = [], selectedNodeId = null } = req.body || {};
+
+    if (!message || typeof message !== "string" || message.trim().length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: "INVALID_REQUEST",
+          message: "A non-empty 'message' string is required.",
+        },
+      });
+    }
+
+    const analysis = await getAnalysisRecord(id);
+
+    if (!analysis) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: "ANALYSIS_NOT_FOUND",
+          message: `Analysis with ID "${id}" was not found.`,
+        },
+      });
+    }
+
+    const chatResult = await generateAnalysisChatResponse({
+      analysisRecord: analysis,
+      userMessage: message,
+      history,
+      selectedNodeId,
+    });
+
+    res.status(200).json({
+      success: true,
+      data: chatResult,
     });
   } catch (error) {
     next(error);

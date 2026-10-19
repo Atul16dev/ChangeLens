@@ -126,3 +126,29 @@ test("classifyImpactPolicies orders allFindings with CRITICAL alerts strictly fi
   assert.equal(result.allFindings[0].severity, IMPACT_SEVERITY.CRITICAL);
   assert.equal(result.allFindings[0].type, "broken_import");
 });
+
+test("classifyImpactPolicies flags unresolved local imports as CRITICAL broken imports", async () => {
+  const unresolvedDependencies = [
+    {
+      sourcePath: "server/controllers/user-controller.js",
+      targetPath: "server/models/missing-model.js",
+      specifier: "../models/missing-model.js",
+      resolutionStatus: "unresolved-local",
+      location: { startLine: 1, startColumn: 1, endLine: 1, endColumn: 45 },
+      rawSource: 'import User from "../models/missing-model.js";',
+    },
+  ];
+
+  const graph = { getDependents: () => [] };
+  const result = classifyImpactPolicies({
+    changes: [{ path: "server/controllers/user-controller.js", status: "modified" }],
+    graph,
+    unresolvedDependencies,
+  });
+
+  assert.equal(result.summary.brokenImportsCount, 1);
+  assert.equal(result.summary.criticalAlerts, true);
+  assert.equal(result.brokenImports[0].severity, IMPACT_SEVERITY.CRITICAL);
+  assert.equal(result.brokenImports[0].affectedFile, "server/controllers/user-controller.js");
+  assert.ok(result.brokenImports[0].explanation.includes("cannot be resolved"));
+});

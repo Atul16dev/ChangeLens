@@ -74,15 +74,13 @@ test("generateImpactExplanation runs end-to-end on real mern-sample analysis", a
     graph,
   });
 
-  const explanation = await generateImpactExplanation({
+  const explanation = generateImpactExplanation({
     impactAnalysis,
     changes: [{ path: "server/models/user.js", status: "modified" }],
-    options: { provider: "mock" },
   });
 
   assert.ok(explanation);
   assert.equal(explanation.riskLevel, "HIGH");
-  assert.equal(explanation.aiEnhanced, false);
   assert.ok(explanation.executiveSummary.includes("Modifications in 1 file(s)"));
   assert.ok(Array.isArray(explanation.actionItems));
   assert.ok(explanation.actionItems.length > 0);

@@ -17,7 +17,6 @@ import {
   GitPullRequest,
   ShieldCheck,
   FileText,
-  Key,
 } from 'lucide-react';
 
 export function ImpactSidebar({
@@ -25,20 +24,18 @@ export function ImpactSidebar({
   explanationData,
   selectedNodeId,
   onSelectNode,
-  onRegenerateAI,
 }) {
   const [activeMainTab, setActiveMainTab] = useState('findings'); // 'findings' | 'ai_review'
   const [activeFilterTab, setActiveFilterTab] = useState('all'); // 'all' | 'critical' | 'direct' | 'transitive'
   const [copied, setCopied] = useState(false);
-  const [customKey, setCustomKey] = useState('');
-  const [showKeyInput, setShowKeyInput] = useState(false);
 
-  const summary = impactData?.summary || {
-    totalChangedFiles: 0,
-    totalImpactedFiles: 0,
-    brokenImportsCount: 0,
-    directImpactCount: 0,
-    transitiveImpactCount: 0,
+  const rawSummary = impactData?.summary || {};
+  const summary = {
+    totalChangedFiles: rawSummary.totalChanges ?? rawSummary.totalChangedFiles ?? 0,
+    totalImpactedFiles: rawSummary.impactedFilesCount ?? rawSummary.totalImpactedFiles ?? 0,
+    brokenImportsCount: rawSummary.brokenImportsCount ?? 0,
+    directImpactCount: rawSummary.directDependentsCount ?? rawSummary.directImpactCount ?? 0,
+    transitiveImpactCount: rawSummary.transitiveDependentsCount ?? rawSummary.transitiveImpactCount ?? 0,
   };
 
   const allFindings = impactData?.allFindings || [];
@@ -278,7 +275,7 @@ export function ImpactSidebar({
           </div>
 
           {/* Findings Scroll Area */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3.5">
+          <div className="flex-1 overflow-y-auto p-4 pb-12 space-y-3.5">
             {filteredFindings.length === 0 ? (
               <div className="text-center py-12 px-4">
                 <CheckCircle2 className="w-10 h-10 text-emerald-500/60 mx-auto mb-2" />
@@ -293,6 +290,13 @@ export function ImpactSidebar({
                 const isHigh = finding.severity === 'HIGH';
                 const file = finding.affectedFile || finding.consumerFile;
                 const isSelected = selectedNodeId === file;
+                const isBrokenImport = finding.type === 'broken_import';
+
+                // Robust extraction supporting AST location objects and legacy line/column
+                const line = finding.evidence?.location?.startLine ?? finding.evidence?.line ?? null;
+                const column = finding.evidence?.location?.startColumn ?? finding.evidence?.column ?? null;
+                const snippet = finding.evidence?.rawSource || finding.evidence?.snippet || (finding.evidence?.specifier ? `import ... from "${finding.evidence.specifier}";` : null);
+                const explanation = finding.explanation || finding.reason || 'Impacted by dependency change.';
 
                 return (
                   <div
@@ -309,20 +313,30 @@ export function ImpactSidebar({
                     }`}
                   >
                     <div className="flex items-center justify-between gap-2 mb-2">
-                      <span
-                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full border flex items-center gap-1 ${
-                          isCritical
-                            ? 'bg-rose-500/20 text-rose-300 border-rose-500/40'
-                            : isHigh
-                            ? 'bg-orange-500/20 text-orange-300 border-orange-500/40'
-                            : 'bg-yellow-500/20 text-yellow-300 border-yellow-500/40'
-                        }`}
-                      >
-                        {isCritical ? <AlertOctagon className="w-3 h-3" /> : <AlertTriangle className="w-3 h-3" />}
-                        {finding.severity}
-                      </span>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span
+                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full border flex items-center gap-1 ${
+                            isCritical
+                              ? 'bg-rose-500/20 text-rose-300 border-rose-500/40'
+                              : isHigh
+                              ? 'bg-orange-500/20 text-orange-300 border-orange-500/40'
+                              : 'bg-yellow-500/20 text-yellow-300 border-yellow-500/40'
+                          }`}
+                        >
+                          {isCritical ? <AlertOctagon className="w-3 h-3" /> : <AlertTriangle className="w-3 h-3" />}
+                          {finding.severity}
+                        </span>
+
+                        {line !== null && (
+                          <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-cyan-950/80 text-cyan-300 border border-cyan-800/60 flex items-center gap-1">
+                            <Code className="w-2.5 h-2.5 text-cyan-400" />
+                            Line {line}{column !== null ? `:${column}` : ''}
+                          </span>
+                        )}
+                      </div>
+
                       <span className="text-[11px] font-mono text-slate-400">
-                        Depth Lv {finding.depth}
+                        {finding.depth ? `Depth Lv ${finding.depth}` : (isBrokenImport ? 'Broken Import' : 'Direct')}
                       </span>
                     </div>
 
@@ -331,7 +345,7 @@ export function ImpactSidebar({
                     </div>
 
                     <p className="text-xs text-slate-300 mb-2 leading-relaxed">
-                      {finding.reason || `Direct dependent impacted by changes in origin file.`}
+                      {explanation}
                     </p>
 
                     {finding.path && finding.path.length > 1 && (
@@ -348,15 +362,24 @@ export function ImpactSidebar({
                       </div>
                     )}
 
-                    {finding.evidence && (
-                      <div className="mt-2 rounded bg-slate-950 p-2 border border-slate-800/80 font-mono text-[11px]">
-                        <div className="text-[10px] text-slate-500 mb-1 flex items-center gap-1">
-                          <Code className="w-3 h-3 text-cyan-400" />
-                          <span>Line {finding.evidence.line}: {finding.evidence.column}</span>
+                    {finding.evidence && (line !== null || snippet) && (
+                      <div className="mt-2.5 rounded-lg bg-slate-950/90 p-2.5 border border-slate-800 font-mono text-[11px] shadow-inner">
+                        <div className="text-[10px] text-slate-400 mb-1.5 flex items-center justify-between">
+                          <div className="flex items-center gap-1.5 text-cyan-400 font-semibold">
+                            <Code className="w-3 h-3 text-cyan-400 shrink-0" />
+                            <span>{line !== null ? `Line ${line}${column !== null ? `:${column}` : ''}` : 'Location'}</span>
+                          </div>
+                          {finding.evidence.specifier && (
+                            <span className="text-slate-400 text-[10px] font-mono truncate max-w-[200px]" title={finding.evidence.specifier}>
+                              specifier: <span className="text-amber-300/90 font-medium">"{finding.evidence.specifier}"</span>
+                            </span>
+                          )}
                         </div>
-                        <code className="text-cyan-300 break-all">
-                          {finding.evidence.snippet || finding.evidence.rawSpecifier}
-                        </code>
+                        {snippet && (
+                          <div className="rounded bg-slate-900/90 p-2 border border-slate-800/90 text-cyan-300 font-mono text-[11px] whitespace-pre-wrap break-all leading-tight">
+                            {snippet}
+                          </div>
+                        )}
                       </div>
                     )}
 
@@ -378,7 +401,7 @@ export function ImpactSidebar({
 
       {/* TAB 2: AI PR REVIEW & COMMENT GENERATOR */}
       {activeMainTab === 'ai_review' && (
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <div className="flex-1 overflow-y-auto p-4 pb-12 space-y-4">
           {/* Risk Level Alert Banner */}
           <div className={`p-3.5 rounded-xl border flex items-center justify-between ${riskConfig.bg}`}>
             <div className="flex items-center gap-2.5">
@@ -397,10 +420,10 @@ export function ImpactSidebar({
           <div className="bg-slate-950/70 border border-slate-800 rounded-xl p-3.5">
             <h4 className="text-xs font-bold text-slate-200 uppercase tracking-wider mb-2 flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-purple-400" />
-              Executive AI Assessment
+              Executive Impact Assessment
             </h4>
-            <p className="text-xs text-slate-300 leading-relaxed">
-              {explanationData?.aiNarrative || explanationData?.executiveSummary || 'No analysis available.'}
+            <p className="text-xs text-slate-300 leading-relaxed whitespace-pre-line">
+              {explanationData?.executiveSummary || explanationData?.aiNarrative || 'No analysis available.'}
             </p>
           </div>
 
@@ -456,36 +479,6 @@ export function ImpactSidebar({
             <pre className="p-3 bg-slate-900/90 border border-slate-800 rounded-lg text-[10px] font-mono text-slate-300 overflow-x-auto max-h-48 overflow-y-auto whitespace-pre-wrap select-all">
               {explanationData?.prCommentMarkdown || 'Generating markdown...'}
             </pre>
-          </div>
-
-          {/* Optional Gemini API Key Drawer */}
-          <div className="pt-2 border-t border-slate-800/80">
-            <button
-              onClick={() => setShowKeyInput(!showKeyInput)}
-              className="text-[11px] text-slate-400 hover:text-cyan-400 flex items-center gap-1 transition-colors"
-            >
-              <Key className="w-3 h-3" />
-              <span>{showKeyInput ? 'Hide Gemini Settings' : 'Use Live Gemini LLM (Optional)'}</span>
-            </button>
-
-            {showKeyInput && (
-              <div className="mt-2 p-2.5 bg-slate-950 rounded-lg border border-slate-800 space-y-2">
-                <input
-                  type="password"
-                  placeholder="Paste GEMINI_API_KEY..."
-                  value={customKey}
-                  onChange={(e) => setCustomKey(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-800 rounded px-2.5 py-1 text-xs text-slate-200 font-mono focus:outline-none focus:border-cyan-500"
-                />
-                <button
-                  onClick={() => onRegenerateAI && onRegenerateAI(customKey)}
-                  className="w-full py-1 rounded bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold transition-colors flex items-center justify-center gap-1"
-                >
-                  <Sparkles className="w-3 h-3" />
-                  <span>Enrich with Gemini Flash</span>
-                </button>
-              </div>
-            )}
           </div>
         </div>
       )}

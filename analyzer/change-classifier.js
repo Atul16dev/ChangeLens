@@ -30,15 +30,46 @@ export const IMPACT_SEVERITY = {
  * @param {number} [params.maxDepth=10] - Maximum traversal depth for modified files
  * @returns {object} Comprehensive categorized impact report
  */
-export function classifyImpactPolicies({ changes = [], graph, maxDepth = 10 }) {
+export function classifyImpactPolicies({
+  changes = [],
+  graph,
+  maxDepth = 10,
+  unresolvedDependencies = [],
+}) {
   if (!graph || typeof graph.getDependents !== "function") {
     throw new TypeError("A valid dependency graph instance is required.");
   }
 
   const brokenImportFindings = [];
+  const seenBroken = new Set();
   const staleRenameFindings = [];
   const addedFileFindings = [];
   const modifiedFileChanges = [];
+
+  // Policy 0: UNRESOLVED LOCAL IMPORTS (Detected directly from AST scan)
+  if (Array.isArray(unresolvedDependencies)) {
+    for (const dep of unresolvedDependencies) {
+      if (dep.resolutionStatus === "unresolved-local") {
+        const key = `${dep.sourcePath}->${dep.specifier}`;
+        if (!seenBroken.has(key)) {
+          seenBroken.add(key);
+          brokenImportFindings.push({
+            type: "broken_import",
+            severity: IMPACT_SEVERITY.CRITICAL,
+            deletedFile: dep.targetPath || dep.specifier,
+            affectedFile: dep.sourcePath,
+            evidence: {
+              specifier: dep.specifier,
+              location: dep.location,
+              rawSource: dep.rawSource,
+            },
+            explanation: `File "${dep.sourcePath}" imports "${dep.specifier}", but this local module does not exist or cannot be resolved. This will cause an immediate compile error or runtime crash.`,
+            recommendation: `Update "${dep.sourcePath}" to fix or remove the import to "${dep.specifier}".`,
+          });
+        }
+      }
+    }
+  }
 
   for (const change of changes) {
     const { path: filePath, oldPath, status } = change;
@@ -48,19 +79,23 @@ export function classifyImpactPolicies({ changes = [], graph, maxDepth = 10 }) {
       const dependents = graph.getDependents(filePath);
 
       for (const dep of dependents) {
-        brokenImportFindings.push({
-          type: "broken_import",
-          severity: IMPACT_SEVERITY.CRITICAL,
-          deletedFile: filePath,
-          affectedFile: dep.consumerPath,
-          evidence: {
-            specifier: dep.specifier,
-            location: dep.location,
-            rawSource: dep.rawSource,
-          },
-          explanation: `File "${filePath}" was DELETED, but is still imported by "${dep.consumerPath}". This will cause an immediate compile error or runtime crash.`,
-          recommendation: `Update "${dep.consumerPath}" to remove or replace the import to "${filePath}".`,
-        });
+        const key = `${dep.consumerPath}->${dep.specifier}`;
+        if (!seenBroken.has(key)) {
+          seenBroken.add(key);
+          brokenImportFindings.push({
+            type: "broken_import",
+            severity: IMPACT_SEVERITY.CRITICAL,
+            deletedFile: filePath,
+            affectedFile: dep.consumerPath,
+            evidence: {
+              specifier: dep.specifier,
+              location: dep.location,
+              rawSource: dep.rawSource,
+            },
+            explanation: `File "${filePath}" was DELETED, but is still imported by "${dep.consumerPath}". This will cause an immediate compile error or runtime crash.`,
+            recommendation: `Update "${dep.consumerPath}" to remove or replace the import to "${filePath}".`,
+          });
+        }
       }
     }
 

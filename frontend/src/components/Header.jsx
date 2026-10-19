@@ -58,6 +58,19 @@ export function Header({ onAnalyze, loading, backendStatus, onRefresh }) {
 
         {/* Input Controls Form */}
         <form onSubmit={handleSubmit} className="flex flex-wrap items-center gap-2.5">
+          {/* Repo Path Input */}
+          <div className="flex items-center bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 focus-within:border-cyan-500 transition-colors shadow-inner">
+            <Folder className="w-4 h-4 text-cyan-400 mr-2 shrink-0" />
+            <input
+              type="text"
+              value={repoPath}
+              onChange={(e) => setRepoPath(e.target.value)}
+              placeholder="Custom repo path (default: mern-sample)"
+              className="bg-transparent text-sm text-slate-100 placeholder-slate-500 focus:outline-none w-52 sm:w-64 font-mono text-xs"
+              title="Absolute or relative path to target repository"
+            />
+          </div>
+
           {/* Changed File Input */}
           <div className="flex items-center bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 focus-within:border-cyan-500 transition-colors shadow-inner">
             <GitPullRequest className="w-4 h-4 text-amber-400 mr-2 shrink-0" />
@@ -66,19 +79,8 @@ export function Header({ onAnalyze, loading, backendStatus, onRefresh }) {
               value={changedFile}
               onChange={(e) => setChangedFile(e.target.value)}
               placeholder="e.g. server/models/user.js"
-              className="bg-transparent text-sm text-slate-100 placeholder-slate-500 focus:outline-none w-56 font-mono"
-            />
-          </div>
-
-          {/* Repo Path Input (Optional) */}
-          <div className="hidden xl:flex items-center bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 focus-within:border-cyan-500 transition-colors shadow-inner">
-            <Folder className="w-4 h-4 text-slate-400 mr-2 shrink-0" />
-            <input
-              type="text"
-              value={repoPath}
-              onChange={(e) => setRepoPath(e.target.value)}
-              placeholder="Custom repo path (default: mern-sample)"
-              className="bg-transparent text-sm text-slate-100 placeholder-slate-500 focus:outline-none w-64 font-mono text-xs"
+              className="bg-transparent text-sm text-slate-100 placeholder-slate-500 focus:outline-none w-48 sm:w-56 font-mono text-xs"
+              title="File path relative to repository root"
             />
           </div>
 
