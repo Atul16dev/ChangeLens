@@ -136,6 +136,62 @@ test("ChangeLens REST API Endpoints Suite", async (t) => {
     assert.ok(body.data.prCommentMarkdown.includes("ChangeLens Impact Analysis Report"));
   });
 
+  await t.test("POST /api/v1/analyses/:id/simulate computes What-If blast radius on the fly", async () => {
+    assert.ok(createdAnalysisId);
+
+    const res = await fetch(`${baseUrl}/api/v1/analyses/${createdAnalysisId}/simulate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        simulatedFile: "server/models/user.js",
+        changeType: "modified",
+      }),
+    });
+
+    assert.equal(res.status, 200);
+    const body = await res.json();
+    assert.equal(body.success, true);
+    assert.equal(body.data.simulatedFile, "server/models/user.js");
+    assert.equal(body.data.changeType, "modified");
+    assert.equal(body.data.summary.impactedFilesCount, 3);
+    assert.equal(body.data.summary.directDependentsCount, 1);
+    assert.equal(body.data.summary.transitiveDependentsCount, 2);
+
+    // Verify recolored graph nodes
+    const { nodes, edges } = body.data.graph;
+    assert.ok(Array.isArray(nodes));
+    assert.ok(Array.isArray(edges));
+    const simulatedRoot = nodes.find((n) => n.id === "server/models/user.js");
+    assert.ok(simulatedRoot);
+    assert.equal(simulatedRoot.data.isChanged, true);
+
+    const directConsumer = nodes.find((n) => n.id === "server/controllers/user-controller.js");
+    assert.ok(directConsumer);
+    assert.equal(directConsumer.data.isImpacted, true);
+    assert.equal(directConsumer.data.severity, "HIGH");
+
+    // Verify explanation generated for simulated scenario
+    assert.ok(body.data.explanation.riskLevel);
+    assert.ok(body.data.explanation.prCommentMarkdown.includes("ChangeLens Impact Analysis Report"));
+  });
+
+  await t.test("POST /api/v1/analyses/:id/simulate validates simulatedFile input", async () => {
+    assert.ok(createdAnalysisId);
+
+    const res = await fetch(`${baseUrl}/api/v1/analyses/${createdAnalysisId}/simulate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        simulatedFile: "   ",
+      }),
+    });
+
+    assert.equal(res.status, 400);
+    const body = await res.json();
+    assert.equal(body.success, false);
+    assert.equal(body.error.code, "INVALID_REQUEST");
+  });
+
   await t.test("GET /api/v1/non-existent returns 404 with structured error envelope", async () => {
     const res = await fetch(`${baseUrl}/api/v1/non-existent`);
     assert.equal(res.status, 404);

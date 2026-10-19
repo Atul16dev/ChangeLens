@@ -6,6 +6,7 @@ import {
   getAnalysisImpact,
   getAnalysisExplanation,
   handleAnalysisChat,
+  simulateAnalysisImpact,
   listAnalyses,
 } from "../controllers/analyses.controller.js";
 
@@ -31,5 +32,8 @@ router.get("/analyses/:id/explain", getAnalysisExplanation);
 
 // Context-aware AI Chatbot query
 router.post("/analyses/:id/chat", handleAnalysisChat);
+
+// What-If live blast radius simulation on an arbitrary file
+router.post("/analyses/:id/simulate", simulateAnalysisImpact);
 
 export const analysesRoutes = router;

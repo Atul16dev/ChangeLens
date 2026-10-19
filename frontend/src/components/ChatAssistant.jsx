@@ -257,7 +257,7 @@ function MarkdownMessageContent({ content, isUser }) {
   );
 }
 
-export function ChatAssistant({ analysisId, selectedNodeId }) {
+export function ChatAssistant({ analysisId, selectedNodeId, isSimulating, simulatedFile }) {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
     {
@@ -606,8 +606,20 @@ export function ChatAssistant({ analysisId, selectedNodeId }) {
     { label: 'What tests to run?', icon: TestTube, prompt: 'What specific unit and integration tests should I write for these affected files?' },
   ];
 
-  if (selectedNodeId) {
+  if (isSimulating && simulatedFile) {
+    const baseName = simulatedFile.split('/').pop();
+    quickPrompts.unshift({
+      label: `Simulated: ${baseName}`,
+      icon: Sparkles,
+      prompt: `Explain the simulated blast radius for "${simulatedFile}". Which files are directly or transitively affected?`,
+    });
+  } else if (selectedNodeId) {
     const baseName = selectedNodeId.split('/').pop();
+    quickPrompts.unshift({
+      label: `What if I change ${baseName}?`,
+      icon: Sparkles,
+      prompt: `What if I change "${selectedNodeId}"? Show the projected blast radius and downstream consumers.`,
+    });
     quickPrompts.unshift({
       label: `Inspect ${baseName}`,
       icon: FileCode,

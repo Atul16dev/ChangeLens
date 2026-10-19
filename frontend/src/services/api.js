@@ -99,3 +99,19 @@ export async function sendAnalysisChatMessage(analysisId, { message, history = [
   }
   return data.data;
 }
+
+export async function simulateImpact(analysisId, { simulatedFile, changeType = 'modified' } = {}) {
+  const res = await fetchWithRetry(`${API_BASE}/analyses/${analysisId}/simulate`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ simulatedFile, changeType }),
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error?.message || `Simulation failed with status ${res.status}`);
+  }
+  return data.data;
+}
+

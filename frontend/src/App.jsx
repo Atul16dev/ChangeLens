@@ -9,6 +9,7 @@ import {
   getAnalysisGraph,
   getAnalysisImpact,
   getAnalysisExplanation,
+  simulateImpact,
 } from './services/api.js';
 import { AlertCircle, RefreshCw } from 'lucide-react';
 
@@ -22,6 +23,10 @@ export default function App() {
   const [impactData, setImpactData] = useState(null);
   const [explanationData, setExplanationData] = useState(null);
   const [selectedNodeId, setSelectedNodeId] = useState(null);
+
+  // What-If Simulator state
+  const [simulationData, setSimulationData] = useState(null);
+  const [isSimulating, setIsSimulating] = useState(false);
 
   // Trigger analysis pipeline
   const executeAnalysis = useCallback(async (options = {}) => {
@@ -48,6 +53,8 @@ export default function App() {
       setImpactData(impactRes);
       setExplanationData(explanationRes);
       setSelectedNodeId(null);
+      setSimulationData(null);
+      setIsSimulating(false);
       setBackendStatus('online');
     } catch (err) {
       console.error('Analysis failed:', err);
@@ -56,6 +63,41 @@ export default function App() {
       setLoading(false);
     }
   }, []);
+
+  // Simulate What-If impact for any given file
+  const handleSimulateNode = useCallback(
+    async (filePath, changeType = 'modified') => {
+      if (!currentAnalysisId || !filePath) return;
+      setLoading(true);
+      setError(null);
+      try {
+        const simResult = await simulateImpact(currentAnalysisId, {
+          simulatedFile: filePath,
+          changeType,
+        });
+        setSimulationData(simResult);
+        setIsSimulating(true);
+        setSelectedNodeId(filePath);
+      } catch (err) {
+        console.error('Simulation failed:', err);
+        setError(err.message || 'Failed to simulate blast radius');
+      } finally {
+        setLoading(false);
+      }
+    },
+    [currentAnalysisId]
+  );
+
+  // Exit simulation and return to real Git diff changes
+  const handleExitSimulation = useCallback(() => {
+    setSimulationData(null);
+    setIsSimulating(false);
+  }, []);
+
+  // Compute effective data (active simulation overrides regular git data)
+  const effectiveGraphData = simulationData ? simulationData.graph : graphData;
+  const effectiveImpactData = simulationData ? simulationData.impactAnalysis : impactData;
+  const effectiveExplanationData = simulationData ? simulationData.explanation : explanationData;
 
   // Check health and run initial analysis on component mount
   useEffect(() => {
@@ -81,6 +123,9 @@ export default function App() {
         loading={loading}
         backendStatus={backendStatus}
         onRefresh={() => executeAnalysis({ changedFiles: ['server/models/user.js'] })}
+        isSimulating={isSimulating}
+        simulatedFile={simulationData?.simulatedFile}
+        onExitSimulation={handleExitSimulation}
       />
 
       {/* Error Notification Banner */}
@@ -104,7 +149,7 @@ export default function App() {
       {/* Main Workspace: Left Graph Canvas + Right Impact Sidebar */}
       <div className="flex-1 flex overflow-hidden relative">
         <main className="flex-1 h-full relative">
-          {loading && !graphData && (
+          {loading && !effectiveGraphData && (
             <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-slate-950/80 backdrop-blur-sm">
               <RefreshCw className="w-8 h-8 text-cyan-400 animate-spin mb-3" />
               <p className="text-sm text-slate-300 font-medium">
@@ -114,23 +159,32 @@ export default function App() {
           )}
 
           <GraphViewer
-            graphData={graphData}
+            graphData={effectiveGraphData}
             selectedNodeId={selectedNodeId}
             onSelectNode={setSelectedNodeId}
+            isSimulating={isSimulating}
+            simulatedFile={simulationData?.simulatedFile}
+            onExitSimulation={handleExitSimulation}
           />
 
           {/* Context-Aware AI Chatbot docked inside Graph Workspace */}
           <ChatAssistant
             analysisId={currentAnalysisId}
             selectedNodeId={selectedNodeId}
+            isSimulating={isSimulating}
+            simulatedFile={simulationData?.simulatedFile}
           />
         </main>
 
         <ImpactSidebar
-          impactData={impactData}
-          explanationData={explanationData}
+          impactData={effectiveImpactData}
+          explanationData={effectiveExplanationData}
           selectedNodeId={selectedNodeId}
           onSelectNode={setSelectedNodeId}
+          isSimulating={isSimulating}
+          simulatedFile={simulationData?.simulatedFile}
+          onSimulateNode={handleSimulateNode}
+          onExitSimulation={handleExitSimulation}
         />
       </div>
     </div>

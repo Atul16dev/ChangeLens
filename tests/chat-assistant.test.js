@@ -726,3 +726,75 @@ test("Intent Routing: each question receives its appropriate specialized handler
   }
 });
 
+test("What-If Simulation: classifies simulation questions and extracts target file and change type", () => {
+  const query1 = "What if I change server/models/user.js?";
+  const c1 = classifyQuestionIntent(query1, { analysisRecord: mockAnalysis });
+  assert.equal(c1.intent, INTENTS.WHAT_IF_SIMULATION);
+  assert.equal(c1.targetFile, "server/models/user.js");
+  assert.equal(c1.changeType, "modified");
+
+  const query2 = "Agar main server/models/user.js ko delete kar doon to kya hoga?";
+  const c2 = classifyQuestionIntent(query2, { analysisRecord: mockAnalysis });
+  assert.equal(c2.intent, INTENTS.WHAT_IF_SIMULATION);
+  assert.equal(c2.targetFile, "server/models/user.js");
+  assert.equal(c2.changeType, "deleted");
+
+  const query3 = "Simulate impact if server/controllers/user-controller.js is modified";
+  const c3 = classifyQuestionIntent(query3, { analysisRecord: mockAnalysis });
+  assert.equal(c3.intent, INTENTS.WHAT_IF_SIMULATION);
+  assert.equal(c3.targetFile, "server/controllers/user-controller.js");
+  assert.equal(c3.changeType, "modified");
+
+  // Uses selectedNodeId when no explicit file is in the query text
+  const query4 = "What if I delete this file?";
+  const c4 = classifyQuestionIntent(query4, {
+    analysisRecord: mockAnalysis,
+    selectedNodeId: "server/models/user.js",
+  });
+  assert.equal(c4.intent, INTENTS.WHAT_IF_SIMULATION);
+  assert.equal(c4.targetFile, "server/models/user.js");
+  assert.equal(c4.changeType, "deleted");
+});
+
+test("What-If Simulation: generates accurate English blast radius projection", () => {
+  const answer = generateDeterministicChatFallback({
+    userMessage: "What if I change server/models/user.js?",
+    analysisRecord: mockAnalysis,
+  });
+
+  assert.ok(answer.includes("Simulated Blast Radius"));
+  assert.ok(answer.includes("server/models/user.js"));
+  assert.ok(answer.includes("Direct Consumers (Depth 1)"));
+  assert.ok(answer.includes("server/controllers/user-controller.js"));
+  assert.ok(answer.includes("Transitive Consumers (Depth 2+)"));
+  assert.ok(answer.includes("server/routes/user-routes.js"));
+  assert.ok(answer.includes("Recommended Verification"));
+});
+
+test("What-If Simulation: generates accurate Hindi and Hinglish simulation projection", () => {
+  const answerHindi = generateDeterministicChatFallback({
+    userMessage: "Agar main server/models/user.js ko delete kar doon to kya asar padega?",
+    analysisRecord: mockAnalysis,
+  });
+
+  assert.ok(answerHindi.includes("Simulated Blast Radius"));
+  assert.ok(answerHindi.includes("server/models/user.js"));
+  assert.ok(answerHindi.includes("Direct Consumers (Depth 1)"));
+  assert.ok(answerHindi.includes("server/controllers/user-controller.js"));
+  assert.ok(answerHindi.includes("Transitive Consumers (Depth 2+)"));
+  assert.ok(answerHindi.includes("server/routes/user-routes.js"));
+  assert.ok(answerHindi.includes("delete"));
+});
+
+test("What-If Simulation: handles simulation requests for files with zero consumers cleanly", () => {
+  const answer = generateDeterministicChatFallback({
+    userMessage: "What if I modify server/index.js?",
+    analysisRecord: mockAnalysis,
+  });
+
+  assert.ok(answer.includes("Simulated Blast Radius"));
+  assert.ok(answer.includes("Isolated Leaf File") || answer.includes("No downstream consumers import"));
+  assert.ok(answer.includes("Low Risk"));
+});
+
+

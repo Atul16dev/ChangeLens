@@ -190,6 +190,9 @@ export async function performAnalysis({
       totalEdges: graph.edges.length,
     },
     impactAnalysis,
+    dependencyGraph: graph,
+    dependencies,
+    allFiles,
   };
 
   analysesStore.save(analysisId, analysisRecord);
@@ -426,3 +429,91 @@ export async function handleAnalysisChat(req, res, next) {
     next(error);
   }
 }
+
+/**
+ * POST /api/v1/analyses/:id/simulate
+ * Simulates the blast radius of modifying or deleting an arbitrary file on the fly (What-If mode).
+ */
+export async function simulateAnalysisImpact(req, res, next) {
+  try {
+    const { id } = req.params;
+    const { simulatedFile, changeType = "modified" } = req.body || {};
+
+    if (!simulatedFile || typeof simulatedFile !== "string" || simulatedFile.trim().length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: "INVALID_REQUEST",
+          message: "A non-empty 'simulatedFile' path string is required.",
+        },
+      });
+    }
+
+    const analysis = await getAnalysisRecord(id);
+    if (!analysis) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: "ANALYSIS_NOT_FOUND",
+          message: `Analysis with ID "${id}" was not found.`,
+        },
+      });
+    }
+
+    // Retrieve or rebuild in-memory dependency graph
+    let graph = analysis.dependencyGraph;
+    if (!graph && analysis.dependencies && analysis.allFiles) {
+      graph = buildDependencyGraph(analysis.dependencies, analysis.allFiles);
+    }
+    if (!graph) {
+      const scanReport = await scanRepository(analysis.targetDir || "tests/fixtures/mern-sample");
+      const dependencies = resolveRepositoryDependencies(scanReport);
+      const allFiles = scanReport.files.map((f) => f.path.split(path.sep).join("/"));
+      graph = buildDependencyGraph(dependencies, allFiles);
+      analysis.dependencyGraph = graph;
+    }
+
+    const cleanSimulatedPath = simulatedFile.split("\\").join("/").replace(/^\.\//, "");
+    const simulatedChanges = [
+      {
+        path: cleanSimulatedPath,
+        status: changeType,
+        statusCode: changeType === "deleted" ? "D" : "M",
+      },
+    ];
+
+    const simulatedImpact = classifyImpactPolicies({
+      changes: simulatedChanges,
+      graph,
+      maxDepth: 10,
+      unresolvedDependencies: [],
+    });
+
+    const simulatedGraph = await formatReactFlowGraph(
+      graph,
+      simulatedImpact,
+      new Set([cleanSimulatedPath])
+    );
+
+    const simulatedExplanation = generateImpactExplanation({
+      impactAnalysis: simulatedImpact,
+      changes: simulatedChanges,
+    });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        analysisId: id,
+        simulatedFile: cleanSimulatedPath,
+        changeType,
+        summary: simulatedImpact.summary,
+        impactAnalysis: simulatedImpact,
+        graph: simulatedGraph,
+        explanation: simulatedExplanation,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+

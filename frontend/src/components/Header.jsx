@@ -1,7 +1,15 @@
 import React, { useState } from 'react';
-import { Play, GitPullRequest, Folder, Sliders, ShieldCheck, Activity, RefreshCw } from 'lucide-react';
+import { Play, GitPullRequest, Folder, Sliders, ShieldCheck, Activity, RefreshCw, Zap, X } from 'lucide-react';
 
-export function Header({ onAnalyze, loading, backendStatus, onRefresh }) {
+export function Header({
+  onAnalyze,
+  loading,
+  backendStatus,
+  onRefresh,
+  isSimulating,
+  simulatedFile,
+  onExitSimulation,
+}) {
   const [repoPath, setRepoPath] = useState('');
   const [changedFile, setChangedFile] = useState('server/models/user.js');
   const [maxDepth, setMaxDepth] = useState(10);
@@ -45,13 +53,32 @@ export function Header({ onAnalyze, loading, backendStatus, onRefresh }) {
                 v1.0 AST Engine
               </span>
             </div>
-            <p className="text-xs text-slate-400 flex items-center gap-1.5">
+            <p className="text-xs text-slate-400 flex items-center gap-1.5 flex-wrap">
               <span>Deterministic Blast Radius & Impact Analyzer</span>
               <span className="inline-block w-1 h-1 rounded-full bg-slate-600"></span>
               <span className={`inline-flex items-center gap-1 text-[11px] ${backendStatus === 'online' ? 'text-emerald-400' : 'text-amber-400'}`}>
                 <span className={`w-1.5 h-1.5 rounded-full ${backendStatus === 'online' ? 'bg-emerald-400 animate-ping' : 'bg-amber-400'}`}></span>
                 {backendStatus === 'online' ? 'Engine Ready' : 'Connecting...'}
               </span>
+              {isSimulating && (
+                <>
+                  <span className="inline-block w-1 h-1 rounded-full bg-slate-600"></span>
+                  <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-purple-300 bg-purple-950/70 border border-purple-500/40 px-2 py-0.5 rounded-full shadow-sm">
+                    <Zap className="w-3 h-3 text-amber-400 animate-pulse" />
+                    <span>What-If: {simulatedFile?.split('/').pop()}</span>
+                    {onExitSimulation && (
+                      <button
+                        type="button"
+                        onClick={onExitSimulation}
+                        className="hover:text-white transition-colors"
+                        title="Exit simulation"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    )}
+                  </span>
+                </>
+              )}
             </p>
           </div>
         </div>

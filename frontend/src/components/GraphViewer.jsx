@@ -25,9 +25,18 @@ import {
   Sparkles,
   Network,
   HelpCircle,
+  Zap,
+  X,
 } from 'lucide-react';
 
-function GraphViewerInternal({ graphData, onSelectNode, selectedNodeId }) {
+function GraphViewerInternal({
+  graphData,
+  onSelectNode,
+  selectedNodeId,
+  isSimulating,
+  simulatedFile,
+  onExitSimulation,
+}) {
   const nodeTypes = useMemo(() => ({ fileNode: FileNode }), []);
   const edgeTypes = useMemo(() => ({ impactEdge: ImpactEdge }), []);
   const { fitView } = useReactFlow();
@@ -294,6 +303,28 @@ function GraphViewerInternal({ graphData, onSelectNode, selectedNodeId }) {
             >
               <RotateCcw className={`w-3.5 h-3.5 ${isLayoutComputing ? 'animate-spin text-cyan-400' : ''}`} />
             </button>
+
+            {/* What-If Simulation Mode Indicator */}
+            {isSimulating && (
+              <div className="flex items-center gap-1.5 bg-gradient-to-r from-purple-950 via-indigo-950 to-slate-950 border border-purple-500/50 px-2.5 py-1 rounded-lg text-xs font-semibold text-purple-200 shadow-lg">
+                <Zap className="w-3.5 h-3.5 text-amber-400 animate-pulse shrink-0" />
+                <span className="text-[10px] text-amber-400 font-bold uppercase tracking-wider">
+                  Simulation:
+                </span>
+                <span className="font-mono text-[11px] text-white truncate max-w-[140px]" title={simulatedFile}>
+                  {simulatedFile?.split('/').pop()}
+                </span>
+                {onExitSimulation && (
+                  <button
+                    onClick={onExitSimulation}
+                    className="ml-1 p-0.5 rounded text-purple-300 hover:text-white hover:bg-purple-800 transition-colors"
+                    title="Exit simulation"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </Panel>
 

@@ -17,6 +17,7 @@ import {
   GitPullRequest,
   ShieldCheck,
   FileText,
+  Zap,
 } from 'lucide-react';
 
 export function ImpactSidebar({
@@ -24,6 +25,10 @@ export function ImpactSidebar({
   explanationData,
   selectedNodeId,
   onSelectNode,
+  isSimulating,
+  simulatedFile,
+  onSimulateNode,
+  onExitSimulation,
 }) {
   const [activeMainTab, setActiveMainTab] = useState('findings'); // 'findings' | 'ai_review'
   const [activeFilterTab, setActiveFilterTab] = useState('all'); // 'all' | 'critical' | 'direct' | 'transitive'
@@ -102,6 +107,34 @@ export function ImpactSidebar({
 
   return (
     <aside className="w-96 lg:w-[430px] h-full bg-slate-900/95 border-l border-slate-800 flex flex-col backdrop-blur-md shrink-0 select-none">
+      {/* WHAT-IF SIMULATION MODE BANNER */}
+      {isSimulating && (
+        <div className="bg-gradient-to-r from-purple-950 via-indigo-950 to-slate-950 border-b border-purple-500/50 p-3 flex items-center justify-between shadow-xl">
+          <div className="flex items-center gap-2.5 overflow-hidden">
+            <div className="p-1.5 rounded-lg bg-purple-500/20 text-purple-300 border border-purple-500/40 shrink-0">
+              <Zap className="w-4 h-4 text-amber-400 animate-pulse" />
+            </div>
+            <div className="truncate">
+              <div className="text-[10px] font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
+                <span>Simulation Mode Active</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping"></span>
+              </div>
+              <div className="font-mono text-xs text-purple-200 truncate font-semibold" title={simulatedFile}>
+                {simulatedFile}
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={onExitSimulation}
+            className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-purple-800/80 hover:bg-purple-700 text-purple-100 border border-purple-500/40 transition-all shrink-0 flex items-center gap-1 shadow-sm active:scale-95"
+            title="Exit simulation and return to real Git changes"
+          >
+            <X className="w-3.5 h-3.5" />
+            <span>Exit</span>
+          </button>
+        </div>
+      )}
+
       {/* Top Main Navigation Tabs */}
       <div className="flex items-center border-b border-slate-800 bg-slate-950/60 p-2 gap-2">
         <button
@@ -225,18 +258,75 @@ export function ImpactSidebar({
 
             {/* Selected Node Filter Banner */}
             {selectedNodeId && (
-              <div className="mt-3 flex items-center justify-between bg-cyan-950/40 border border-cyan-500/40 px-3 py-1.5 rounded-lg text-xs text-cyan-300">
-                <div className="flex items-center gap-1.5 truncate">
-                  <Filter className="w-3.5 h-3.5 shrink-0" />
-                  <span className="truncate">Filtered: <strong className="font-mono">{selectedNodeId}</strong></span>
+              <div className="mt-3 space-y-2">
+                <div className="flex items-center justify-between bg-cyan-950/40 border border-cyan-500/40 px-3 py-1.5 rounded-lg text-xs text-cyan-300">
+                  <div className="flex items-center gap-1.5 truncate">
+                    <Filter className="w-3.5 h-3.5 shrink-0" />
+                    <span className="truncate">Filtered: <strong className="font-mono">{selectedNodeId}</strong></span>
+                  </div>
+                  <button
+                    onClick={() => onSelectNode(null)}
+                    className="hover:bg-cyan-900/60 p-1 rounded transition-colors ml-2"
+                    title="Clear selection"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
                 </div>
-                <button
-                  onClick={() => onSelectNode(null)}
-                  className="hover:bg-cyan-900/60 p-1 rounded transition-colors ml-2"
-                  title="Clear selection"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
+
+                {/* What-If Simulation Trigger Card */}
+                {onSimulateNode && (
+                  <div className="p-2.5 rounded-xl bg-gradient-to-r from-purple-950/70 via-indigo-950/60 to-slate-900 border border-purple-500/40 shadow-md">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <Zap className="w-4 h-4 text-amber-400 shrink-0 animate-pulse" />
+                        <div className="min-w-0">
+                          <div className="text-[11px] font-bold text-white flex items-center gap-1.5">
+                            <span>What-If Simulator</span>
+                            {selectedNodeId === simulatedFile && (
+                              <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                                Active
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-[10px] text-slate-400 truncate">
+                            Project blast radius before code edits
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        {selectedNodeId === simulatedFile ? (
+                          <button
+                            onClick={onExitSimulation}
+                            className="px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-amber-950/80 hover:bg-amber-900 text-amber-300 border border-amber-500/40 transition-all active:scale-95 flex items-center gap-1"
+                            title="Exit simulation"
+                          >
+                            <X className="w-3 h-3" />
+                            <span>Reset</span>
+                          </button>
+                        ) : (
+                          <>
+                            <button
+                              onClick={() => onSimulateNode(selectedNodeId, 'modified')}
+                              className="px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-sm transition-all active:scale-95 flex items-center gap-1 border border-purple-400/40"
+                              title={`Simulate modifying ${selectedNodeId}`}
+                            >
+                              <Zap className="w-3 h-3 text-amber-300" />
+                              <span>Simulate</span>
+                            </button>
+                            <button
+                              onClick={() => onSimulateNode(selectedNodeId, 'deleted')}
+                              className="px-2 py-1 text-[11px] font-semibold rounded-lg bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-500/40 transition-all active:scale-95 flex items-center gap-1"
+                              title={`Simulate deleting ${selectedNodeId}`}
+                            >
+                              <span>Delete</span>
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -340,8 +430,23 @@ export function ImpactSidebar({
                       </span>
                     </div>
 
-                    <div className="font-mono text-xs font-semibold text-slate-200 truncate mb-1.5" title={file}>
-                      {file}
+                    <div className="flex items-center justify-between gap-2 mb-1.5">
+                      <div className="font-mono text-xs font-semibold text-slate-200 truncate" title={file}>
+                        {file}
+                      </div>
+                      {onSimulateNode && file !== simulatedFile && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onSimulateNode(file, 'modified');
+                          }}
+                          className="shrink-0 px-2 py-0.5 rounded text-[10px] bg-purple-950/80 hover:bg-purple-850 text-purple-300 border border-purple-500/40 flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                          title={`Simulate blast radius if ${file} is modified`}
+                        >
+                          <Zap className="w-2.5 h-2.5 text-amber-400" />
+                          <span>Simulate</span>
+                        </button>
+                      )}
                     </div>
 
                     <p className="text-xs text-slate-300 mb-2 leading-relaxed">

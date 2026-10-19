@@ -38,6 +38,7 @@ export const INTENTS = {
   UNKNOWN_FILE: "UNKNOWN_FILE",
   ABUSE_ONLY: "ABUSE_ONLY",
   UNRECOGNIZED_QUERY: "UNRECOGNIZED_QUERY",
+  WHAT_IF_SIMULATION: "WHAT_IF_SIMULATION",
 };
 
 /**
@@ -403,7 +404,27 @@ export function classifyQuestionIntent(userMessage, { analysisRecord = null, sel
     };
   }
 
-  // G. Directional queries for a specific file
+  // G. What-If Blast Radius Simulation Query ("What if I change X?", "Agar main X ko delete karun...")
+  const isWhatIfQuery =
+    /\b(what if|what happens if|kya hoga agar|agar main|agar mai|suppose|imagine|if i change|if i delete|if i modify|simulate impact|simulate change|simulate)\b/i.test(query);
+
+  if (isWhatIfQuery && (mentionedFile || selectedNodeId)) {
+    const target = mentionedFile || selectedNodeId;
+    const changeType = /\b(delete|remove|deleted|hata|hatao)\b/i.test(query) ? "deleted" : "modified";
+    return {
+      intent: INTENTS.WHAT_IF_SIMULATION,
+      isHindi,
+      isAbusive,
+      isRepeatedAbuse,
+      targetFile: target,
+      mentionedFile: target,
+      changeType,
+      simulatedChangeType: changeType,
+      unknownFile: null,
+    };
+  }
+
+  // H. Directional queries for a specific file
   const isIncomingDirection =
     /\b(who import|who imports|which files depend|which files directly depend|consumers of|kaun import karta|kon import kar|kisne import|par kaun depend|depend on this|depend on it)\b/i.test(query);
 
@@ -659,6 +680,70 @@ export function retrieveScopedEvidence(classification, analysisRecord, selectedN
       return { targetFile, item, incoming, outgoing, isRoot, summary };
     }
 
+    case INTENTS.WHAT_IF_SIMULATION: {
+      const target = targetFile || changes[0]?.path || "server/models/user.js";
+      const changeType = classification.simulatedChangeType || "modified";
+
+      // Reverse BFS on edges where edge.imported === current
+      const queue = [{ file: target, depth: 0, path: [target] }];
+      const visited = new Map([[target, 0]]);
+      const findings = [];
+      const directConsumers = [];
+      const transitiveConsumers = [];
+
+      while (queue.length > 0) {
+        const curr = queue.shift();
+        if (curr.depth >= 10) continue;
+
+        const consumers = edges.filter(
+          (e) =>
+            e.imported.toLowerCase() === curr.file.toLowerCase() ||
+            e.imported.toLowerCase().endsWith(curr.file.toLowerCase())
+        );
+
+        for (const edge of consumers) {
+          const nextDepth = curr.depth + 1;
+          const consumerPath = edge.importer;
+
+          if (visited.has(consumerPath) && visited.get(consumerPath) <= nextDepth) {
+            continue;
+          }
+
+          visited.set(consumerPath, nextDepth);
+          const nextPath = [...curr.path, consumerPath];
+
+          if (nextDepth === 1) {
+            directConsumers.push(consumerPath);
+          } else {
+            transitiveConsumers.push(consumerPath);
+          }
+
+          findings.push({
+            affectedFile: consumerPath,
+            depth: nextDepth,
+            path: nextPath,
+            specifier: edge.specifier,
+            relationshipType: edge.relationshipType,
+          });
+
+          queue.push({
+            file: consumerPath,
+            depth: nextDepth,
+            path: nextPath,
+          });
+        }
+      }
+
+      return {
+        targetFile: target,
+        changeType,
+        directConsumers,
+        transitiveConsumers,
+        findings,
+        totalImpacted: directConsumers.length + transitiveConsumers.length,
+      };
+    }
+
     case INTENTS.UNKNOWN_FILE:
       return { requestedFile: unknownFile, availableFiles: allKnownFiles.slice(0, 5) };
 
@@ -755,6 +840,47 @@ You can ask:
 - ⚡ *"What is the difference between direct and transitive consumers?"*
 - 🚨 *"Are there any broken imports?"*
 - 🧪 *"What tests should I run for this PR?"*`;
+}
+
+function handleWhatIfSimulation(evidence, { isHindi }) {
+  const {
+    targetFile,
+    changeType = "modified",
+    directConsumers = [],
+    transitiveConsumers = [],
+    findings = [],
+    totalImpacted = 0,
+  } = evidence;
+
+  const routes = findings.slice(0, 4).map((f) => `- **Depth ${f.depth}:** \`${f.path.join(" ➔ ")}\``);
+
+  if (isHindi) {
+    return `### ⚡ Simulated Blast Radius (What-If Simulation): \`${targetFile}\`
+
+Agar aap \`${targetFile}\` ko **${changeType === "deleted" ? "delete" : "modify"}** karte hain, toh ChangeLens AST dependency graph ke anusaar projected blast radius yeh hoga:
+
+- **Simulated Target:** \`${targetFile}\` (${changeType.toUpperCase()})
+- **Direct Consumers (Depth 1):** ${directConsumers.length} file(s) ${directConsumers.length > 0 ? `(${directConsumers.map((f) => `\`${f}\``).join(", ")})` : ""}
+- **Transitive Consumers (Depth 2+):** ${transitiveConsumers.length} file(s) ${transitiveConsumers.length > 0 ? `(${transitiveConsumers.map((f) => `\`${f}\``).join(", ")})` : ""}
+- **Total Projected Blast Radius:** **${totalImpacted} file(s)**
+
+${routes.length > 0 ? `**Projected Propagation Routes:**\n${routes.join("\n")}` : `*No downstream consumers import this file. Koi downstream dependent file nahi mili. Yeh file isolated hai (Isolated Leaf File).*`}
+
+> **Recommended Verification / Testing Strategy:** Agar aap yeh change karte hain, toh ${directConsumers.length > 0 ? `direct consumers ${directConsumers.map((f) => `\`${f}\``).join(", ")} ke contract tests` : "unit tests"} ko sabse pehle run karein.`;
+  }
+
+  return `### ⚡ Simulated Blast Radius (What-If Simulation): \`${targetFile}\`
+
+If \`${targetFile}\` is **${changeType === "deleted" ? "deleted" : "modified"}**, here is the projected downstream blast radius based on the AST dependency graph:
+
+- **Simulated Target:** \`${targetFile}\` (${changeType.toUpperCase()})
+- **Direct Consumers (Depth 1):** ${directConsumers.length} file(s) ${directConsumers.length > 0 ? `(${directConsumers.map((f) => `\`${f}\``).join(", ")})` : ""}
+- **Transitive Consumers (Depth 2+):** ${transitiveConsumers.length} file(s) ${transitiveConsumers.length > 0 ? `(${transitiveConsumers.map((f) => `\`${f}\``).join(", ")})` : ""}
+- **Total Projected Blast Radius:** **${totalImpacted} file(s)**
+
+${routes.length > 0 ? `**Projected Propagation Routes:**\n${routes.join("\n")}` : `*No downstream consumers import this file. This file appears isolated (Isolated Leaf File - Low Risk).*`}
+
+> **Recommended Verification / Testing Strategy:** Modifications here will immediately break or require contract updates in ${directConsumers.length > 0 ? `direct consumers (${directConsumers.map((f) => `\`${f}\``).join(", ")})` : "unit tests"}. Run integration tests before merging.`;
 }
 
 function handleAllImportRelationships(evidence, { isHindi }) {
@@ -1379,6 +1505,9 @@ export function generateDeterministicChatFallback({
     case INTENTS.ANALYSIS_SUMMARY:
     case INTENTS.GENERAL_REPORT_EXPLANATION:
       return handleGeneralReportExplanation(evidence, { isHindi });
+
+    case INTENTS.WHAT_IF_SIMULATION:
+      return handleWhatIfSimulation(evidence, { isHindi });
 
     case INTENTS.UNRECOGNIZED_QUERY:
     default:
