@@ -22,13 +22,11 @@ export function LandingPage() {
       <div className="fixed top-[40%] right-[-10%] w-[550px] h-[550px] bg-indigo-600/10 rounded-full blur-[160px] pointer-events-none animate-float-slow z-0" />
       <div className="fixed bottom-[-10%] left-[20%] w-[650px] h-[650px] bg-violet-600/10 rounded-full blur-[170px] pointer-events-none animate-float-reverse z-0" />
 
-      {/* Navigation Header */}
-      <div className="relative z-50">
-        <Navbar />
-      </div>
+      {/* Fixed Navigation Header */}
+      <Navbar />
 
-      {/* Main Content Sections */}
-      <main className="relative z-10">
+      {/* Main Content Sections (with top padding for fixed navbar) */}
+      <main className="relative z-10 pt-16 sm:pt-20">
         <HeroSection />
 
         {/* Problem Section */}

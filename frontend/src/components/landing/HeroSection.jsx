@@ -73,7 +73,7 @@ export function HeroSection() {
   const [activeDemo, setActiveDemo] = useState(DEMO_PRESETS[0]);
 
   return (
-    <section className="relative pt-8 pb-14 sm:pt-16 sm:pb-20 md:pt-20 md:pb-32 overflow-hidden">
+    <section className="relative pt-6 pb-14 sm:pt-10 sm:pb-20 md:pt-14 md:pb-32 overflow-hidden">
       {/* Background radial gradient mesh with continuous floating & pulsing */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[650px] pointer-events-none overflow-hidden">
         <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-cyan-600/15 blur-[140px] rounded-full animate-pulse-glow" />
