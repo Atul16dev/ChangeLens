@@ -109,30 +109,46 @@ export function HeroSection() {
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
             {isAuthenticated ? (
-              <Link
-                to="/app"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-500 via-indigo-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold text-base px-7 py-3.5 rounded-xl shadow-lg shadow-cyan-500/25 active:scale-95 transition-all group"
-              >
-                <span>Launch ChangeLens Workspace</span>
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </Link>
+              <>
+                <Link
+                  to="/app"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-500 via-indigo-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold text-base px-7 py-3.5 rounded-xl shadow-lg shadow-cyan-500/25 active:scale-95 transition-all group"
+                >
+                  <span>Launch ChangeLens Workspace</span>
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </Link>
+                <a
+                  href="#features"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-slate-900/90 hover:bg-slate-800 text-slate-200 hover:text-white font-semibold text-base px-6 py-3.5 rounded-xl border border-slate-800 hover:border-slate-700 transition-all shadow-sm"
+                >
+                  <span>Explore Features</span>
+                  <Layers className="w-4 h-4 text-slate-400" />
+                </a>
+              </>
             ) : (
-              <Link
-                to="/register"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-500 via-indigo-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold text-base px-7 py-3.5 rounded-xl shadow-lg shadow-cyan-500/25 active:scale-95 transition-all group"
-              >
-                <span>Get Started Free</span>
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </Link>
+              <>
+                <Link
+                  to="/register"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-500 via-indigo-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold text-base px-7 py-3.5 rounded-xl shadow-lg shadow-cyan-500/25 active:scale-95 transition-all group"
+                >
+                  <span>Get Started Free</span>
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </Link>
+                <Link
+                  to="/login"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-slate-900/90 hover:bg-slate-800 text-slate-200 hover:text-white font-semibold text-base px-6 py-3.5 rounded-xl border border-slate-800 hover:border-slate-700 transition-all shadow-sm"
+                >
+                  <span>Launch Workspace (Sign In)</span>
+                </Link>
+                <a
+                  href="#features"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 text-slate-400 hover:text-white text-sm font-medium px-4 py-3.5 transition-colors"
+                >
+                  <span>Explore Features</span>
+                  <Layers className="w-4 h-4" />
+                </a>
+              </>
             )}
-
-            <a
-              href="#features"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-slate-900/90 hover:bg-slate-800 text-slate-200 hover:text-white font-semibold text-base px-6 py-3.5 rounded-xl border border-slate-800 hover:border-slate-700 transition-all shadow-sm"
-            >
-              <span>Explore Features</span>
-              <Layers className="w-4 h-4 text-slate-400" />
-            </a>
           </div>
 
           {/* Supported Languages Badges */}

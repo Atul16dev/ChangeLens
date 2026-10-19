@@ -15,8 +15,11 @@ import {
   Copy,
   Check,
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext.jsx';
 
 export function InteractivePreviewSection() {
+  const { isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState('graph');
   const [selectedNode, setSelectedNode] = useState('user.js');
   const [copied, setCopied] = useState(false);
@@ -328,6 +331,27 @@ npm test tests/auth.test.js
               </div>
             </div>
           )}
+        </div>
+
+        {/* Workspace Quick Launch Bar */}
+        <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 p-5 rounded-2xl bg-gradient-to-r from-slate-900 via-slate-900/90 to-cyan-950/40 border border-slate-800">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center shrink-0">
+              <Sparkles className="w-5 h-5 text-cyan-400" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-white">Experience deterministic AST impact analysis on your code</p>
+              <p className="text-xs text-slate-400">Scan any local repository or commit diff with Tree-Sitter WASM</p>
+            </div>
+          </div>
+
+          <Link
+            to={isAuthenticated ? '/app' : '/login'}
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold text-xs sm:text-sm px-5 py-2.5 rounded-xl shadow-md shadow-cyan-500/20 transition-all shrink-0 active:scale-95"
+          >
+            <span>{isAuthenticated ? 'Open Interactive Workspace' : 'Launch Workspace (Sign In)'}</span>
+            <ChevronRight className="w-4 h-4" />
+          </Link>
         </div>
       </div>
     </section>

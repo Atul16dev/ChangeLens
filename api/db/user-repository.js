@@ -161,6 +161,24 @@ export const userRepository = {
     return user || null;
   },
 
+  async updateProfile(id, { name }) {
+    if (isMongoConnected()) {
+      const doc = await User.findByIdAndUpdate(
+        id,
+        { name: name.trim() },
+        { new: true }
+      );
+      return formatUserDoc(doc);
+    }
+
+    const user = memoryUsers.get(id);
+    if (user) {
+      user.name = name.trim();
+      user.updated_at = new Date().toISOString();
+    }
+    return user || null;
+  },
+
   async updatePassword(id, passwordHash) {
     const now = new Date();
     if (isMongoConnected()) {

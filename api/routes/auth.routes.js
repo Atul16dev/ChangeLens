@@ -24,6 +24,7 @@ authRoutes.post("/resend-verification-otp", otpLimiter, authController.resendVer
 authRoutes.post("/login", authLimiter, authController.login);
 authRoutes.post("/logout", authController.logout);
 authRoutes.get("/me", requireAuth, authController.me);
+authRoutes.patch("/profile", requireAuth, authController.updateProfile);
 
 // Password recovery endpoints
 authRoutes.post("/forgot-password", otpLimiter, authController.forgotPassword);

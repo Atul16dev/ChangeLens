@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { getCurrentUser, loginUser, logoutUser, registerUser, verifyEmailOtp } from '../services/authApi.js';
+import { getCurrentUser, loginUser, logoutUser, registerUser, verifyEmailOtp, updateUserProfile } from '../services/authApi.js';
 
 const AuthContext = createContext(null);
 
@@ -60,6 +60,15 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
+  const updateProfile = useCallback(async (data) => {
+    setError(null);
+    const res = await updateUserProfile(data);
+    if (res.data?.user) {
+      setUser(res.data.user);
+    }
+    return res;
+  }, []);
+
   const value = {
     user,
     loading,
@@ -69,6 +78,7 @@ export function AuthProvider({ children }) {
     register,
     verifyEmail,
     logout,
+    updateProfile,
     refreshUser,
     setUser,
     error,

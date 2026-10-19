@@ -73,6 +73,13 @@ export async function getCurrentUser() {
   });
 }
 
+export async function updateUserProfile({ name }) {
+  return authFetch(`${AUTH_BASE}/profile`, {
+    method: 'PATCH',
+    body: JSON.stringify({ name }),
+  });
+}
+
 export async function forgotPassword({ email }) {
   return authFetch(`${AUTH_BASE}/forgot-password`, {
     method: 'POST',

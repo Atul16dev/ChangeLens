@@ -383,4 +383,66 @@ test("ChangeLens Authentication System Test Suite", async (t) => {
     assert.equal(body.error.code, "COOLDOWN_ACTIVE");
     assert.ok(body.error.retryAfter > 0);
   });
+
+  // --- Profile Update Tests ---
+  await t.test("PATCH /api/v1/auth/profile requires authentication", async () => {
+    const res = await fetch(`${baseUrl}/api/v1/auth/profile`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: "Updated Hacker" }),
+    });
+    assert.equal(res.status, 401);
+  });
+
+  await t.test("PATCH /api/v1/auth/profile successfully updates authenticated user's name", async () => {
+    // Register and login a user Dave
+    await fetch(`${baseUrl}/api/v1/auth/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: "Dave Original",
+        email: "dave@company.dev",
+        password: "Passcode123!",
+        confirmPassword: "Passcode123!",
+      }),
+    });
+
+    const email = findLatestEmailFor("dave@company.dev");
+    const otp = extractOtpFromEmail(email);
+
+    const verifyRes = await fetch(`${baseUrl}/api/v1/auth/verify-email`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: "dave@company.dev", otp }),
+    });
+    const sessionCookie = extractCookie(verifyRes);
+    assert.ok(sessionCookie);
+
+    // Update with invalid name (too short)
+    const invalidRes = await fetch(`${baseUrl}/api/v1/auth/profile`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", Cookie: sessionCookie },
+      body: JSON.stringify({ name: " " }),
+    });
+    assert.equal(invalidRes.status, 400);
+
+    // Update with valid new name
+    const updateRes = await fetch(`${baseUrl}/api/v1/auth/profile`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", Cookie: sessionCookie },
+      body: JSON.stringify({ name: "Dave Architect" }),
+    });
+    assert.equal(updateRes.status, 200);
+    const updateBody = await updateRes.json();
+    assert.equal(updateBody.success, true);
+    assert.equal(updateBody.data.user.name, "Dave Architect");
+
+    // Verify GET /me reflects updated name
+    const meRes = await fetch(`${baseUrl}/api/v1/auth/me`, {
+      headers: { Cookie: sessionCookie },
+    });
+    assert.equal(meRes.status, 200);
+    const meBody = await meRes.json();
+    assert.equal(meBody.data.user.name, "Dave Architect");
+  });
 });

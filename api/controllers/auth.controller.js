@@ -405,6 +405,56 @@ export const authController = {
   },
 
   /**
+   * Update profile information of authenticated user
+   */
+  async updateProfile(req, res, next) {
+    try {
+      if (!req.user) {
+        return res.status(401).json({
+          success: false,
+          error: { code: "UNAUTHORIZED", message: "Not authenticated." },
+        });
+      }
+
+      const { name } = req.body || {};
+      if (!name || typeof name !== "string" || name.trim().length < 2) {
+        return res.status(400).json({
+          success: false,
+          error: { code: "VALIDATION_ERROR", message: "Name must be at least 2 characters long." },
+        });
+      }
+
+      if (name.trim().length > 100) {
+        return res.status(400).json({
+          success: false,
+          error: { code: "VALIDATION_ERROR", message: "Name must not exceed 100 characters." },
+        });
+      }
+
+      const updatedUser = await userRepository.updateProfile(req.user.id, {
+        name: name.trim(),
+      });
+
+      if (!updatedUser) {
+        return res.status(404).json({
+          success: false,
+          error: { code: "USER_NOT_FOUND", message: "User account not found." },
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: "Profile updated successfully.",
+        data: {
+          user: toSafeUser(updatedUser),
+        },
+      });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  /**
    * Request password reset code
    */
   async forgotPassword(req, res, next) {

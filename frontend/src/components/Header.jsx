@@ -10,6 +10,7 @@ import {
   X,
   History,
 } from 'lucide-react';
+import { UserProfileMenu } from './UserProfileMenu.jsx';
 
 export function Header({
   onAnalyze,
@@ -106,68 +107,76 @@ export function Header({
           </div>
         </div>
 
-        {/* Input Controls Form */}
-        <form onSubmit={handleSubmit} className="flex flex-wrap items-center gap-2.5">
-          {/* Repo Path Input */}
-          <div className="flex items-center bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 focus-within:border-cyan-500 transition-colors shadow-inner">
-            <Folder className="w-4 h-4 text-cyan-400 mr-2 shrink-0" />
-            <input
-              type="text"
-              value={repoPath}
-              onChange={(e) => setRepoPath(e.target.value)}
-              placeholder="Custom repo path (default: mern-sample)"
-              className="bg-transparent text-sm text-slate-100 placeholder-slate-500 focus:outline-none w-52 sm:w-64 font-mono text-xs"
-              title="Absolute or relative path to target repository"
-            />
-          </div>
+        {/* Input Controls Form & User Profile */}
+        <div className="flex items-center gap-3 flex-wrap lg:flex-nowrap">
+          <form onSubmit={handleSubmit} className="flex flex-wrap items-center gap-2.5">
+            {/* Repo Path Input */}
+            <div className="flex items-center bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 focus-within:border-cyan-500 transition-colors shadow-inner">
+              <Folder className="w-4 h-4 text-cyan-400 mr-2 shrink-0" />
+              <input
+                type="text"
+                value={repoPath}
+                onChange={(e) => setRepoPath(e.target.value)}
+                placeholder="Custom repo path (default: mern-sample)"
+                className="bg-transparent text-sm text-slate-100 placeholder-slate-500 focus:outline-none w-52 sm:w-64 font-mono text-xs"
+                title="Absolute or relative path to target repository"
+              />
+            </div>
 
-          {/* Changed File Input */}
-          <div className="flex items-center bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 focus-within:border-cyan-500 transition-colors shadow-inner">
-            <GitPullRequest className="w-4 h-4 text-amber-400 mr-2 shrink-0" />
-            <input
-              type="text"
-              value={changedFile}
-              onChange={(e) => setChangedFile(e.target.value)}
-              placeholder="e.g. server/models/user.js"
-              className="bg-transparent text-sm text-slate-100 placeholder-slate-500 focus:outline-none w-48 sm:w-56 font-mono text-xs"
-              title="File path relative to repository root"
-            />
-          </div>
+            {/* Changed File Input */}
+            <div className="flex items-center bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 focus-within:border-cyan-500 transition-colors shadow-inner">
+              <GitPullRequest className="w-4 h-4 text-amber-400 mr-2 shrink-0" />
+              <input
+                type="text"
+                value={changedFile}
+                onChange={(e) => setChangedFile(e.target.value)}
+                placeholder="e.g. server/models/user.js"
+                className="bg-transparent text-sm text-slate-100 placeholder-slate-500 focus:outline-none w-48 sm:w-56 font-mono text-xs"
+                title="File path relative to repository root"
+              />
+            </div>
 
-          {/* Max Depth */}
-          <div className="flex items-center bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5">
-            <Sliders className="w-3.5 h-3.5 text-slate-400 mr-1.5" />
-            <span className="text-xs text-slate-400 mr-1">Depth:</span>
-            <select
-              value={maxDepth}
-              onChange={(e) => setMaxDepth(e.target.value)}
-              className="bg-transparent text-xs text-slate-200 focus:outline-none font-mono cursor-pointer"
+            {/* Max Depth */}
+            <div className="flex items-center bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5">
+              <Sliders className="w-3.5 h-3.5 text-slate-400 mr-1.5" />
+              <span className="text-xs text-slate-400 mr-1">Depth:</span>
+              <select
+                value={maxDepth}
+                onChange={(e) => setMaxDepth(e.target.value)}
+                className="bg-transparent text-xs text-slate-200 focus:outline-none font-mono cursor-pointer"
+              >
+                <option value="5" className="bg-slate-900">5</option>
+                <option value="10" className="bg-slate-900">10</option>
+                <option value="20" className="bg-slate-900">20</option>
+              </select>
+            </div>
+
+            {/* Run Analysis Button */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold text-sm px-4 py-1.5 rounded-lg shadow-md shadow-cyan-500/20 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
-              <option value="5" className="bg-slate-900">5</option>
-              <option value="10" className="bg-slate-900">10</option>
-              <option value="20" className="bg-slate-900">20</option>
-            </select>
-          </div>
+              {loading ? (
+                <>
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  <span>Analyzing...</span>
+                </>
+              ) : (
+                <>
+                  <Play className="w-4 h-4 fill-white" />
+                  <span>Calculate Blast Radius</span>
+                </>
+              )}
+            </button>
+          </form>
 
-          {/* Run Analysis Button */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold text-sm px-4 py-1.5 rounded-lg shadow-md shadow-cyan-500/20 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-          >
-            {loading ? (
-              <>
-                <RefreshCw className="w-4 h-4 animate-spin" />
-                <span>Analyzing...</span>
-              </>
-            ) : (
-              <>
-                <Play className="w-4 h-4 fill-white" />
-                <span>Calculate Blast Radius</span>
-              </>
-            )}
-          </button>
-        </form>
+          {/* User Profile Avatar with Dropdown */}
+          <div className="hidden sm:block h-7 w-px bg-slate-800 shrink-0" />
+          <div className="shrink-0">
+            <UserProfileMenu />
+          </div>
+        </div>
       </div>
 
       {/* Preset Pills */}

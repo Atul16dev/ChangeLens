@@ -8,6 +8,7 @@ import {
   ArrowRight,
   LayoutDashboard,
 } from 'lucide-react';
+import { UserProfileMenu } from '../UserProfileMenu.jsx';
 
 export function Navbar() {
   const { user, isAuthenticated } = useAuth();
@@ -120,12 +121,8 @@ export function Navbar() {
                   <span>Launch Workspace</span>
                   <ArrowRight className="w-4 h-4 ml-0.5" />
                 </Link>
-                <div
-                  className="w-8 h-8 rounded-lg bg-gradient-to-tr from-cyan-600 to-indigo-600 flex items-center justify-center text-xs font-bold text-white shadow-sm"
-                  title={user?.name || user?.email}
-                >
-                  {user?.name ? user.name.slice(0, 2).toUpperCase() : 'CL'}
-                </div>
+                <div className="h-6 w-px bg-slate-800" />
+                <UserProfileMenu />
               </div>
             ) : (
               <div className="flex items-center gap-3">
@@ -146,15 +143,18 @@ export function Navbar() {
             )}
           </div>
 
-          {/* Mobile Hamburger Toggle Button */}
+          {/* Mobile Hamburger Toggle Button & Profile */}
           <div className="flex md:hidden items-center gap-2">
             {isAuthenticated && (
-              <Link
-                to="/app"
-                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-cyan-600 text-white shadow-sm"
-              >
-                <span>Workspace</span>
-              </Link>
+              <div className="flex items-center gap-2">
+                <Link
+                  to="/app"
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-cyan-600 hover:bg-cyan-500 text-white shadow-sm"
+                >
+                  <span>Workspace</span>
+                </Link>
+                <UserProfileMenu compact={true} />
+              </div>
             )}
             <button
               type="button"
