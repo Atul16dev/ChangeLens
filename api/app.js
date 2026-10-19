@@ -2,15 +2,80 @@ import fs from "node:fs";
 import path from "node:path";
 import express from "express";
 import cors from "cors";
+import cookieParser from "cookie-parser";
+import session from "express-session";
+import MongoStore from "connect-mongo";
+import { hydrateUser } from "./middleware/auth.js";
 import { healthRoutes } from "./routes/health.routes.js";
 import { analysesRoutes } from "./routes/analyses.routes.js";
+import { authRoutes } from "./routes/auth.routes.js";
 
-export function createApp() {
+export function createApp({ sessionSecret, sessionStore } = {}) {
   const app = express();
 
-  // Middleware
-  app.use(cors());
+  const secret = sessionSecret || process.env.SESSION_SECRET || "changelens-secure-session-key-entropy-32-chars";
+
+  // Session store: MongoStore when MongoDB URI is configured, else standard MemoryStore
+  let defaultStore;
+  if (process.env.MONGODB_URI) {
+    defaultStore = MongoStore.create({
+      mongoUrl: process.env.MONGODB_URI,
+      collectionName: "sessions",
+      ttl: 7 * 24 * 60 * 60, // 7 days
+    });
+  } else {
+    defaultStore = new session.MemoryStore();
+  }
+
+  const store = sessionStore || defaultStore;
+
+  // CORS configuration supporting credentialed cookies
+  const allowedOrigins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:5000",
+    "http://127.0.0.1:5000",
+  ];
+  if (process.env.FRONTEND_ORIGIN) {
+    allowedOrigins.push(process.env.FRONTEND_ORIGIN);
+  }
+
+  app.use(
+    cors({
+      origin: (origin, callback) => {
+        if (
+          !origin ||
+          allowedOrigins.includes(origin) ||
+          origin.startsWith("http://localhost:") ||
+          origin.startsWith("http://127.0.0.1:")
+        ) {
+          return callback(null, true);
+        }
+        callback(new Error("CORS policy violation"));
+      },
+      credentials: true,
+    })
+  );
+
   app.use(express.json({ limit: "5mb" }));
+  app.use(cookieParser(secret));
+
+  // Express session middleware
+  app.use(
+    session({
+      name: "changelens.sid",
+      store,
+      secret,
+      resave: false,
+      saveUninitialized: false,
+      cookie: {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      },
+    })
+  );
 
   // Request ID middleware
   app.use((req, res, next) => {
@@ -19,8 +84,12 @@ export function createApp() {
     next();
   });
 
+  // User hydration from session
+  app.use(hydrateUser);
+
   // API v1 Routes
   app.use("/api/v1/health", healthRoutes);
+  app.use("/api/v1/auth", authRoutes);
   app.use("/api/v1", analysesRoutes);
 
   // Serve compiled frontend UI if available

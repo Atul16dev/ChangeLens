@@ -1,7 +1,25 @@
+# Dependencies
 node_modules/
+frontend/node_modules/
+
+# Environment Variables & Secrets (NEVER COMMIT SENSITIVE SECRETS)
 .env
 .env.*
 !.env.example
+
+# Build Artifacts
 dist/
 build/
+frontend/dist/
+
+# Local Database & Logs
+data/
+*.db
+*.db-*
 *.log
+
+# OS & Editor Files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

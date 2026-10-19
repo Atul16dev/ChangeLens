@@ -1,5 +1,19 @@
 import React, { useState } from 'react';
-import { Play, GitPullRequest, Folder, Sliders, ShieldCheck, Activity, RefreshCw, Zap, X } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext.jsx';
+import {
+  Play,
+  GitPullRequest,
+  Folder,
+  Sliders,
+  ShieldCheck,
+  Activity,
+  RefreshCw,
+  Zap,
+  X,
+  LogOut,
+  User,
+} from 'lucide-react';
 
 export function Header({
   onAnalyze,
@@ -10,6 +24,9 @@ export function Header({
   simulatedFile,
   onExitSimulation,
 }) {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
   const [repoPath, setRepoPath] = useState('');
   const [changedFile, setChangedFile] = useState('server/models/user.js');
   const [maxDepth, setMaxDepth] = useState(10);
@@ -31,6 +48,11 @@ export function Header({
       changedFiles: [presetFile],
       maxDepth: Number(maxDepth),
     });
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
   };
 
   return (
@@ -83,68 +105,113 @@ export function Header({
           </div>
         </div>
 
-        {/* Input Controls Form */}
-        <form onSubmit={handleSubmit} className="flex flex-wrap items-center gap-2.5">
-          {/* Repo Path Input */}
-          <div className="flex items-center bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 focus-within:border-cyan-500 transition-colors shadow-inner">
-            <Folder className="w-4 h-4 text-cyan-400 mr-2 shrink-0" />
-            <input
-              type="text"
-              value={repoPath}
-              onChange={(e) => setRepoPath(e.target.value)}
-              placeholder="Custom repo path (default: mern-sample)"
-              className="bg-transparent text-sm text-slate-100 placeholder-slate-500 focus:outline-none w-52 sm:w-64 font-mono text-xs"
-              title="Absolute or relative path to target repository"
-            />
-          </div>
+        {/* Input Controls Form & Auth */}
+        <div className="flex flex-wrap items-center gap-3">
+          <form onSubmit={handleSubmit} className="flex flex-wrap items-center gap-2.5">
+            {/* Repo Path Input */}
+            <div className="flex items-center bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 focus-within:border-cyan-500 transition-colors shadow-inner">
+              <Folder className="w-4 h-4 text-cyan-400 mr-2 shrink-0" />
+              <input
+                type="text"
+                value={repoPath}
+                onChange={(e) => setRepoPath(e.target.value)}
+                placeholder="Custom repo path (default: mern-sample)"
+                className="bg-transparent text-sm text-slate-100 placeholder-slate-500 focus:outline-none w-52 sm:w-64 font-mono text-xs"
+                title="Absolute or relative path to target repository"
+              />
+            </div>
 
-          {/* Changed File Input */}
-          <div className="flex items-center bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 focus-within:border-cyan-500 transition-colors shadow-inner">
-            <GitPullRequest className="w-4 h-4 text-amber-400 mr-2 shrink-0" />
-            <input
-              type="text"
-              value={changedFile}
-              onChange={(e) => setChangedFile(e.target.value)}
-              placeholder="e.g. server/models/user.js"
-              className="bg-transparent text-sm text-slate-100 placeholder-slate-500 focus:outline-none w-48 sm:w-56 font-mono text-xs"
-              title="File path relative to repository root"
-            />
-          </div>
+            {/* Changed File Input */}
+            <div className="flex items-center bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 focus-within:border-cyan-500 transition-colors shadow-inner">
+              <GitPullRequest className="w-4 h-4 text-amber-400 mr-2 shrink-0" />
+              <input
+                type="text"
+                value={changedFile}
+                onChange={(e) => setChangedFile(e.target.value)}
+                placeholder="e.g. server/models/user.js"
+                className="bg-transparent text-sm text-slate-100 placeholder-slate-500 focus:outline-none w-48 sm:w-56 font-mono text-xs"
+                title="File path relative to repository root"
+              />
+            </div>
 
-          {/* Max Depth */}
-          <div className="flex items-center bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5">
-            <Sliders className="w-3.5 h-3.5 text-slate-400 mr-1.5" />
-            <span className="text-xs text-slate-400 mr-1">Depth:</span>
-            <select
-              value={maxDepth}
-              onChange={(e) => setMaxDepth(e.target.value)}
-              className="bg-transparent text-xs text-slate-200 focus:outline-none font-mono cursor-pointer"
+            {/* Max Depth */}
+            <div className="flex items-center bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5">
+              <Sliders className="w-3.5 h-3.5 text-slate-400 mr-1.5" />
+              <span className="text-xs text-slate-400 mr-1">Depth:</span>
+              <select
+                value={maxDepth}
+                onChange={(e) => setMaxDepth(e.target.value)}
+                className="bg-transparent text-xs text-slate-200 focus:outline-none font-mono cursor-pointer"
+              >
+                <option value="5" className="bg-slate-900">5</option>
+                <option value="10" className="bg-slate-900">10</option>
+                <option value="20" className="bg-slate-900">20</option>
+              </select>
+            </div>
+
+            {/* Run Analysis Button */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold text-sm px-4 py-1.5 rounded-lg shadow-md shadow-cyan-500/20 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
-              <option value="5" className="bg-slate-900">5</option>
-              <option value="10" className="bg-slate-900">10</option>
-              <option value="20" className="bg-slate-900">20</option>
-            </select>
-          </div>
+              {loading ? (
+                <>
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  <span>Analyzing...</span>
+                </>
+              ) : (
+                <>
+                  <Play className="w-4 h-4 fill-white" />
+                  <span>Calculate Blast Radius</span>
+                </>
+              )}
+            </button>
+          </form>
 
-          {/* Run Analysis Button */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold text-sm px-4 py-1.5 rounded-lg shadow-md shadow-cyan-500/20 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-          >
-            {loading ? (
-              <>
-                <RefreshCw className="w-4 h-4 animate-spin" />
-                <span>Analyzing...</span>
-              </>
+          {/* User Authentication Profile & Actions */}
+          <div className="flex items-center gap-2.5 pl-3 border-l border-slate-800/80">
+            {user ? (
+              <div className="flex items-center gap-2">
+                <div
+                  className="w-8 h-8 rounded-lg bg-gradient-to-tr from-cyan-600 to-indigo-600 flex items-center justify-center text-xs font-bold text-white shadow-sm"
+                  title={`${user.name} (${user.email})`}
+                >
+                  {user.name ? user.name.slice(0, 2).toUpperCase() : 'CL'}
+                </div>
+                <div className="hidden xl:block text-left">
+                  <div className="text-xs font-semibold text-slate-200 leading-none">{user.name}</div>
+                  <div className="text-[10px] text-slate-400 font-mono leading-none mt-1 truncate max-w-[120px]">
+                    {user.email}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-slate-800 rounded-lg transition-colors ml-1"
+                  title="Sign Out"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
             ) : (
-              <>
-                <Play className="w-4 h-4 fill-white" />
-                <span>Calculate Blast Radius</span>
-              </>
+              <div className="flex items-center gap-2">
+                <Link
+                  to="/login"
+                  className="text-xs font-semibold text-slate-300 hover:text-white px-3 py-1.5 rounded-lg hover:bg-slate-800 transition-colors"
+                >
+                  Log In
+                </Link>
+                <Link
+                  to="/register"
+                  className="text-xs font-semibold text-cyan-400 hover:text-cyan-300 border border-cyan-500/30 bg-cyan-950/40 px-3 py-1.5 rounded-lg transition-colors"
+                >
+                  Sign Up
+                </Link>
+              </div>
             )}
-          </button>
-        </form>
+          </div>
+        </div>
       </div>
 
       {/* Preset Pills */}

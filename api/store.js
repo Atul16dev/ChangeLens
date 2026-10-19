@@ -1,24 +1,78 @@
 /**
- * In-memory analysis store for ChangeLens API
+ * Analysis Store for ChangeLens API
  * 
- * Stores active and historical analysis runs in memory.
- * Designed behind an interface so it can be swapped with MongoDB/Mongoose later.
+ * Supports high-speed in-memory caching and persistent MongoDB Atlas storage.
  */
+import { isMongoConnected } from "./db/mongodb.js";
+import { Analysis } from "./models/Analysis.js";
 
 const analyses = new Map();
 
 export const analysesStore = {
-  save(analysisId, analysisData) {
-    analyses.set(analysisId, {
+  async save(analysisId, analysisData, userId = null) {
+    const record = {
       id: analysisId,
+      analysisId,
       createdAt: new Date().toISOString(),
       ...analysisData,
-    });
-    return analyses.get(analysisId);
+    };
+    analyses.set(analysisId, record);
+
+    if (isMongoConnected()) {
+      try {
+        await Analysis.findOneAndUpdate(
+          { analysisId },
+          {
+            analysisId,
+            user: userId,
+            targetDir: analysisData.targetDir,
+            changedFiles: analysisData.changedFiles || [],
+            summary: analysisData.summary || {},
+            graph: analysisData.graph || {},
+            impactAnalysis: analysisData.impactAnalysis || {},
+            explanation: analysisData.explanation || null,
+            status: analysisData.status || "completed",
+          },
+          { upsert: true, new: true }
+        );
+      } catch (err) {
+        console.warn("[MongoDB] Failed to persist analysis record:", err.message);
+      }
+    }
+
+    return record;
   },
 
-  get(analysisId) {
-    return analyses.get(analysisId) || null;
+  async get(analysisId) {
+    if (analyses.has(analysisId)) {
+      return analyses.get(analysisId);
+    }
+
+    if (isMongoConnected()) {
+      try {
+        const doc = await Analysis.findOne({ analysisId });
+        if (doc) {
+          const formatted = {
+            id: doc.analysisId,
+            analysisId: doc.analysisId,
+            createdAt: doc.createdAt.toISOString(),
+            targetDir: doc.targetDir,
+            changedFiles: doc.changedFiles,
+            summary: doc.summary,
+            graph: doc.graph,
+            impactAnalysis: doc.impactAnalysis,
+            explanation: doc.explanation,
+            status: doc.status,
+          };
+          analyses.set(analysisId, formatted);
+          return formatted;
+        }
+      } catch (err) {
+        console.warn("[MongoDB] Failed to retrieve analysis record:", err.message);
+      }
+    }
+
+    return null;
   },
 
   getLatest() {
@@ -30,7 +84,22 @@ export const analysesStore = {
     return analyses.size;
   },
 
-  list() {
+  async list() {
+    if (isMongoConnected()) {
+      try {
+        const docs = await Analysis.find().sort({ createdAt: -1 }).limit(50);
+        if (docs && docs.length > 0) {
+          return docs.map((a) => ({
+            id: a.analysisId,
+            targetDir: a.targetDir,
+            createdAt: a.createdAt.toISOString(),
+            status: a.status,
+            summary: a.summary,
+          }));
+        }
+      } catch {}
+    }
+
     return Array.from(analyses.values()).map((a) => ({
       id: a.id,
       targetDir: a.targetDir,
@@ -40,8 +109,14 @@ export const analysesStore = {
     }));
   },
 
-  delete(analysisId) {
-    return analyses.delete(analysisId);
+  async delete(analysisId) {
+    analyses.delete(analysisId);
+    if (isMongoConnected()) {
+      try {
+        await Analysis.deleteOne({ analysisId });
+      } catch {}
+    }
+    return true;
   },
 
   clear() {
