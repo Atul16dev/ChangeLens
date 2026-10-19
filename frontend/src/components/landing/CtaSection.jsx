@@ -1,3 +1,4 @@
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { ArrowRight, LayoutDashboard, ShieldCheck, Sparkles, Terminal } from 'lucide-react';
