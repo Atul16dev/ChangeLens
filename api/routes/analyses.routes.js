@@ -10,6 +10,7 @@ import {
   listAnalyses,
   getAnalysisHistory,
   deleteAnalysisRecord,
+  toggleAnalysisPin,
 } from "../controllers/analyses.controller.js";
 import { requireAuth } from "../middleware/auth.js";
 
@@ -23,6 +24,9 @@ router.get("/analyses/history", requireAuth, getAnalysisHistory);
 
 // List recent analyses
 router.get("/analyses", listAnalyses);
+
+// Toggle/set pin status of an analysis record (prevents 30-day auto-deletion)
+router.patch("/analyses/:id/pin", requireAuth, toggleAnalysisPin);
 
 // Delete an analysis record (owner only)
 router.delete("/analyses/:id", requireAuth, deleteAnalysisRecord);

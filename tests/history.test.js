@@ -187,4 +187,146 @@ test("ChangeLens Analysis History & Saved Reports Test Suite", async (t) => {
     const check = await analysesStore.get(targetAnalysisId);
     assert.strictEqual(check, null, "Analysis record must be deleted");
   });
+
+  await t.test("Unpinned analysis report is scheduled for 30-day auto-deletion", async () => {
+    // Run an analysis for Alice
+    const runRes = await fetch(`${baseUrl}/api/v1/analyze`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: aliceCookie,
+      },
+      body: JSON.stringify({
+        changedFiles: ["server/models/order.js"],
+      }),
+    });
+    const runBody = await runRes.json();
+    const analysisId = runBody.data.analysisId;
+
+    const record = await analysesStore.get(analysisId);
+    assert.ok(record);
+    assert.strictEqual(record.isPinned, false, "Default isPinned must be false");
+    assert.ok(record.expireAt, "Must have expireAt scheduled");
+
+    const expireDate = new Date(record.expireAt);
+    const createdDate = new Date(record.createdAt);
+    const diffDays = Math.round((expireDate.getTime() - createdDate.getTime()) / (24 * 60 * 60 * 1000));
+    assert.strictEqual(diffDays, 30, "expireAt must be exactly 30 days after creation");
+  });
+
+  await t.test("Alice can pin/save an analysis report to keep it permanently", async () => {
+    const listRes = await fetch(`${baseUrl}/api/v1/analyses/history`, {
+      headers: { Cookie: aliceCookie },
+    });
+    const listBody = await listRes.json();
+    const target = listBody.data.analyses[0];
+    assert.ok(target);
+
+    // Alice pins the report
+    const pinRes = await fetch(`${baseUrl}/api/v1/analyses/${target.analysisId}/pin`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: aliceCookie,
+      },
+      body: JSON.stringify({ isPinned: true }),
+    });
+
+    assert.strictEqual(pinRes.status, 200);
+    const pinBody = await pinRes.json();
+    assert.strictEqual(pinBody.success, true);
+    assert.strictEqual(pinBody.data.isPinned, true);
+    assert.strictEqual(pinBody.data.expireAt, null, "Pinned report must have expireAt = null (permanent retention)");
+
+    // Check in store
+    const stored = await analysesStore.get(target.analysisId);
+    assert.strictEqual(stored.isPinned, true);
+    assert.strictEqual(stored.expireAt, null);
+  });
+
+  await t.test("Bob cannot toggle pin on Alice's analysis report (forbidden/not found)", async () => {
+    const listRes = await fetch(`${baseUrl}/api/v1/analyses/history`, {
+      headers: { Cookie: aliceCookie },
+    });
+    const listBody = await listRes.json();
+    const target = listBody.data.analyses[0];
+
+    const bobPinRes = await fetch(`${baseUrl}/api/v1/analyses/${target.analysisId}/pin`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: bobCookie,
+      },
+      body: JSON.stringify({ isPinned: false }),
+    });
+
+    assert.strictEqual(bobPinRes.status, 404, "Bob cannot modify Alice's report pin state");
+  });
+
+  await t.test("Alice can unpin report and expireAt reverts to 30 days from creation", async () => {
+    const listRes = await fetch(`${baseUrl}/api/v1/analyses/history`, {
+      headers: { Cookie: aliceCookie },
+    });
+    const listBody = await listRes.json();
+    const target = listBody.data.analyses.find((a) => a.isPinned);
+    assert.ok(target, "Should find pinned report");
+
+    const unpinRes = await fetch(`${baseUrl}/api/v1/analyses/${target.analysisId}/pin`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: aliceCookie,
+      },
+      body: JSON.stringify({ isPinned: false }),
+    });
+
+    assert.strictEqual(unpinRes.status, 200);
+    const unpinBody = await unpinRes.json();
+    assert.strictEqual(unpinBody.data.isPinned, false);
+    assert.ok(unpinBody.data.expireAt, "expireAt must be restored when unpinned");
+  });
+
+  await t.test("Expired unpinned reports (> 30 days old) are automatically purged from history", async () => {
+    // Inject an old unpinned report created 35 days ago
+    const expiredId = "analysis_expired_test";
+    const pastDate = new Date(Date.now() - 35 * 24 * 60 * 60 * 1000);
+    const expiredExpireAt = new Date(pastDate.getTime() + 30 * 24 * 60 * 60 * 1000); // 5 days ago
+
+    await analysesStore.save(
+      expiredId,
+      {
+        analysisId: expiredId,
+        createdAt: pastDate.toISOString(),
+        expireAt: expiredExpireAt.toISOString(),
+        isPinned: false,
+        summary: { riskLevel: "LOW" },
+        changes: [{ path: "old.js" }],
+      },
+      userA.id
+    );
+
+    // Also inject an old PINNED report created 35 days ago
+    const pinnedOldId = "analysis_pinned_old_test";
+    await analysesStore.save(
+      pinnedOldId,
+      {
+        analysisId: pinnedOldId,
+        createdAt: pastDate.toISOString(),
+        expireAt: null,
+        isPinned: true,
+        summary: { riskLevel: "HIGH" },
+        changes: [{ path: "important.js" }],
+      },
+      userA.id
+    );
+
+    const historyRes = await fetch(`${baseUrl}/api/v1/analyses/history`, {
+      headers: { Cookie: aliceCookie },
+    });
+    const historyBody = await historyRes.json();
+    const ids = historyBody.data.analyses.map((a) => a.analysisId);
+
+    assert.ok(!ids.includes(expiredId), "Expired unpinned report must be purged/excluded from history");
+    assert.ok(ids.includes(pinnedOldId), "Pinned report must be preserved regardless of age");
+  });
 });

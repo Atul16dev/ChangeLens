@@ -14,8 +14,12 @@ import {
   Layers,
   FileCode,
   CheckCircle2,
+  Bookmark,
+  BookmarkCheck,
+  Clock,
+  Pin,
 } from 'lucide-react';
-import { getAnalysisHistory, deleteAnalysis } from '../services/api.js';
+import { getAnalysisHistory, deleteAnalysis, togglePinAnalysis } from '../services/api.js';
 
 export function HistoryDrawer({ isOpen, onClose, onLoadAnalysis, currentAnalysisId }) {
   const [analyses, setAnalyses] = useState([]);
@@ -26,6 +30,7 @@ export function HistoryDrawer({ isOpen, onClose, onLoadAnalysis, currentAnalysis
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
   const [loadingId, setLoadingId] = useState(null);
+  const [pinningId, setPinningId] = useState(null);
 
   const fetchHistory = useCallback(async (query = search) => {
     setLoading(true);
@@ -51,6 +56,30 @@ export function HistoryDrawer({ isOpen, onClose, onLoadAnalysis, currentAnalysis
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     fetchHistory(search);
+  };
+
+  const handleTogglePin = async (analysisId, currentPinState) => {
+    setPinningId(analysisId);
+    try {
+      const updated = await togglePinAnalysis(analysisId, !currentPinState);
+      setAnalyses((prev) => {
+        const next = prev.map((item) =>
+          item.analysisId === analysisId
+            ? { ...item, isPinned: updated.isPinned, expireAt: updated.expireAt }
+            : item
+        );
+        // Pinned reports on top
+        return [...next].sort((a, b) => {
+          if (a.isPinned !== b.isPinned) return a.isPinned ? -1 : 1;
+          return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+        });
+      });
+    } catch (err) {
+      console.error('Failed to toggle pin status:', err);
+      alert('Could not update pin status: ' + (err.message || 'Unknown error'));
+    } finally {
+      setPinningId(null);
+    }
   };
 
   const handleDelete = async (analysisId) => {
@@ -83,6 +112,7 @@ export function HistoryDrawer({ isOpen, onClose, onLoadAnalysis, currentAnalysis
   const highRiskCount = analyses.filter(
     (a) => a.summary?.riskLevel === 'CRITICAL' || a.summary?.riskLevel === 'HIGH'
   ).length;
+  const pinnedCount = analyses.filter((a) => a.isPinned).length;
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden bg-slate-950/70 backdrop-blur-sm transition-opacity">
@@ -105,8 +135,14 @@ export function HistoryDrawer({ isOpen, onClose, onLoadAnalysis, currentAnalysis
                 <h2 id="history-drawer-title" className="text-base font-bold text-slate-100 flex items-center gap-2">
                   <span>Analysis History</span>
                   <span className="text-xs px-2 py-0.5 rounded-full bg-cyan-950 text-cyan-400 border border-cyan-800/40">
-                    {total} Saved
+                    {total} Total
                   </span>
+                  {pinnedCount > 0 && (
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-violet-950 text-violet-300 border border-violet-800/40 flex items-center gap-1 font-medium">
+                      <BookmarkCheck className="w-3 h-3 text-violet-400" />
+                      {pinnedCount} Saved
+                    </span>
+                  )}
                 </h2>
                 <p className="text-xs text-slate-400">
                   Cloud-persisted blast radius graphs in MongoDB Atlas
@@ -132,6 +168,21 @@ export function HistoryDrawer({ isOpen, onClose, onLoadAnalysis, currentAnalysis
               >
                 <X className="w-5 h-5" />
               </button>
+            </div>
+          </div>
+
+          {/* 30-Day Auto-Deletion Policy Notice Banner */}
+          <div className="px-5 py-3 bg-gradient-to-r from-indigo-950/70 via-slate-900 to-indigo-950/40 border-b border-indigo-900/40 flex items-start gap-3">
+            <div className="p-1 rounded-md bg-indigo-500/15 border border-indigo-500/25 text-indigo-400 shrink-0 mt-0.5">
+              <Clock className="w-4 h-4" />
+            </div>
+            <div className="text-xs space-y-0.5">
+              <p className="font-semibold text-slate-200">
+                History will be deleted after 30 days automatically.
+              </p>
+              <p className="text-slate-400 text-[11px] leading-relaxed">
+                To save your history for a long time, please <span className="text-indigo-300 font-semibold">pin</span> or <span className="text-indigo-300 font-semibold">save</span>. Pinned reports will never be deleted.
+              </p>
             </div>
           </div>
 
@@ -162,18 +213,16 @@ export function HistoryDrawer({ isOpen, onClose, onLoadAnalysis, currentAnalysis
                 <p className="text-base font-bold text-slate-100 mt-0.5">{total}</p>
               </div>
               <div className="bg-slate-950/70 border border-slate-800/80 rounded-lg p-2.5">
+                <span className="text-[11px] text-violet-400 flex items-center gap-1">
+                  <BookmarkCheck className="w-3.5 h-3.5 text-violet-400" /> Pinned / Saved
+                </span>
+                <p className="text-base font-bold text-violet-300 mt-0.5">{pinnedCount}</p>
+              </div>
+              <div className="bg-slate-950/70 border border-slate-800/80 rounded-lg p-2.5">
                 <span className="text-[11px] text-amber-400 flex items-center gap-1">
                   <ShieldAlert className="w-3.5 h-3.5" /> High Risk
                 </span>
                 <p className="text-base font-bold text-amber-300 mt-0.5">{highRiskCount}</p>
-              </div>
-              <div className="bg-slate-950/70 border border-slate-800/80 rounded-lg p-2.5">
-                <span className="text-[11px] text-emerald-400 flex items-center gap-1">
-                  <ShieldCheck className="w-3.5 h-3.5" /> Clean / Low
-                </span>
-                <p className="text-base font-bold text-emerald-300 mt-0.5">
-                  {Math.max(0, analyses.length - highRiskCount)}
-                </p>
               </div>
             </div>
           </div>
@@ -250,12 +299,18 @@ export function HistoryDrawer({ isOpen, onClose, onLoadAnalysis, currentAnalysis
                     })
                   : 'Recent';
 
+                const createdAtTime = item.createdAt ? new Date(item.createdAt).getTime() : Date.now();
+                const expireTime = item.expireAt ? new Date(item.expireAt).getTime() : (createdAtTime + 30 * 24 * 60 * 60 * 1000);
+                const daysLeft = Math.max(1, Math.ceil((expireTime - Date.now()) / (24 * 60 * 60 * 1000)));
+
                 return (
                   <div
                     key={item.analysisId}
                     className={`bg-slate-950/80 border rounded-xl p-4 transition-all ${
                       isSelected
                         ? 'border-cyan-500/80 ring-1 ring-cyan-500/30 bg-cyan-950/20 shadow-lg shadow-cyan-950/30'
+                        : item.isPinned
+                        ? 'border-violet-900/60 bg-gradient-to-b from-slate-950/90 to-violet-950/10'
                         : 'border-slate-800 hover:border-slate-700'
                     }`}
                   >
@@ -269,6 +324,20 @@ export function HistoryDrawer({ isOpen, onClose, onLoadAnalysis, currentAnalysis
                             <Calendar className="w-3 h-3" />
                             {formattedDate}
                           </span>
+                          {item.isPinned ? (
+                            <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-violet-500/15 text-violet-300 border border-violet-500/30 flex items-center gap-1 shadow-sm">
+                              <BookmarkCheck className="w-3 h-3 text-violet-400" />
+                              Saved Permanently
+                            </span>
+                          ) : (
+                            <span
+                              className="px-2 py-0.5 rounded text-[10px] font-medium bg-slate-800/90 text-slate-400 border border-slate-700/60 flex items-center gap-1"
+                              title="Automatically deleted after 30 days unless pinned/saved"
+                            >
+                              <Clock className="w-3 h-3 text-slate-400" />
+                              Auto-deletes in {daysLeft}d
+                            </span>
+                          )}
                           {isSelected && (
                             <span className="text-[10px] px-1.5 py-0.5 rounded bg-cyan-900/60 text-cyan-300 font-medium border border-cyan-700/40">
                               Active in Workspace
@@ -288,35 +357,62 @@ export function HistoryDrawer({ isOpen, onClose, onLoadAnalysis, currentAnalysis
                         )}
                       </div>
 
-                      {/* Delete button or confirmation */}
-                      {isConfirmingDelete ? (
-                        <div className="flex items-center gap-1 bg-rose-950/80 border border-rose-800/60 p-1 rounded-lg">
-                          <button
-                            type="button"
-                            onClick={() => handleDelete(item.analysisId)}
-                            disabled={isDeleting}
-                            className="px-2 py-0.5 text-[10px] font-bold bg-rose-600 hover:bg-rose-500 text-white rounded transition-colors"
-                          >
-                            {isDeleting ? '...' : 'Confirm'}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setDeleteConfirmId(null)}
-                            className="px-2 py-0.5 text-[10px] text-slate-300 hover:text-white"
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      ) : (
+                      {/* Top actions: Save/Pin toggle + Delete */}
+                      <div className="flex items-center gap-1.5 shrink-0">
                         <button
                           type="button"
-                          onClick={() => setDeleteConfirmId(item.analysisId)}
-                          className="p-1.5 text-slate-500 hover:text-rose-400 hover:bg-rose-950/30 rounded-lg transition-colors"
-                          title="Delete from history"
+                          onClick={() => handleTogglePin(item.analysisId, item.isPinned)}
+                          disabled={pinningId === item.analysisId}
+                          className={`px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm ${
+                            item.isPinned
+                              ? 'bg-violet-950/70 text-violet-300 hover:bg-violet-900/80 border border-violet-700/60 hover:border-violet-500/80'
+                              : 'bg-slate-800/80 text-slate-300 hover:text-white hover:bg-slate-700 border border-slate-700/60'
+                          }`}
+                          title={
+                            item.isPinned
+                              ? 'Saved permanently. Click to unpin and restore 30-day auto-deletion policy.'
+                              : 'Save History / Pin (keep permanently in history)'
+                          }
                         >
-                          <Trash2 className="w-4 h-4" />
+                          {pinningId === item.analysisId ? (
+                            <RefreshCw className="w-3.5 h-3.5 animate-spin text-violet-400" />
+                          ) : item.isPinned ? (
+                            <BookmarkCheck className="w-3.5 h-3.5 text-violet-400" />
+                          ) : (
+                            <Bookmark className="w-3.5 h-3.5 text-slate-400" />
+                          )}
+                          <span>{item.isPinned ? 'Saved' : 'Save History'}</span>
                         </button>
-                      )}
+
+                        {isConfirmingDelete ? (
+                          <div className="flex items-center gap-1 bg-rose-950/80 border border-rose-800/60 p-1 rounded-lg">
+                            <button
+                              type="button"
+                              onClick={() => handleDelete(item.analysisId)}
+                              disabled={isDeleting}
+                              className="px-2 py-0.5 text-[10px] font-bold bg-rose-600 hover:bg-rose-500 text-white rounded transition-colors"
+                            >
+                              {isDeleting ? '...' : 'Confirm'}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setDeleteConfirmId(null)}
+                              className="px-2 py-0.5 text-[10px] text-slate-300 hover:text-white"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setDeleteConfirmId(item.analysisId)}
+                            className="p-1.5 text-slate-500 hover:text-rose-400 hover:bg-rose-950/30 rounded-lg transition-colors"
+                            title="Delete from history"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
                     </div>
 
                     {/* Metric pills */}

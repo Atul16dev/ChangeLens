@@ -143,4 +143,20 @@ export async function deleteAnalysis(analysisId) {
   return data;
 }
 
+export async function togglePinAnalysis(analysisId, isPinned = undefined) {
+  const res = await fetchWithRetry(`${API_BASE}/analyses/${analysisId}/pin`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(isPinned !== undefined ? { isPinned } : {}),
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error?.message || 'Failed to update pin status');
+  }
+  return data.data;
+}
+
+
 

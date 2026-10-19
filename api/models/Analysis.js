@@ -51,13 +51,23 @@ const AnalysisSchema = new mongoose.Schema(
       type: Object,
       default: null,
     },
+    isPinned: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    expireAt: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,
   }
 );
 
-AnalysisSchema.index({ user: 1, createdAt: -1 });
+AnalysisSchema.index({ user: 1, isPinned: -1, createdAt: -1 });
 AnalysisSchema.index({ createdAt: -1 });
+AnalysisSchema.index({ expireAt: 1 }, { expireAfterSeconds: 0 });
 
 export const Analysis = mongoose.models.Analysis || mongoose.model("Analysis", AnalysisSchema);

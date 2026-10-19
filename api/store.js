@@ -38,13 +38,20 @@ export const analysesStore = {
   async save(analysisId, analysisData, userId = null) {
     const changedFiles = extractChangedFiles(analysisData);
     const title = deriveTitle(analysisData, changedFiles);
+    const now = new Date();
+    const isPinned = Boolean(analysisData.isPinned);
+    // 30 days retention policy for unpinned analyses
+    const thirtyDays = 30 * 24 * 60 * 60 * 1000;
+    const expireAt = isPinned ? null : new Date(now.getTime() + thirtyDays);
 
     const record = {
       id: analysisId,
       analysisId,
       user: userId,
       title,
-      createdAt: new Date().toISOString(),
+      isPinned,
+      expireAt: expireAt ? expireAt.toISOString() : null,
+      createdAt: now.toISOString(),
       changedFiles,
       ...analysisData,
     };
@@ -66,6 +73,8 @@ export const analysesStore = {
             impactAnalysis: analysisData.impactAnalysis || {},
             explanation: analysisData.explanation || null,
             status: analysisData.status || "completed",
+            isPinned,
+            expireAt,
           },
           { upsert: true, new: true }
         );
@@ -91,6 +100,8 @@ export const analysesStore = {
             analysisId: doc.analysisId,
             user: doc.user ? doc.user.toString() : null,
             title: doc.title,
+            isPinned: Boolean(doc.isPinned),
+            expireAt: doc.expireAt ? doc.expireAt.toISOString() : null,
             createdAt: doc.createdAt.toISOString(),
             targetDir: doc.targetDir,
             changedFiles: doc.changedFiles || [],
@@ -145,7 +156,7 @@ export const analysesStore = {
         const [total, docs] = await Promise.all([
           Analysis.countDocuments(filter),
           Analysis.find(filter)
-            .sort({ createdAt: -1 })
+            .sort({ isPinned: -1, createdAt: -1 })
             .skip(skip)
             .limit(cleanLimit)
             .lean(),
@@ -158,6 +169,8 @@ export const analysesStore = {
           changedFiles: doc.changedFiles || [],
           status: doc.status,
           summary: doc.summary || {},
+          isPinned: Boolean(doc.isPinned),
+          expireAt: doc.expireAt ? new Date(doc.expireAt).toISOString() : null,
           createdAt: doc.createdAt ? new Date(doc.createdAt).toISOString() : new Date().toISOString(),
         }));
 
@@ -172,7 +185,14 @@ export const analysesStore = {
       }
     }
 
-    // In-memory fallback
+    // In-memory fallback: purge expired unpinned analyses
+    const now = new Date();
+    for (const [key, a] of analyses.entries()) {
+      if (!a.isPinned && a.expireAt && new Date(a.expireAt) < now) {
+        analyses.delete(key);
+      }
+    }
+
     let all = Array.from(analyses.values());
     if (userId) {
       all = all.filter((a) => !a.user || a.user === userId);
@@ -188,7 +208,8 @@ export const analysesStore = {
       });
     }
 
-    all.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    // Pinned first, then newest
+    all.sort((a, b) => (b.isPinned ? 1 : 0) - (a.isPinned ? 1 : 0) || new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
     const total = all.length;
     const sliced = all.slice(skip, skip + cleanLimit).map((a) => ({
@@ -198,6 +219,8 @@ export const analysesStore = {
       changedFiles: a.changedFiles || [],
       status: a.status,
       summary: a.summary || {},
+      isPinned: Boolean(a.isPinned),
+      expireAt: a.expireAt || null,
       createdAt: a.createdAt,
     }));
 
@@ -206,6 +229,66 @@ export const analysesStore = {
       total,
       page: cleanPage,
       totalPages: Math.ceil(total / cleanLimit) || 1,
+    };
+  },
+
+  async togglePin(analysisId, isPinnedExplicit = undefined, userId = null) {
+    let target = analyses.get(analysisId);
+
+    if (isMongoConnected()) {
+      try {
+        const doc = await Analysis.findOne({ analysisId });
+        if (!doc) return null;
+        if (userId && doc.user && doc.user.toString() !== userId.toString()) {
+          return null; // Forbidden: not owner
+        }
+
+        const newPinned = isPinnedExplicit !== undefined ? Boolean(isPinnedExplicit) : !doc.isPinned;
+        let newExpireAt = null;
+
+        if (!newPinned) {
+          // Unpinned: expires 30 days from creation
+          const baseDate = doc.createdAt ? new Date(doc.createdAt) : new Date();
+          newExpireAt = new Date(baseDate.getTime() + 30 * 24 * 60 * 60 * 1000);
+        }
+
+        doc.isPinned = newPinned;
+        doc.expireAt = newExpireAt;
+        await doc.save();
+
+        const formatted = {
+          analysisId: doc.analysisId,
+          isPinned: doc.isPinned,
+          expireAt: doc.expireAt ? doc.expireAt.toISOString() : null,
+        };
+
+        if (target) {
+          target.isPinned = newPinned;
+          target.expireAt = formatted.expireAt;
+        }
+
+        return formatted;
+      } catch (err) {
+        console.warn("[MongoDB] Failed to toggle pin:", err.message);
+      }
+    }
+
+    if (!target) return null;
+    if (userId && target.user && target.user !== userId) {
+      return null; // Forbidden: not owner
+    }
+
+    const newPinned = isPinnedExplicit !== undefined ? Boolean(isPinnedExplicit) : !target.isPinned;
+    const baseDate = target.createdAt ? new Date(target.createdAt) : new Date();
+    const newExpireAt = newPinned ? null : new Date(baseDate.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString();
+
+    target.isPinned = newPinned;
+    target.expireAt = newExpireAt;
+
+    return {
+      analysisId: target.analysisId,
+      isPinned: target.isPinned,
+      expireAt: target.expireAt,
     };
   },
 

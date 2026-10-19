@@ -415,6 +415,41 @@ export async function deleteAnalysisRecord(req, res, next) {
 }
 
 /**
+ * PATCH /api/v1/analyses/:id/pin
+ * Toggles or sets the pinned/saved status of an analysis run.
+ * Pinned analyses never auto-delete. Unpinned analyses expire 30 days after creation.
+ */
+export async function toggleAnalysisPin(req, res, next) {
+  try {
+    const { id } = req.params;
+    const userId = req.user?.id || null;
+    const { isPinned } = req.body || {};
+
+    const updated = await analysesStore.togglePin(id, isPinned, userId);
+    if (!updated) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: "NOT_FOUND",
+          message: `Analysis with ID "${id}" was not found or access denied.`,
+          requestId: req.id,
+        },
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: updated,
+      message: updated.isPinned
+        ? "Analysis report pinned successfully. It will not be auto-deleted."
+        : "Analysis report unpinned. It will auto-delete 30 days after its creation.",
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
  * GET /api/v1/analyses/:id/explain
  * Returns AI impact explanation, risk level, and GitHub PR comment markdown.
  */
