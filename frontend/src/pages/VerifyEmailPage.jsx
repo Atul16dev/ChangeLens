@@ -47,7 +47,7 @@ export function VerifyEmailPage() {
       await verifyEmail(email.trim(), otp.trim());
       setSuccessMsg('Email verified successfully! Redirecting...');
       setTimeout(() => {
-        navigate('/', { replace: true });
+        navigate('/app', { replace: true });
       }, 1200);
     } catch (err) {
       setError(err.message || 'Verification failed. Please try again.');

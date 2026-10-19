@@ -15,7 +15,9 @@ export function LoginPage() {
   const [error, setError] = useState(null);
   const [unverifiedEmail, setUnverifiedEmail] = useState(null);
 
-  const from = location.state?.from?.pathname || '/';
+  const from = location.state?.from?.pathname && location.state.from.pathname !== '/'
+    ? location.state.from.pathname
+    : '/app';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
