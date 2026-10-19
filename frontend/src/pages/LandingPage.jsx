@@ -15,12 +15,20 @@ export function LandingPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#070b14] text-slate-100 font-sans selection:bg-cyan-500/30 selection:text-cyan-200">
-      {/* Navigation Header */}
-      <Navbar />
+    <div className="min-h-screen bg-[#070b14] text-slate-100 font-sans selection:bg-cyan-500/30 selection:text-cyan-200 relative overflow-x-hidden">
+      {/* Permanent Ambient Background Grid & Floating Glow Orbs */}
+      <div className="fixed inset-0 pointer-events-none z-0 bg-grid-pattern opacity-60" />
+      <div className="fixed top-[-10%] left-[-10%] w-[600px] h-[600px] bg-cyan-600/10 rounded-full blur-[160px] pointer-events-none animate-pulse-glow z-0" />
+      <div className="fixed top-[40%] right-[-10%] w-[550px] h-[550px] bg-indigo-600/10 rounded-full blur-[160px] pointer-events-none animate-float-slow z-0" />
+      <div className="fixed bottom-[-10%] left-[20%] w-[650px] h-[650px] bg-violet-600/10 rounded-full blur-[170px] pointer-events-none animate-float-reverse z-0" />
 
-      {/* Hero Section */}
-      <main>
+      {/* Navigation Header */}
+      <div className="relative z-50">
+        <Navbar />
+      </div>
+
+      {/* Main Content Sections */}
+      <main className="relative z-10">
         <HeroSection />
 
         {/* Problem Section */}
@@ -43,7 +51,9 @@ export function LandingPage() {
       </main>
 
       {/* Footer */}
-      <Footer />
+      <div className="relative z-10">
+        <Footer />
+      </div>
     </div>
   );
 }

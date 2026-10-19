@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   AlertOctagon,
   Network,
@@ -12,16 +11,17 @@ import {
   FileCode,
   Zap,
 } from 'lucide-react';
+import { ScrollReveal } from './ScrollReveal.jsx';
 
 export function ProblemSection() {
   return (
     <section id="problem" className="py-20 md:py-28 relative bg-slate-950/70 border-t border-slate-900 overflow-hidden">
-      {/* Background ambient radial glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[450px] bg-rose-950/10 blur-[150px] rounded-full pointer-events-none" />
+      {/* Background ambient radial glow with continuous breathing animation */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[450px] bg-rose-950/15 blur-[150px] rounded-full pointer-events-none animate-pulse-glow" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto space-y-4 mb-14 sm:mb-16">
+        {/* Section Header with Scroll Reveal */}
+        <ScrollReveal animation="fade-up" duration={750} className="text-center max-w-3xl mx-auto space-y-4 mb-14 sm:mb-16">
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-semibold uppercase tracking-wider">
             <AlertOctagon className="w-3.5 h-3.5" />
             <span>The Reality of Code Modification</span>
@@ -32,12 +32,17 @@ export function ProblemSection() {
           <p className="text-base sm:text-lg text-slate-400">
             Every codebase evolves into an intricate, multi-layered graph. Without deterministic dependency intelligence, even innocent commits risk silent production catastrophes.
           </p>
-        </div>
+        </ScrollReveal>
 
         {/* Asymmetric Bento Problem Grid: 5 Items, Zero Empty Slots */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Card 1: ANCHOR HERO CARD (Spans 2 columns on lg and md for a balanced Bento Box) */}
-          <div className="col-span-1 md:col-span-2 lg:col-span-2 p-7 sm:p-8 rounded-2xl bg-gradient-to-br from-slate-900/90 via-slate-900/60 to-rose-950/20 border border-rose-500/30 hover:border-rose-500/50 shadow-xl shadow-rose-950/20 transition-all duration-300 relative group overflow-hidden flex flex-col justify-between">
+          <ScrollReveal
+            animation="fade-up"
+            delay={50}
+            duration={700}
+            className="col-span-1 md:col-span-2 lg:col-span-2 p-7 sm:p-8 rounded-2xl bg-gradient-to-br from-slate-900/90 via-slate-900/60 to-rose-950/20 border border-rose-500/30 hover:border-rose-500/50 shadow-xl shadow-rose-950/20 transition-all duration-300 relative group overflow-hidden flex flex-col justify-between"
+          >
             <div className="absolute top-0 right-0 w-64 h-64 bg-rose-600/10 rounded-full blur-3xl pointer-events-none group-hover:bg-rose-600/15 transition-colors" />
 
             <div>
@@ -104,13 +109,18 @@ export function ProblemSection() {
                 </div>
               </div>
             </div>
-          </div>
+          </ScrollReveal>
 
           {/* Card 2: Hidden Relationships (Square Bento Card) */}
-          <div className="col-span-1 p-7 rounded-2xl bg-slate-900/60 border border-slate-800/80 hover:border-slate-700/80 hover:bg-slate-900/90 transition-all duration-300 relative group flex flex-col justify-between">
+          <ScrollReveal
+            animation="fade-up"
+            delay={150}
+            duration={700}
+            className="col-span-1 p-7 rounded-2xl bg-slate-900/60 border border-slate-800/80 hover:border-slate-700/80 hover:bg-slate-900/90 transition-all duration-300 relative group flex flex-col justify-between"
+          >
             <div>
               <div className="flex items-center justify-between mb-5">
-                <div className="w-12 h-12 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                <div className="w-12 h-12 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 group-hover:scale-105 transition-transform">
                   <Network className="w-6 h-6" />
                 </div>
                 <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-950 text-amber-400 border border-amber-500/20">
@@ -134,13 +144,18 @@ export function ProblemSection() {
                 <span className="text-rose-400">0 matches found</span>
               </div>
             </div>
-          </div>
+          </ScrollReveal>
 
           {/* Card 3: Unclear Impact of Changes (Square Bento Card) */}
-          <div className="col-span-1 p-7 rounded-2xl bg-slate-900/60 border border-slate-800/80 hover:border-slate-700/80 hover:bg-slate-900/90 transition-all duration-300 relative group flex flex-col justify-between">
+          <ScrollReveal
+            animation="fade-up"
+            delay={250}
+            duration={700}
+            className="col-span-1 p-7 rounded-2xl bg-slate-900/60 border border-slate-800/80 hover:border-slate-700/80 hover:bg-slate-900/90 transition-all duration-300 relative group flex flex-col justify-between"
+          >
             <div>
               <div className="flex items-center justify-between mb-5">
-                <div className="w-12 h-12 rounded-xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
+                <div className="w-12 h-12 rounded-xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400 group-hover:scale-105 transition-transform">
                   <GitPullRequest className="w-6 h-6" />
                 </div>
                 <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-950 text-cyan-400 border border-cyan-500/20">
@@ -164,13 +179,18 @@ export function ProblemSection() {
                 <span className="text-cyan-400 font-semibold">14 Files Impacted</span>
               </div>
             </div>
-          </div>
+          </ScrollReveal>
 
           {/* Card 4: Missing Test Coverage (Square Bento Card) */}
-          <div className="col-span-1 p-7 rounded-2xl bg-slate-900/60 border border-slate-800/80 hover:border-slate-700/80 hover:bg-slate-900/90 transition-all duration-300 relative group flex flex-col justify-between">
+          <ScrollReveal
+            animation="fade-up"
+            delay={350}
+            duration={700}
+            className="col-span-1 p-7 rounded-2xl bg-slate-900/60 border border-slate-800/80 hover:border-slate-700/80 hover:bg-slate-900/90 transition-all duration-300 relative group flex flex-col justify-between"
+          >
             <div>
               <div className="flex items-center justify-between mb-5">
-                <div className="w-12 h-12 rounded-xl bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
+                <div className="w-12 h-12 rounded-xl bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center text-indigo-400 group-hover:scale-105 transition-transform">
                   <CheckSquare className="w-6 h-6" />
                 </div>
                 <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-950 text-indigo-400 border border-indigo-500/20">
@@ -194,13 +214,18 @@ export function ProblemSection() {
                 <span className="text-emerald-400 font-semibold">Targeted: 1.2s</span>
               </div>
             </div>
-          </div>
+          </ScrollReveal>
 
           {/* Card 5: Exhausting Code Reviews (Square Bento Card) */}
-          <div className="col-span-1 p-7 rounded-2xl bg-slate-900/60 border border-slate-800/80 hover:border-slate-700/80 hover:bg-slate-900/90 transition-all duration-300 relative group flex flex-col justify-between">
+          <ScrollReveal
+            animation="fade-up"
+            delay={450}
+            duration={700}
+            className="col-span-1 p-7 rounded-2xl bg-slate-900/60 border border-slate-800/80 hover:border-slate-700/80 hover:bg-slate-900/90 transition-all duration-300 relative group flex flex-col justify-between"
+          >
             <div>
               <div className="flex items-center justify-between mb-5">
-                <div className="w-12 h-12 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+                <div className="w-12 h-12 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 group-hover:scale-105 transition-transform">
                   <Clock className="w-6 h-6" />
                 </div>
                 <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-950 text-emerald-400 border border-emerald-500/20">
@@ -224,7 +249,7 @@ export function ProblemSection() {
                 <span className="text-rose-400 font-semibold">+3.8 days delay</span>
               </div>
             </div>
-          </div>
+          </ScrollReveal>
         </div>
       </div>
     </section>

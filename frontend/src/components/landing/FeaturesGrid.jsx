@@ -1,4 +1,3 @@
-import React, { useState } from 'react';
 import {
   GitCompare,
   Code2,
@@ -17,21 +16,23 @@ import {
   Layers,
   FileCheck,
   Check,
+  BookmarkCheck,
 } from 'lucide-react';
+import { ScrollReveal } from './ScrollReveal.jsx';
 
 export function FeaturesGrid() {
   const [activeAstTab, setActiveAstTab] = useState('js');
 
   return (
     <section id="features" className="py-20 md:py-32 relative bg-slate-950 overflow-hidden">
-      {/* Background subtle radial glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[600px] bg-indigo-600/5 blur-[160px] pointer-events-none rounded-full" />
+      {/* Background subtle radial glow with continuous breathing animation */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[600px] bg-indigo-600/10 blur-[160px] pointer-events-none rounded-full animate-pulse-glow" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto space-y-4 mb-16 sm:mb-20">
+        {/* Section Header with Scroll Reveal */}
+        <ScrollReveal animation="fade-up" duration={750} className="text-center max-w-3xl mx-auto space-y-4 mb-16 sm:mb-20">
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-semibold uppercase tracking-wider">
-            <Sparkles className="w-3.5 h-3.5" />
+            <Sparkles className="w-3.5 h-3.5 animate-pulse" />
             <span>Platform Capabilities</span>
           </div>
           <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white leading-tight">
@@ -40,14 +41,19 @@ export function FeaturesGrid() {
           <p className="text-base sm:text-lg text-slate-400">
             From low-level WebAssembly AST token extraction to interactive dependency graph rendering and automated AI PR risk scoring.
           </p>
-        </div>
+        </ScrollReveal>
 
         {/* 12-Column Asymmetric Bento Grid: 10 Items, 100% Geometry, Zero Gaps */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-6">
           {/* ================= ROW 1 (12 COLS: 7 + 5) ================= */}
 
           {/* Feature 1: Multi-Language WASM AST (Hero Card: lg:col-span-7, md:col-span-2) */}
-          <div className="col-span-1 md:col-span-2 lg:col-span-7 p-7 sm:p-8 rounded-2xl bg-gradient-to-br from-slate-900/90 via-slate-900/60 to-indigo-950/30 border border-indigo-500/30 hover:border-indigo-500/50 shadow-xl shadow-indigo-950/20 transition-all duration-300 relative group flex flex-col justify-between">
+          <ScrollReveal
+            animation="fade-up"
+            delay={50}
+            duration={700}
+            className="col-span-1 md:col-span-2 lg:col-span-7 p-7 sm:p-8 rounded-2xl bg-gradient-to-br from-slate-900/90 via-slate-900/60 to-indigo-950/30 border border-indigo-500/30 hover:border-indigo-500/50 shadow-xl shadow-indigo-950/20 transition-all duration-300 relative group flex flex-col justify-between overflow-hidden"
+          >
             <div>
               <div className="flex items-center justify-between mb-5 flex-wrap gap-2">
                 <div className="flex items-center gap-3">
@@ -158,13 +164,18 @@ export function FeaturesGrid() {
                 )}
               </div>
             </div>
-          </div>
+          </ScrollReveal>
 
           {/* Feature 2: Symbol-Level Granularity (lg:col-span-5, md:col-span-2) */}
-          <div className="col-span-1 md:col-span-2 lg:col-span-5 p-7 sm:p-8 rounded-2xl bg-slate-900/50 border border-slate-800/80 hover:border-slate-700/80 hover:bg-slate-900/80 transition-all duration-300 relative group flex flex-col justify-between">
+          <ScrollReveal
+            animation="fade-up"
+            delay={150}
+            duration={700}
+            className="col-span-1 md:col-span-2 lg:col-span-5 p-7 sm:p-8 rounded-2xl bg-slate-900/50 border border-slate-800/80 hover:border-slate-700/80 hover:bg-slate-900/80 transition-all duration-300 relative group flex flex-col justify-between"
+          >
             <div>
               <div className="flex items-center justify-between mb-5">
-                <div className="w-12 h-12 rounded-xl bg-blue-500/15 border border-blue-500/30 flex items-center justify-center text-blue-400">
+                <div className="w-12 h-12 rounded-xl bg-blue-500/15 border border-blue-500/30 flex items-center justify-center text-blue-400 group-hover:scale-105 transition-transform">
                   <Binary className="w-6 h-6" />
                 </div>
                 <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-slate-950 text-blue-400 border border-blue-500/20">
@@ -186,7 +197,7 @@ export function FeaturesGrid() {
               <div className="space-y-2 font-mono text-xs">
                 <div className="p-2.5 rounded-lg bg-slate-950 border border-slate-800 flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-rose-400" />
+                    <span className="w-2 h-2 rounded-full bg-rose-400 animate-pulse" />
                     <span className="text-slate-300">deleteUser()</span>
                   </div>
                   <span className="text-[10px] text-rose-400 font-semibold">Modified (3 Callers)</span>
@@ -201,15 +212,20 @@ export function FeaturesGrid() {
                 </div>
               </div>
             </div>
-          </div>
+          </ScrollReveal>
 
           {/* ================= ROW 2 (12 COLS: 4 + 4 + 4) ================= */}
 
           {/* Feature 3: Interactive Graph (lg:col-span-4, md:col-span-1) */}
-          <div className="col-span-1 md:col-span-1 lg:col-span-4 p-7 rounded-2xl bg-slate-900/50 border border-slate-800/80 hover:border-slate-700/80 hover:bg-slate-900/80 transition-all duration-300 relative group flex flex-col justify-between">
+          <ScrollReveal
+            animation="fade-up"
+            delay={80}
+            duration={700}
+            className="col-span-1 md:col-span-1 lg:col-span-4 p-7 rounded-2xl bg-slate-900/50 border border-slate-800/80 hover:border-slate-700/80 hover:bg-slate-900/80 transition-all duration-300 relative group flex flex-col justify-between"
+          >
             <div>
               <div className="flex items-center justify-between mb-5">
-                <div className="w-12 h-12 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+                <div className="w-12 h-12 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 group-hover:scale-105 transition-transform">
                   <Share2 className="w-6 h-6" />
                 </div>
                 <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-slate-950 text-emerald-400 border border-emerald-500/20">
@@ -236,14 +252,19 @@ export function FeaturesGrid() {
                 <span className="px-2 py-0.5 rounded bg-rose-950 text-rose-300 border border-rose-800/50">Depth 2</span>
               </div>
             </div>
-          </div>
+          </ScrollReveal>
 
           {/* Feature 4: Deterministic Blast Radius (lg:col-span-4, md:col-span-1) */}
-          <div className="col-span-1 md:col-span-1 lg:col-span-4 p-7 rounded-2xl bg-slate-900/50 border border-slate-800/80 hover:border-slate-700/80 hover:bg-slate-900/80 transition-all duration-300 relative group flex flex-col justify-between">
+          <ScrollReveal
+            animation="fade-up"
+            delay={180}
+            duration={700}
+            className="col-span-1 md:col-span-1 lg:col-span-4 p-7 rounded-2xl bg-slate-900/50 border border-slate-800/80 hover:border-slate-700/80 hover:bg-slate-900/80 transition-all duration-300 relative group flex flex-col justify-between"
+          >
             <div>
               <div className="flex items-center justify-between mb-5">
-                <div className="w-12 h-12 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400">
-                  <Radiation className="w-6 h-6" />
+                <div className="w-12 h-12 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 group-hover:scale-105 transition-transform">
+                  <Radiation className="w-6 h-6 animate-pulse" />
                 </div>
                 <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-slate-950 text-amber-400 border border-amber-500/20">
                   Reverse BFS
@@ -269,13 +290,18 @@ export function FeaturesGrid() {
                 <div className="h-full bg-gradient-to-r from-cyan-500 via-amber-500 to-rose-500 rounded-full w-[78%]" />
               </div>
             </div>
-          </div>
+          </ScrollReveal>
 
           {/* Feature 5: Broken Symbol Detection (lg:col-span-4, md:col-span-2) */}
-          <div className="col-span-1 md:col-span-2 lg:col-span-4 p-7 rounded-2xl bg-slate-900/50 border border-slate-800/80 hover:border-slate-700/80 hover:bg-slate-900/80 transition-all duration-300 relative group flex flex-col justify-between">
+          <ScrollReveal
+            animation="fade-up"
+            delay={280}
+            duration={700}
+            className="col-span-1 md:col-span-2 lg:col-span-4 p-7 rounded-2xl bg-slate-900/50 border border-slate-800/80 hover:border-slate-700/80 hover:bg-slate-900/80 transition-all duration-300 relative group flex flex-col justify-between"
+          >
             <div>
               <div className="flex items-center justify-between mb-5">
-                <div className="w-12 h-12 rounded-xl bg-rose-500/15 border border-rose-500/30 flex items-center justify-center text-rose-400">
+                <div className="w-12 h-12 rounded-xl bg-rose-500/15 border border-rose-500/30 flex items-center justify-center text-rose-400 group-hover:scale-105 transition-transform">
                   <AlertTriangle className="w-6 h-6" />
                 </div>
                 <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-slate-950 text-rose-400 border border-rose-500/20">
@@ -299,15 +325,20 @@ export function FeaturesGrid() {
                 <span className="text-[10px] bg-rose-900/60 px-1.5 py-0.5 rounded">CRITICAL</span>
               </div>
             </div>
-          </div>
+          </ScrollReveal>
 
           {/* ================= ROW 3 (12 COLS: 4 + 4 + 4) ================= */}
 
           {/* Feature 6: What-If Simulator (lg:col-span-4, md:col-span-1) */}
-          <div className="col-span-1 md:col-span-1 lg:col-span-4 p-7 rounded-2xl bg-slate-900/50 border border-slate-800/80 hover:border-slate-700/80 hover:bg-slate-900/80 transition-all duration-300 relative group flex flex-col justify-between">
+          <ScrollReveal
+            animation="fade-up"
+            delay={100}
+            duration={700}
+            className="col-span-1 md:col-span-1 lg:col-span-4 p-7 rounded-2xl bg-slate-900/50 border border-slate-800/80 hover:border-slate-700/80 hover:bg-slate-900/80 transition-all duration-300 relative group flex flex-col justify-between"
+          >
             <div>
               <div className="flex items-center justify-between mb-5">
-                <div className="w-12 h-12 rounded-xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center text-purple-400">
+                <div className="w-12 h-12 rounded-xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center text-purple-400 group-hover:scale-105 transition-transform">
                   <Zap className="w-6 h-6 animate-pulse" />
                 </div>
                 <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-slate-950 text-purple-400 border border-purple-500/20">
@@ -331,13 +362,18 @@ export function FeaturesGrid() {
                 <span className="text-cyan-400 font-semibold">-4 files ripple</span>
               </div>
             </div>
-          </div>
+          </ScrollReveal>
 
           {/* Feature 7: Git Diff Analysis (lg:col-span-4, md:col-span-1) */}
-          <div className="col-span-1 md:col-span-1 lg:col-span-4 p-7 rounded-2xl bg-slate-900/50 border border-slate-800/80 hover:border-slate-700/80 hover:bg-slate-900/80 transition-all duration-300 relative group flex flex-col justify-between">
+          <ScrollReveal
+            animation="fade-up"
+            delay={200}
+            duration={700}
+            className="col-span-1 md:col-span-1 lg:col-span-4 p-7 rounded-2xl bg-slate-900/50 border border-slate-800/80 hover:border-slate-700/80 hover:bg-slate-900/80 transition-all duration-300 relative group flex flex-col justify-between"
+          >
             <div>
               <div className="flex items-center justify-between mb-5">
-                <div className="w-12 h-12 rounded-xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
+                <div className="w-12 h-12 rounded-xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400 group-hover:scale-105 transition-transform">
                   <GitCompare className="w-6 h-6" />
                 </div>
                 <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-slate-950 text-cyan-400 border border-cyan-500/20">
@@ -361,13 +397,18 @@ export function FeaturesGrid() {
                 <span className="text-cyan-400 font-semibold">3 Staged Files</span>
               </div>
             </div>
-          </div>
+          </ScrollReveal>
 
           {/* Feature 8: CI/CD Runner (lg:col-span-4, md:col-span-2) */}
-          <div className="col-span-1 md:col-span-2 lg:col-span-4 p-7 rounded-2xl bg-slate-900/50 border border-slate-800/80 hover:border-slate-700/80 hover:bg-slate-900/80 transition-all duration-300 relative group flex flex-col justify-between">
+          <ScrollReveal
+            animation="fade-up"
+            delay={300}
+            duration={700}
+            className="col-span-1 md:col-span-2 lg:col-span-4 p-7 rounded-2xl bg-slate-900/50 border border-slate-800/80 hover:border-slate-700/80 hover:bg-slate-900/80 transition-all duration-300 relative group flex flex-col justify-between"
+          >
             <div>
               <div className="flex items-center justify-between mb-5">
-                <div className="w-12 h-12 rounded-xl bg-teal-500/15 border border-teal-500/30 flex items-center justify-center text-teal-400">
+                <div className="w-12 h-12 rounded-xl bg-teal-500/15 border border-teal-500/30 flex items-center justify-center text-teal-400 group-hover:scale-105 transition-transform">
                   <Terminal className="w-6 h-6" />
                 </div>
                 <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-slate-950 text-teal-400 border border-teal-500/20">
@@ -391,17 +432,22 @@ export function FeaturesGrid() {
                 <span className="text-emerald-400">Exit: 0</span>
               </div>
             </div>
-          </div>
+          </ScrollReveal>
 
           {/* ================= ROW 4 (12 COLS: 6 + 6) ================= */}
 
           {/* Feature 9: AI PR Explanations (lg:col-span-6, md:col-span-1) */}
-          <div className="col-span-1 md:col-span-1 lg:col-span-6 p-7 sm:p-8 rounded-2xl bg-gradient-to-br from-slate-900/90 via-slate-900/60 to-purple-950/20 border border-purple-500/30 hover:border-purple-500/50 shadow-xl shadow-purple-950/20 transition-all duration-300 relative group flex flex-col justify-between">
+          <ScrollReveal
+            animation="fade-up"
+            delay={120}
+            duration={700}
+            className="col-span-1 md:col-span-1 lg:col-span-6 p-7 sm:p-8 rounded-2xl bg-gradient-to-br from-slate-900/90 via-slate-900/60 to-purple-950/20 border border-purple-500/30 hover:border-purple-500/50 shadow-xl shadow-purple-950/20 transition-all duration-300 relative group flex flex-col justify-between"
+          >
             <div>
               <div className="flex items-center justify-between mb-5">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center text-purple-400">
-                    <Sparkles className="w-6 h-6" />
+                  <div className="w-12 h-12 rounded-xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center text-purple-400 group-hover:scale-105 transition-transform">
+                    <Sparkles className="w-6 h-6 animate-pulse" />
                   </div>
                   <div>
                     <span className="text-[10px] font-mono uppercase tracking-wider font-bold px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30">
@@ -434,14 +480,19 @@ export function FeaturesGrid() {
                 </p>
               </div>
             </div>
-          </div>
+          </ScrollReveal>
 
-          {/* Feature 10: Cloud History (lg:col-span-6, md:col-span-1) */}
-          <div className="col-span-1 md:col-span-1 lg:col-span-6 p-7 sm:p-8 rounded-2xl bg-gradient-to-br from-slate-900/90 via-slate-900/60 to-emerald-950/20 border border-emerald-500/30 hover:border-emerald-500/50 shadow-xl shadow-emerald-950/20 transition-all duration-300 relative group flex flex-col justify-between">
+          {/* Feature 10: Cloud History & 30-Day TTL (lg:col-span-6, md:col-span-1) */}
+          <ScrollReveal
+            animation="fade-up"
+            delay={240}
+            duration={700}
+            className="col-span-1 md:col-span-1 lg:col-span-6 p-7 sm:p-8 rounded-2xl bg-gradient-to-br from-slate-900/90 via-slate-900/60 to-emerald-950/20 border border-emerald-500/30 hover:border-emerald-500/50 shadow-xl shadow-emerald-950/20 transition-all duration-300 relative group flex flex-col justify-between"
+          >
             <div>
-              <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center justify-between mb-5 flex-wrap gap-2">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+                  <div className="w-12 h-12 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 group-hover:scale-105 transition-transform">
                     <Database className="w-6 h-6" />
                   </div>
                   <div>
@@ -453,13 +504,16 @@ export function FeaturesGrid() {
                     </h3>
                   </div>
                 </div>
-                <span className="text-xs font-mono text-emerald-400 bg-emerald-950/80 px-2.5 py-1 rounded-full border border-emerald-800/60 hidden sm:inline-block">
-                  One-Click Rehydrate
-                </span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[11px] font-mono text-violet-300 bg-violet-950/80 px-2.5 py-0.5 rounded-full border border-violet-800/60 flex items-center gap-1">
+                    <BookmarkCheck className="w-3 h-3 text-violet-400" />
+                    30d TTL & Pin
+                  </span>
+                </div>
               </div>
 
               <p className="text-sm text-slate-300 leading-relaxed">
-                Every analysis run is securely stored to the cloud. Search past blast radius reports, filter by branch or file, and rehydrate graphs back into the canvas instantly.
+                Every analysis run is securely stored to the cloud. Unpinned reports auto-delete after 30 days to keep your workspace lean, while pinned reports remain permanent.
               </p>
             </div>
 
@@ -468,17 +522,18 @@ export function FeaturesGrid() {
               <div className="grid grid-cols-2 gap-2 font-mono text-[11px]">
                 <div className="p-2 rounded-lg bg-slate-950/90 border border-slate-800 flex items-center justify-between">
                   <span className="text-slate-400 truncate">mern-sample (user.js)</span>
-                  <span className="text-emerald-400 font-bold shrink-0">7 Nodes</span>
+                  <span className="text-emerald-400 font-bold shrink-0">📌 Saved</span>
                 </div>
                 <div className="p-2 rounded-lg bg-slate-950/90 border border-slate-800 flex items-center justify-between">
                   <span className="text-slate-400 truncate">python-store (pool.py)</span>
-                  <span className="text-cyan-400 font-bold shrink-0">4 Nodes</span>
+                  <span className="text-cyan-400 font-bold shrink-0">⏳ 28d left</span>
                 </div>
               </div>
             </div>
-          </div>
+          </ScrollReveal>
         </div>
       </div>
     </section>
   );
 }
+

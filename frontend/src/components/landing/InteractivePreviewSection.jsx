@@ -1,4 +1,3 @@
-import React, { useState } from 'react';
 import {
   Share2,
   Binary,
@@ -17,6 +16,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext.jsx';
+import { ScrollReveal } from './ScrollReveal.jsx';
 
 export function InteractivePreviewSection() {
   const { isAuthenticated } = useAuth();
@@ -46,12 +46,15 @@ npm test tests/auth.test.js
   };
 
   return (
-    <section id="preview" className="py-20 md:py-32 relative bg-slate-950">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto space-y-4 mb-14">
+    <section id="preview" className="py-20 md:py-32 relative bg-slate-950 overflow-hidden">
+      {/* Background ambient glow with continuous breathing animation */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[550px] bg-cyan-950/20 blur-[160px] rounded-full pointer-events-none animate-pulse-glow" />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        {/* Section Header with Scroll Reveal */}
+        <ScrollReveal animation="fade-up" duration={750} className="text-center max-w-3xl mx-auto space-y-4 mb-14">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-semibold uppercase tracking-wider">
-            <Activity className="w-3.5 h-3.5" />
+            <Activity className="w-3.5 h-3.5 animate-pulse" />
             Interactive Product Preview
           </div>
           <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white">
@@ -60,10 +63,10 @@ npm test tests/auth.test.js
           <p className="text-base sm:text-lg text-slate-400">
             Switch between the visual blast radius graph, symbol isolation analyzer, automated Gemini PR summary, and the live What-If simulator.
           </p>
-        </div>
+        </ScrollReveal>
 
-        {/* Tab Controls */}
-        <div className="flex items-center justify-center mb-8">
+        {/* Tab Controls with Scroll Reveal */}
+        <ScrollReveal animation="fade-down" delay={100} duration={650} className="flex items-center justify-center mb-8">
           <div className="inline-flex items-center p-1.5 rounded-xl bg-slate-900 border border-slate-800 shadow-inner overflow-x-auto max-w-full">
             <button
               type="button"
@@ -114,10 +117,13 @@ npm test tests/auth.test.js
               <span>What-If Simulator</span>
             </button>
           </div>
-        </div>
+        </ScrollReveal>
 
-        {/* Tab Content Display Window */}
-        <div className="rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl overflow-hidden">
+        {/* Tab Content Display Window with Scale-Up Reveal */}
+        <ScrollReveal animation="scale-up" delay={200} duration={800} className="relative rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl overflow-hidden">
+          {/* Laser Scanline Beam Effect */}
+          <div className="scanline-effect" />
+
           {/* macOS Title Bar */}
           <div className="px-5 py-3.5 bg-slate-950/80 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
             <div className="flex items-center gap-3">
@@ -331,10 +337,10 @@ npm test tests/auth.test.js
               </div>
             </div>
           )}
-        </div>
+        </ScrollReveal>
 
-        {/* Workspace Quick Launch Bar */}
-        <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 p-5 rounded-2xl bg-gradient-to-r from-slate-900 via-slate-900/90 to-cyan-950/40 border border-slate-800">
+        {/* Workspace Quick Launch Bar with Scroll Reveal */}
+        <ScrollReveal animation="fade-up" delay={250} duration={750} className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 p-5 rounded-2xl bg-gradient-to-r from-slate-900 via-slate-900/90 to-cyan-950/40 border border-slate-800">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center shrink-0">
               <Sparkles className="w-5 h-5 text-cyan-400" />
@@ -352,7 +358,7 @@ npm test tests/auth.test.js
             <span>{isAuthenticated ? 'Open Interactive Workspace' : 'Launch Workspace (Sign In)'}</span>
             <ChevronRight className="w-4 h-4" />
           </Link>
-        </div>
+        </ScrollReveal>
       </div>
     </section>
   );

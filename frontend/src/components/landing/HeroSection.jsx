@@ -7,7 +7,9 @@ import {
   FileCode2,
   Cpu,
   Activity,
+  Sparkles,
 } from 'lucide-react';
+import { ScrollReveal } from './ScrollReveal.jsx';
 
 const DEMO_PRESETS = [
   {
@@ -72,105 +74,119 @@ export function HeroSection() {
 
   return (
     <section className="relative pt-12 pb-20 md:pt-20 md:pb-32 overflow-hidden">
-      {/* Background radial gradient mesh */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[600px] pointer-events-none overflow-hidden">
-        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-cyan-600/10 blur-[140px] rounded-full" />
-        <div className="absolute top-1/3 right-1/4 w-[450px] h-[450px] bg-indigo-600/10 blur-[130px] rounded-full" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-rose-600/5 blur-[150px] rounded-full" />
+      {/* Background radial gradient mesh with continuous floating & pulsing */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[650px] pointer-events-none overflow-hidden">
+        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-cyan-600/15 blur-[140px] rounded-full animate-pulse-glow" />
+        <div className="absolute top-1/3 right-1/4 w-[480px] h-[480px] bg-indigo-600/15 blur-[130px] rounded-full animate-float-slow" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 w-[600px] h-[320px] bg-rose-600/10 blur-[150px] rounded-full animate-float-reverse" />
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Top Announcement Pill */}
-        <div className="flex justify-center mb-6">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-900/90 border border-slate-800 shadow-inner backdrop-blur-md">
-            <span className="flex h-2 w-2 rounded-full bg-cyan-400 animate-pulse" />
-            <span className="text-xs font-medium text-slate-300">
+        <ScrollReveal animation="fade-down" duration={650} className="flex justify-center mb-6">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-900/90 border border-slate-800 shadow-inner backdrop-blur-md hover:border-cyan-500/40 transition-colors cursor-pointer group">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"></span>
+            </span>
+            <span className="text-xs font-medium text-slate-300 group-hover:text-cyan-200 transition-colors">
               Deterministic AST Blast Radius Engine
             </span>
             <span className="text-[10px] uppercase tracking-wider font-bold px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
               v1.0 Live
             </span>
           </div>
-        </div>
+        </ScrollReveal>
 
         {/* Hero Title & Supporting Text */}
         <div className="text-center max-w-4xl mx-auto space-y-6">
-          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white leading-[1.1]">
-            Know What Your Code Changes{' '}
-            <span className="bg-gradient-to-r from-cyan-400 via-indigo-300 to-rose-400 bg-clip-text text-transparent">
-              Will Break.
-            </span>
-          </h1>
+          <ScrollReveal animation="fade-up" delay={100} duration={800}>
+            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white leading-[1.1]">
+              Know What Your Code Changes{' '}
+              <span className="text-shimmer inline-block">
+                Will Break.
+              </span>
+            </h1>
+          </ScrollReveal>
 
-          <p className="text-base sm:text-xl text-slate-300 max-w-2xl mx-auto leading-relaxed">
-            ChangeLens analyzes code changes, traces dependencies, and helps developers understand the potential impact before merging.
-          </p>
+          <ScrollReveal animation="fade-up" delay={200} duration={800}>
+            <p className="text-base sm:text-xl text-slate-300 max-w-2xl mx-auto leading-relaxed">
+              ChangeLens analyzes code changes, traces dependencies, and helps developers understand the potential impact before merging.
+            </p>
+          </ScrollReveal>
 
           {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-            {isAuthenticated ? (
-              <>
-                <Link
-                  to="/app"
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-500 via-indigo-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold text-base px-7 py-3.5 rounded-xl shadow-lg shadow-cyan-500/25 active:scale-95 transition-all group"
-                >
-                  <span>Launch ChangeLens Workspace</span>
-                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                </Link>
-                <a
-                  href="#features"
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-slate-900/90 hover:bg-slate-800 text-slate-200 hover:text-white font-semibold text-base px-6 py-3.5 rounded-xl border border-slate-800 hover:border-slate-700 transition-all shadow-sm"
-                >
-                  <span>Explore Features</span>
-                  <Layers className="w-4 h-4 text-slate-400" />
-                </a>
-              </>
-            ) : (
-              <>
-                <Link
-                  to="/register"
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-500 via-indigo-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold text-base px-7 py-3.5 rounded-xl shadow-lg shadow-cyan-500/25 active:scale-95 transition-all group"
-                >
-                  <span>Get Started Free</span>
-                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                </Link>
-                <Link
-                  to="/login"
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-slate-900/90 hover:bg-slate-800 text-slate-200 hover:text-white font-semibold text-base px-6 py-3.5 rounded-xl border border-slate-800 hover:border-slate-700 transition-all shadow-sm"
-                >
-                  <span>Launch Workspace (Sign In)</span>
-                </Link>
-                <a
-                  href="#features"
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 text-slate-400 hover:text-white text-sm font-medium px-4 py-3.5 transition-colors"
-                >
-                  <span>Explore Features</span>
-                  <Layers className="w-4 h-4" />
-                </a>
-              </>
-            )}
-          </div>
+          <ScrollReveal animation="fade-up" delay={300} duration={800}>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+              {isAuthenticated ? (
+                <>
+                  <Link
+                    to="/app"
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-500 via-indigo-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold text-base px-7 py-3.5 rounded-xl shadow-lg shadow-cyan-500/25 active:scale-95 transition-all group"
+                  >
+                    <span>Launch ChangeLens Workspace</span>
+                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  </Link>
+                  <a
+                    href="#features"
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-slate-900/90 hover:bg-slate-800 text-slate-200 hover:text-white font-semibold text-base px-6 py-3.5 rounded-xl border border-slate-800 hover:border-slate-700 transition-all shadow-sm"
+                  >
+                    <span>Explore Features</span>
+                    <Layers className="w-4 h-4 text-slate-400" />
+                  </a>
+                </>
+              ) : (
+                <>
+                  <Link
+                    to="/register"
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-500 via-indigo-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold text-base px-7 py-3.5 rounded-xl shadow-lg shadow-cyan-500/25 active:scale-95 transition-all group"
+                  >
+                    <span>Get Started Free</span>
+                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  </Link>
+                  <Link
+                    to="/login"
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-slate-900/90 hover:bg-slate-800 text-slate-200 hover:text-white font-semibold text-base px-6 py-3.5 rounded-xl border border-slate-800 hover:border-slate-700 transition-all shadow-sm"
+                  >
+                    <span>Launch Workspace (Sign In)</span>
+                  </Link>
+                  <a
+                    href="#features"
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 text-slate-400 hover:text-white text-sm font-medium px-4 py-3.5 transition-colors"
+                  >
+                    <span>Explore Features</span>
+                    <Layers className="w-4 h-4" />
+                  </a>
+                </>
+              )}
+            </div>
+          </ScrollReveal>
 
           {/* Supported Languages Badges */}
-          <div className="pt-6 flex items-center justify-center gap-3 sm:gap-6 flex-wrap text-xs text-slate-400 font-medium">
-            <span className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-amber-400" /> JavaScript / TypeScript
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-blue-400" /> Python 3 AST
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-cyan-400" /> Go Modules
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-400" /> Git Diff
-            </span>
-          </div>
+          <ScrollReveal animation="fade-up" delay={400} duration={800}>
+            <div className="pt-6 flex items-center justify-center gap-3 sm:gap-6 flex-wrap text-xs text-slate-400 font-medium">
+              <span className="flex items-center gap-1.5 hover:text-slate-200 transition-colors">
+                <span className="w-2 h-2 rounded-full bg-amber-400" /> JavaScript / TypeScript
+              </span>
+              <span className="flex items-center gap-1.5 hover:text-slate-200 transition-colors">
+                <span className="w-2 h-2 rounded-full bg-blue-400" /> Python 3 AST
+              </span>
+              <span className="flex items-center gap-1.5 hover:text-slate-200 transition-colors">
+                <span className="w-2 h-2 rounded-full bg-cyan-400" /> Go Modules
+              </span>
+              <span className="flex items-center gap-1.5 hover:text-slate-200 transition-colors">
+                <span className="w-2 h-2 rounded-full bg-emerald-400" /> Git Diff
+              </span>
+            </div>
+          </ScrollReveal>
         </div>
 
         {/* Interactive Product Preview Mockup */}
-        <div className="mt-14 max-w-5xl mx-auto" id="hero-preview">
-          <div className="relative rounded-2xl bg-gradient-to-b from-slate-800/60 to-slate-900/90 p-1 sm:p-2 border border-slate-800 shadow-2xl shadow-cyan-950/20 backdrop-blur-xl">
+        <ScrollReveal animation="scale-up" delay={250} duration={900} className="mt-14 max-w-5xl mx-auto" id="hero-preview">
+          <div className="relative rounded-2xl bg-gradient-to-b from-slate-800/60 to-slate-900/90 p-1 sm:p-2 border border-slate-800 shadow-2xl shadow-cyan-950/20 backdrop-blur-xl overflow-hidden">
+            {/* Laser Scanline Beam Effect */}
+            <div className="scanline-effect" />
+
             {/* Window Titlebar */}
             <div className="px-4 py-3 bg-slate-950/80 rounded-t-xl border-b border-slate-800/80 flex items-center justify-between flex-wrap gap-2">
               <div className="flex items-center gap-2">
@@ -312,7 +328,7 @@ export function HeroSection() {
               </div>
             </div>
           </div>
-        </div>
+        </ScrollReveal>
       </div>
     </section>
   );
