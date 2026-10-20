@@ -51,25 +51,28 @@ export function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-center items-center p-4 sm:p-6 font-sans relative overflow-hidden">
+    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans relative overflow-x-hidden">
       {/* Background radial gradient glow */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[350px] bg-cyan-600/10 blur-[120px] rounded-full pointer-events-none" />
+      <div className="fixed top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[350px] bg-cyan-600/10 blur-[120px] rounded-full pointer-events-none" />
+
+      {/* Scrollable centering wrapper */}
+      <div className="min-h-screen flex flex-col items-center justify-start sm:justify-center px-4 py-8 sm:py-10 relative z-10">
 
       {/* Brand Header */}
-      <div className="flex flex-col items-center mb-8 relative z-10">
+      <div className="flex flex-col items-center mb-5 w-full max-w-md">
         <div className="mb-3">
           <BrandLogo size="lg" />
         </div>
-        <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-center bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">
           Welcome back to ChangeLens
         </h1>
-        <p className="text-xs text-slate-400 mt-1">
+        <p className="text-xs text-slate-400 mt-1 text-center">
           Deterministic Code Blast Radius & Impact Intelligence
         </p>
       </div>
 
       {/* Login Card */}
-      <div className="w-full max-w-md bg-slate-900/90 border border-slate-800 rounded-2xl p-6 sm:p-8 backdrop-blur-xl shadow-2xl relative z-10">
+      <div className="w-full max-w-md bg-slate-900/90 border border-slate-800 rounded-2xl p-5 sm:p-7 backdrop-blur-xl shadow-2xl">
         {/* Error Alert */}
         {error && (
           <div className="mb-5 bg-rose-950/80 border border-rose-500/40 rounded-xl p-3.5 flex items-start gap-3 text-rose-200 text-xs">
@@ -200,12 +203,16 @@ export function LoginPage() {
         </button>
 
         {/* Footer Link */}
-        <p className="mt-6 text-center text-xs text-slate-400">
+        <p className="mt-5 text-center text-xs text-slate-400">
           Don't have an account?{' '}
           <Link to="/register" className="text-cyan-400 hover:text-cyan-300 font-semibold transition-colors">
             Create an account
           </Link>
         </p>
+      </div>
+
+      {/* Bottom breathing room */}
+      <div className="h-4" />
       </div>
     </div>
   );
