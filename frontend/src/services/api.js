@@ -158,5 +158,68 @@ export async function togglePinAnalysis(analysisId, isPinned = undefined) {
   return data.data;
 }
 
+/**
+ * GitHub Connector API methods
+ */
+export async function inspectGitHubPR({ prUrl, token }) {
+  const res = await fetchWithRetry(`${API_BASE}/github/inspect-pr`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ prUrl, token }),
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error?.message || 'Failed to inspect GitHub Pull Request');
+  }
+  return data.data;
+}
+
+export async function analyzeGitHubPR({ prUrl, token, repoPath, maxDepth = 10 }) {
+  const res = await fetchWithRetry(`${API_BASE}/github/analyze-pr`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ prUrl, token, repoPath, maxDepth }),
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error?.message || 'Failed to analyze GitHub Pull Request');
+  }
+  return data.data;
+}
+
+export async function postCommentToGitHubPR({ owner, repo, pullNumber, token, analysisId, customMarkdown }) {
+  const res = await fetchWithRetry(`${API_BASE}/github/post-comment`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ owner, repo, pullNumber, token, analysisId, customMarkdown }),
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error?.message || 'Failed to post comment to GitHub PR');
+  }
+  return data.data;
+}
+
+export async function getGitHubWorkflowTemplate({ failOnCritical = true, failOnHigh = false, nodeVersion = '22' } = {}) {
+  const params = new URLSearchParams();
+  if (failOnCritical !== undefined) params.append('failOnCritical', failOnCritical);
+  if (failOnHigh !== undefined) params.append('failOnHigh', failOnHigh);
+  if (nodeVersion) params.append('nodeVersion', nodeVersion);
+
+  const res = await fetchWithRetry(`${API_BASE}/github/workflow-template?${params.toString()}`);
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error?.message || 'Failed to fetch GitHub Actions workflow template');
+  }
+  return data.data;
+}
+
+
 
 

@@ -9,6 +9,7 @@ import { hydrateUser } from "./middleware/auth.js";
 import { healthRoutes } from "./routes/health.routes.js";
 import { analysesRoutes } from "./routes/analyses.routes.js";
 import { authRoutes } from "./routes/auth.routes.js";
+import { githubRoutes } from "./routes/github.routes.js";
 
 export function createApp({ sessionSecret, sessionStore } = {}) {
   const app = express();
@@ -90,6 +91,7 @@ export function createApp({ sessionSecret, sessionStore } = {}) {
   // API v1 Routes
   app.use("/api/v1/health", healthRoutes);
   app.use("/api/v1/auth", authRoutes);
+  app.use("/api/v1/github", githubRoutes);
   app.use("/api/v1", analysesRoutes);
 
   // Serve compiled frontend UI if available

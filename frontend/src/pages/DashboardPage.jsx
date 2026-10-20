@@ -4,6 +4,7 @@ import { GraphViewer } from '../components/GraphViewer.jsx';
 import { ImpactSidebar } from '../components/ImpactSidebar.jsx';
 import { ChatAssistant } from '../components/ChatAssistant.jsx';
 import { HistoryDrawer } from '../components/HistoryDrawer.jsx';
+import { GitHubConnectorModal } from '../components/GitHubConnectorModal.jsx';
 import {
   checkBackendHealth,
   runImpactAnalysis,
@@ -27,6 +28,9 @@ export function DashboardPage() {
 
   // History Drawer state
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+
+  // GitHub Connector Modal state
+  const [isGitHubOpen, setIsGitHubOpen] = useState(false);
 
   // What-If Simulator state
   const [simulationData, setSimulationData] = useState(null);
@@ -161,6 +165,7 @@ export function DashboardPage() {
         simulatedFile={simulationData?.simulatedFile}
         onExitSimulation={handleExitSimulation}
         onOpenHistory={() => setIsHistoryOpen(true)}
+        onOpenGitHub={() => setIsGitHubOpen(true)}
       />
 
       {/* Error Notification Banner */}
@@ -228,6 +233,14 @@ export function DashboardPage() {
         isOpen={isHistoryOpen}
         onClose={() => setIsHistoryOpen(false)}
         onLoadAnalysis={loadSavedAnalysis}
+        currentAnalysisId={currentAnalysisId}
+      />
+
+      {/* GitHub PR Connector Modal */}
+      <GitHubConnectorModal
+        isOpen={isGitHubOpen}
+        onClose={() => setIsGitHubOpen(false)}
+        onAnalysisComplete={(analysisId) => loadSavedAnalysis(analysisId)}
         currentAnalysisId={currentAnalysisId}
       />
     </div>
