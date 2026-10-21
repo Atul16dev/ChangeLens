@@ -7,7 +7,29 @@
 import { isMongoConnected } from "./db/mongodb.js";
 import { Analysis } from "./models/Analysis.js";
 
+export const DEFAULT_MAX_RAM_CACHE_SIZE = 200;
+export const DEFAULT_MAX_USER_HISTORY_LIMIT = 100;
+
+let maxRamCacheSize = parseInt(process.env.MAX_RAM_CACHE_SIZE, 10) || DEFAULT_MAX_RAM_CACHE_SIZE;
+let maxUserHistoryLimit = parseInt(process.env.MAX_USER_HISTORY_LIMIT, 10) || DEFAULT_MAX_USER_HISTORY_LIMIT;
+
 const analyses = new Map();
+
+/**
+ * Puts an entry into the in-memory LRU cache, evicting the least recently used
+ * item if the cache has reached maxRamCacheSize.
+ */
+function putInRamCache(key, value) {
+  if (analyses.has(key)) {
+    analyses.delete(key);
+  } else if (analyses.size >= maxRamCacheSize) {
+    const oldestKey = analyses.keys().next().value;
+    if (oldestKey !== undefined) {
+      analyses.delete(oldestKey);
+    }
+  }
+  analyses.set(key, value);
+}
 
 function extractChangedFiles(analysisData) {
   if (Array.isArray(analysisData.changedFiles) && analysisData.changedFiles.length > 0) {
@@ -35,6 +57,19 @@ function deriveTitle(analysisData, changedFiles) {
 }
 
 export const analysesStore = {
+  getLimits() {
+    return {
+      maxRamCacheSize,
+      maxUserHistoryLimit,
+      currentRamSize: analyses.size,
+    };
+  },
+
+  setLimits({ ramCacheSize, userHistoryLimit } = {}) {
+    if (ramCacheSize !== undefined) maxRamCacheSize = Math.max(1, ramCacheSize);
+    if (userHistoryLimit !== undefined) maxUserHistoryLimit = Math.max(1, userHistoryLimit);
+  },
+
   async save(analysisId, analysisData, userId = null) {
     const changedFiles = extractChangedFiles(analysisData);
     const title = deriveTitle(analysisData, changedFiles);
@@ -43,6 +78,40 @@ export const analysesStore = {
     // 30 days retention policy for unpinned analyses
     const thirtyDays = 30 * 24 * 60 * 60 * 1000;
     const expireAt = isPinned ? null : new Date(now.getTime() + thirtyDays);
+
+    // Enforce Per-User History Quota: If user exceeds maxUserHistoryLimit,
+    // evict their oldest unpinned analysis to make room for the new one.
+    if (userId) {
+      if (isMongoConnected()) {
+        try {
+          const userCount = await Analysis.countDocuments({ user: userId });
+          if (userCount >= maxUserHistoryLimit) {
+            const oldestUnpinned = await Analysis.findOne({ user: userId, isPinned: false })
+              .sort({ createdAt: 1 })
+              .select("analysisId");
+            if (oldestUnpinned) {
+              await Analysis.deleteOne({ _id: oldestUnpinned._id });
+              analyses.delete(oldestUnpinned.analysisId);
+            }
+          }
+        } catch (err) {
+          console.warn("[MongoDB] Failed to enforce user analysis quota:", err.message);
+        }
+      } else {
+        // In-memory quota enforcement
+        const allUserItems = Array.from(analyses.values()).filter((a) => a.user === userId);
+        if (allUserItems.length >= maxUserHistoryLimit) {
+          const unpinnedItems = allUserItems.filter((a) => !a.isPinned);
+          if (unpinnedItems.length > 0) {
+            unpinnedItems.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+            const oldest = unpinnedItems[0];
+            if (oldest) {
+              analyses.delete(oldest.analysisId);
+            }
+          }
+        }
+      }
+    }
 
     const record = {
       id: analysisId,
@@ -55,7 +124,9 @@ export const analysesStore = {
       changedFiles,
       ...analysisData,
     };
-    analyses.set(analysisId, record);
+
+    // Store in bounded RAM cache with LRU eviction
+    putInRamCache(analysisId, record);
 
     if (isMongoConnected()) {
       try {
@@ -88,7 +159,11 @@ export const analysesStore = {
 
   async get(analysisId) {
     if (analyses.has(analysisId)) {
-      return analyses.get(analysisId);
+      const cached = analyses.get(analysisId);
+      // Refresh recency for LRU caching
+      analyses.delete(analysisId);
+      analyses.set(analysisId, cached);
+      return cached;
     }
 
     if (isMongoConnected()) {
@@ -112,7 +187,8 @@ export const analysesStore = {
             explanation: doc.explanation || null,
             status: doc.status,
           };
-          analyses.set(analysisId, formatted);
+          // Store freshly fetched document in RAM cache with LRU eviction
+          putInRamCache(analysisId, formatted);
           return formatted;
         }
       } catch (err) {
