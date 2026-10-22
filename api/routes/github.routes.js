@@ -4,9 +4,21 @@ import {
   analyzePullRequest,
   postCommentToPullRequest,
   getWorkflowTemplate,
+  connectRepository,
+  syncRepositoryCommits,
+  getRepositoryCommits,
 } from "../controllers/github.controller.js";
 
 const router = Router();
+
+// Connect to a direct GitHub repository & fetch overview + commits
+router.post("/connect-repo", connectRepository);
+
+// Synchronize repository commits and compute blast radius (cumulative or single)
+router.post("/sync-commits", syncRepositoryCommits);
+
+// Fetch fresh commits for a connected repository
+router.get("/repo-commits", getRepositoryCommits);
 
 // Inspect GitHub PR metadata and modified file list
 router.post("/inspect-pr", inspectPullRequest);

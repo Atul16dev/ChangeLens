@@ -4,6 +4,7 @@ import {
   Play,
   GitPullRequest,
   Folder,
+  FolderPlus,
   Sliders,
   RefreshCw,
   Zap,
@@ -42,6 +43,7 @@ export function Header({
   onExitSimulation,
   onOpenHistory,
   onOpenGitHub,
+  onOpenProjectHub,
 }) {
   const [repoPath, setRepoPath] = useState('');
   const [changedFile, setChangedFile] = useState('server/models/user.js');
@@ -125,13 +127,26 @@ export function Header({
           </div>
         </div>
 
-        {/* Right: Actions (GitHub PR, History, Profile) */}
+        {/* Right: Actions (Connect Repo, GitHub PR, History, Profile) */}
         <div className="flex items-center gap-2.5 shrink-0">
+          {/* Project Hub / Connect Repo Button */}
+          {onOpenProjectHub && (
+            <button
+              type="button"
+              onClick={onOpenProjectHub}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-cyan-950/70 hover:bg-cyan-900/80 text-cyan-300 hover:text-cyan-200 border border-cyan-800/60 hover:border-cyan-500/60 transition-all shadow-sm active:scale-95 cursor-pointer"
+              title="Open Project Hub to connect GitHub repo or local folder"
+            >
+              <FolderPlus className="w-3.5 h-3.5 text-cyan-400" />
+              <span>Connect Repo</span>
+            </button>
+          )}
+
           {/* GitHub PR Connector Button */}
           <button
             type="button"
             onClick={onOpenGitHub}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800/90 hover:bg-slate-750 text-cyan-300 hover:text-cyan-200 border border-slate-700/80 hover:border-cyan-500/50 transition-all shadow-sm active:scale-95"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800/90 hover:bg-slate-750 text-slate-200 hover:text-white border border-slate-700/80 hover:border-cyan-500/50 transition-all shadow-sm active:scale-95 cursor-pointer"
             title="Connect GitHub Pull Request & Actions CI"
           >
             <GitHubIcon className="w-3.5 h-3.5 text-cyan-400" />

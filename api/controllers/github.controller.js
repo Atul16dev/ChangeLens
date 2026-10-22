@@ -5,6 +5,9 @@ import {
   analyzeGitHubPR,
   postPRComment,
   getGitHubActionWorkflowYaml,
+  fetchRepositoryDetails,
+  fetchLatestCommits,
+  analyzeRepositorySync,
 } from "../services/github.js";
 
 /**
@@ -163,4 +166,142 @@ export async function getWorkflowTemplate(req, res) {
       yaml,
     },
   });
+}
+
+/**
+ * POST /api/v1/github/connect-repo
+ * Connects to a GitHub repository, fetches repo overview and recent commits.
+ */
+export async function connectRepository(req, res, next) {
+  try {
+    const { repoUrl, token } = req.body || {};
+    if (!repoUrl) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: "INVALID_REPO_URL",
+          message: "A valid GitHub repository URL is required (e.g. https://github.com/owner/repo or owner/repo).",
+        },
+      });
+    }
+
+    const parsed = parseGitHubUrl(repoUrl);
+    const [details, latestCommits] = await Promise.all([
+      fetchRepositoryDetails({
+        owner: parsed.owner,
+        repo: parsed.repo,
+        token,
+      }),
+      fetchLatestCommits({
+        owner: parsed.owner,
+        repo: parsed.repo,
+        token,
+        perPage: 10,
+      }),
+    ]);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        repo: details,
+        latestCommits,
+        currentSha: latestCommits.length > 0 ? latestCommits[0].sha : null,
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
+ * POST /api/v1/github/sync-commits
+ * Synchronizes and computes blast radius for GitHub commits.
+ * Supports:
+ * - mode: "cumulative" (All pushes between baseSha and headSha)
+ * - mode: "single" (Only specified commitSha or latest push)
+ */
+export async function syncRepositoryCommits(req, res, next) {
+  try {
+    const {
+      repoUrl,
+      token,
+      mode = "cumulative",
+      baseSha,
+      headSha,
+      commitSha,
+      repoPath,
+      maxDepth,
+    } = req.body || {};
+
+    if (!repoUrl) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: "INVALID_REPO_URL",
+          message: "A valid GitHub repository URL is required.",
+        },
+      });
+    }
+
+    const userId = req.user?.id || null;
+    const result = await analyzeRepositorySync({
+      repoUrl,
+      token,
+      mode,
+      baseSha,
+      headSha,
+      commitSha,
+      repoPath,
+      maxDepth: maxDepth ? Number(maxDepth) : 10,
+      userId,
+    });
+
+    res.status(201).json({
+      success: true,
+      data: result,
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
+ * GET /api/v1/github/repo-commits
+ * Fetches fresh commit list for an active repository.
+ */
+export async function getRepositoryCommits(req, res, next) {
+  try {
+    const repoUrl = req.query.repoUrl;
+    const token = req.query.token;
+    const branch = req.query.branch;
+    const perPage = req.query.perPage ? parseInt(req.query.perPage, 10) : 10;
+
+    if (!repoUrl) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: "REPO_URL_REQUIRED",
+          message: "Repository URL query parameter is required.",
+        },
+      });
+    }
+
+    const parsed = parseGitHubUrl(repoUrl);
+    const commits = await fetchLatestCommits({
+      owner: parsed.owner,
+      repo: parsed.repo,
+      branch,
+      token,
+      perPage,
+    });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        commits,
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
 }

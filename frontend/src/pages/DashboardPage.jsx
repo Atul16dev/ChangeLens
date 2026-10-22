@@ -5,6 +5,8 @@ import { ImpactSidebar } from '../components/ImpactSidebar.jsx';
 import { ChatAssistant } from '../components/ChatAssistant.jsx';
 import { HistoryDrawer } from '../components/HistoryDrawer.jsx';
 import { GitHubConnectorModal } from '../components/GitHubConnectorModal.jsx';
+import { RepoSyncBar } from '../components/RepoSyncBar.jsx';
+import { ProjectHub } from '../components/ProjectHub.jsx';
 import {
   checkBackendHealth,
   runImpactAnalysis,
@@ -12,6 +14,9 @@ import {
   getAnalysisImpact,
   getAnalysisExplanation,
   simulateImpact,
+  connectGitHubRepository,
+  syncGitHubRepositoryCommits,
+  getGitHubRepositoryCommits,
 } from '../services/api.js';
 import { AlertCircle, RefreshCw } from 'lucide-react';
 
@@ -31,6 +36,12 @@ export function DashboardPage() {
 
   // GitHub Connector Modal state
   const [isGitHubOpen, setIsGitHubOpen] = useState(false);
+
+  // Project Hub state (Full-screen onboarding & project chooser)
+  const [isProjectHubOpen, setIsProjectHubOpen] = useState(false);
+
+  // Connected GitHub Repository state (with Cumulative & Single Push tracking)
+  const [connectedRepo, setConnectedRepo] = useState(null);
 
   // What-If Simulator state
   const [simulationData, setSimulationData] = useState(null);
@@ -102,6 +113,171 @@ export function DashboardPage() {
     }
   }, []);
 
+  // Connect a GitHub repository and run baseline audit
+  const handleConnectGitHubRepo = useCallback(
+    async ({ repoUrl, token }) => {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await connectGitHubRepository({ repoUrl, token });
+        const latestSha = data.currentSha;
+
+        // Perform initial sync on latest push
+        const syncResult = await syncGitHubRepositoryCommits({
+          repoUrl,
+          token,
+          mode: 'single',
+          commitSha: latestSha,
+        });
+
+        setConnectedRepo({
+          repo: data.repo,
+          defaultBranch: data.repo.defaultBranch,
+          latestCommits: data.latestCommits || [],
+          currentSha: latestSha,
+          lastSyncedSha: latestSha,
+          token,
+          repoUrl,
+        });
+
+        await loadSavedAnalysis(syncResult.analysisId);
+        setIsProjectHubOpen(false);
+      } catch (err) {
+        console.error('Failed to connect GitHub repository:', err);
+        setError(err.message || 'Failed to connect GitHub repository');
+      } finally {
+        setLoading(false);
+      }
+    },
+    [loadSavedAnalysis]
+  );
+
+  // Sync ALL pushes cumulatively between lastSyncedSha and currentSha
+  const handleSyncAllPushes = useCallback(async () => {
+    if (!connectedRepo) return;
+    setLoading(true);
+    setError(null);
+    try {
+      // Fetch fresh commits list to detect new pushes
+      const commitsData = await getGitHubRepositoryCommits({
+        repoUrl: connectedRepo.repoUrl,
+        token: connectedRepo.token,
+        branch: connectedRepo.defaultBranch,
+      });
+
+      const freshCommits = commitsData.commits || [];
+      const freshHeadSha =
+        freshCommits.length > 0 ? freshCommits[0].sha : connectedRepo.currentSha;
+
+      // Cumulative sync across all pushes since last check
+      const syncResult = await syncGitHubRepositoryCommits({
+        repoUrl: connectedRepo.repoUrl,
+        token: connectedRepo.token,
+        mode: 'cumulative',
+        baseSha: connectedRepo.lastSyncedSha,
+        headSha: freshHeadSha,
+      });
+
+      setConnectedRepo((prev) => ({
+        ...prev,
+        latestCommits: freshCommits,
+        currentSha: freshHeadSha,
+        lastSyncedSha: freshHeadSha,
+      }));
+
+      await loadSavedAnalysis(syncResult.analysisId);
+    } catch (err) {
+      console.error('Cumulative push sync failed:', err);
+      setError(err.message || 'Failed to sync all pushes');
+    } finally {
+      setLoading(false);
+    }
+  }, [connectedRepo, loadSavedAnalysis]);
+
+  // Sync ONLY the latest push
+  const handleSyncLatestPush = useCallback(async () => {
+    if (!connectedRepo) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const commitsData = await getGitHubRepositoryCommits({
+        repoUrl: connectedRepo.repoUrl,
+        token: connectedRepo.token,
+        branch: connectedRepo.defaultBranch,
+      });
+
+      const freshCommits = commitsData.commits || [];
+      const freshHeadSha =
+        freshCommits.length > 0 ? freshCommits[0].sha : connectedRepo.currentSha;
+
+      const syncResult = await syncGitHubRepositoryCommits({
+        repoUrl: connectedRepo.repoUrl,
+        token: connectedRepo.token,
+        mode: 'single',
+        commitSha: freshHeadSha,
+      });
+
+      setConnectedRepo((prev) => ({
+        ...prev,
+        latestCommits: freshCommits,
+        currentSha: freshHeadSha,
+        lastSyncedSha: freshHeadSha,
+      }));
+
+      await loadSavedAnalysis(syncResult.analysisId);
+    } catch (err) {
+      console.error('Latest push sync failed:', err);
+      setError(err.message || 'Failed to sync latest push');
+    } finally {
+      setLoading(false);
+    }
+  }, [connectedRepo, loadSavedAnalysis]);
+
+  // Sync a specific historical commit
+  const handleSelectSpecificCommit = useCallback(
+    async (commitSha) => {
+      if (!connectedRepo || !commitSha) return;
+      setLoading(true);
+      setError(null);
+      try {
+        const syncResult = await syncGitHubRepositoryCommits({
+          repoUrl: connectedRepo.repoUrl,
+          token: connectedRepo.token,
+          mode: 'single',
+          commitSha,
+        });
+
+        await loadSavedAnalysis(syncResult.analysisId);
+      } catch (err) {
+        console.error('Failed to sync specific commit:', err);
+        setError(err.message || 'Failed to sync commit');
+      } finally {
+        setLoading(false);
+      }
+    },
+    [connectedRepo, loadSavedAnalysis]
+  );
+
+  const handleDisconnectRepo = useCallback(() => {
+    setConnectedRepo(null);
+    setIsProjectHubOpen(true);
+  }, []);
+
+  const handleOpenLocalWorkspace = useCallback(
+    async ({ repoPath }) => {
+      setConnectedRepo(null);
+      setIsProjectHubOpen(false);
+      await executeAnalysis({ repoPath });
+    },
+    [executeAnalysis]
+  );
+
+  const handleLaunchDemo = useCallback(async () => {
+    setConnectedRepo(null);
+    setIsProjectHubOpen(false);
+    await executeAnalysis({ changedFiles: ['server/models/user.js'] });
+  }, [executeAnalysis]);
+
   // Simulate What-If impact for any given file
   const handleSimulateNode = useCallback(
     async (filePath, changeType = 'modified') => {
@@ -166,7 +342,23 @@ export function DashboardPage() {
         onExitSimulation={handleExitSimulation}
         onOpenHistory={() => setIsHistoryOpen(true)}
         onOpenGitHub={() => setIsGitHubOpen(true)}
+        onOpenProjectHub={() => setIsProjectHubOpen((prev) => !prev)}
       />
+
+      {/* Connected Repository Push Sync Bar */}
+      {connectedRepo && (
+        <RepoSyncBar
+          repoInfo={connectedRepo.repo}
+          commits={connectedRepo.latestCommits}
+          lastSyncedSha={connectedRepo.lastSyncedSha}
+          currentSha={connectedRepo.currentSha}
+          loading={loading}
+          onSyncAllPushes={handleSyncAllPushes}
+          onSyncLatestPush={handleSyncLatestPush}
+          onSelectSpecificCommit={handleSelectSpecificCommit}
+          onDisconnect={handleDisconnectRepo}
+        />
+      )}
 
       {/* Error Notification Banner */}
       {error && (
@@ -179,54 +371,63 @@ export function DashboardPage() {
           </div>
           <button
             onClick={() => setError(null)}
-            className="hover:underline text-rose-400 font-semibold"
+            className="hover:underline text-rose-400 font-semibold cursor-pointer"
           >
             Dismiss
           </button>
         </div>
       )}
 
-      {/* Main Workspace: Left Graph Canvas + Right Impact Sidebar */}
-      <div className="flex-1 flex overflow-hidden relative">
-        <main className="flex-1 h-full relative">
-          {loading && !effectiveGraphData && (
-            <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-slate-950/80 backdrop-blur-sm">
-              <RefreshCw className="w-8 h-8 text-cyan-400 animate-spin mb-3" />
-              <p className="text-sm text-slate-300 font-medium">
-                Parsing ASTs & Computing AI Impact Review...
-              </p>
-            </div>
-          )}
+      {/* Main Workspace OR Onboarding Project Hub */}
+      {isProjectHubOpen ? (
+        <ProjectHub
+          onConnectGitHubRepo={handleConnectGitHubRepo}
+          onOpenLocalWorkspace={handleOpenLocalWorkspace}
+          onLaunchDemo={handleLaunchDemo}
+          loading={loading}
+        />
+      ) : (
+        <div className="flex-1 flex overflow-hidden relative">
+          <main className="flex-1 h-full relative">
+            {loading && !effectiveGraphData && (
+              <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-slate-950/80 backdrop-blur-sm">
+                <RefreshCw className="w-8 h-8 text-cyan-400 animate-spin mb-3" />
+                <p className="text-sm text-slate-300 font-medium">
+                  Parsing ASTs & Computing AI Impact Review...
+                </p>
+              </div>
+            )}
 
-          <GraphViewer
-            graphData={effectiveGraphData}
+            <GraphViewer
+              graphData={effectiveGraphData}
+              selectedNodeId={selectedNodeId}
+              onSelectNode={setSelectedNodeId}
+              isSimulating={isSimulating}
+              simulatedFile={simulationData?.simulatedFile}
+              onExitSimulation={handleExitSimulation}
+            />
+
+            {/* Context-Aware AI Chatbot docked inside Graph Workspace */}
+            <ChatAssistant
+              analysisId={currentAnalysisId}
+              selectedNodeId={selectedNodeId}
+              isSimulating={isSimulating}
+              simulatedFile={simulationData?.simulatedFile}
+            />
+          </main>
+
+          <ImpactSidebar
+            impactData={effectiveImpactData}
+            explanationData={effectiveExplanationData}
             selectedNodeId={selectedNodeId}
             onSelectNode={setSelectedNodeId}
             isSimulating={isSimulating}
             simulatedFile={simulationData?.simulatedFile}
+            onSimulateNode={handleSimulateNode}
             onExitSimulation={handleExitSimulation}
           />
-
-          {/* Context-Aware AI Chatbot docked inside Graph Workspace */}
-          <ChatAssistant
-            analysisId={currentAnalysisId}
-            selectedNodeId={selectedNodeId}
-            isSimulating={isSimulating}
-            simulatedFile={simulationData?.simulatedFile}
-          />
-        </main>
-
-        <ImpactSidebar
-          impactData={effectiveImpactData}
-          explanationData={effectiveExplanationData}
-          selectedNodeId={selectedNodeId}
-          onSelectNode={setSelectedNodeId}
-          isSimulating={isSimulating}
-          simulatedFile={simulationData?.simulatedFile}
-          onSimulateNode={handleSimulateNode}
-          onExitSimulation={handleExitSimulation}
-        />
-      </div>
+        </div>
+      )}
 
       {/* Slide-over Analysis History & Saved Reports Drawer */}
       <HistoryDrawer

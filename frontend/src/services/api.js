@@ -220,6 +220,67 @@ export async function getGitHubWorkflowTemplate({ failOnCritical = true, failOnH
   return data.data;
 }
 
+export async function connectGitHubRepository({ repoUrl, token }) {
+  const res = await fetchWithRetry(`${API_BASE}/github/connect-repo`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ repoUrl, token }),
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error?.message || 'Failed to connect GitHub repository');
+  }
+  return data.data;
+}
+
+export async function syncGitHubRepositoryCommits({
+  repoUrl,
+  token,
+  mode = 'cumulative',
+  baseSha,
+  headSha,
+  commitSha,
+  repoPath,
+  maxDepth = 10,
+}) {
+  const res = await fetchWithRetry(`${API_BASE}/github/sync-commits`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      repoUrl,
+      token,
+      mode,
+      baseSha,
+      headSha,
+      commitSha,
+      repoPath,
+      maxDepth,
+    }),
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error?.message || 'Failed to sync repository commits');
+  }
+  return data.data;
+}
+
+export async function getGitHubRepositoryCommits({ repoUrl, token, branch, perPage = 10 }) {
+  const params = new URLSearchParams({ repoUrl, perPage: String(perPage) });
+  if (token) params.append('token', token);
+  if (branch) params.append('branch', branch);
+
+  const res = await fetchWithRetry(`${API_BASE}/github/repo-commits?${params.toString()}`);
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error?.message || 'Failed to fetch repository commits');
+  }
+  return data.data;
+}
+
 
 
 
