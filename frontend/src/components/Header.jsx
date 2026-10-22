@@ -44,9 +44,10 @@ export function Header({
   onOpenHistory,
   onOpenGitHub,
   onOpenProjectHub,
+  isDemoMode = false,
 }) {
   const [repoPath, setRepoPath] = useState('');
-  const [changedFile, setChangedFile] = useState('server/models/user.js');
+  const [changedFile, setChangedFile] = useState('');
   const [maxDepth, setMaxDepth] = useState(10);
 
   const handleSubmit = (e) => {
@@ -55,15 +56,6 @@ export function Header({
     onAnalyze({
       repoPath: repoPath.trim() || undefined,
       changedFiles,
-      maxDepth: Number(maxDepth),
-    });
-  };
-
-  const applyPreset = (presetFile) => {
-    setChangedFile(presetFile);
-    onAnalyze({
-      repoPath: repoPath.trim() || undefined,
-      changedFiles: [presetFile],
       maxDepth: Number(maxDepth),
     });
   };
@@ -184,7 +176,7 @@ export function Header({
               type="text"
               value={repoPath}
               onChange={(e) => setRepoPath(e.target.value)}
-              placeholder="Repo path (default: mern-sample)"
+              placeholder="Project / Workspace path"
               className="bg-transparent text-xs text-slate-100 placeholder-slate-500 focus:outline-none w-44 lg:w-56 font-mono"
               title="Absolute or relative path to target repository"
             />
@@ -197,9 +189,9 @@ export function Header({
               type="text"
               value={changedFile}
               onChange={(e) => setChangedFile(e.target.value)}
-              placeholder="e.g. server/models/user.js"
-              className="bg-transparent text-xs text-slate-100 placeholder-slate-500 focus:outline-none w-40 lg:w-52 font-mono"
-              title="File path relative to repository root"
+              placeholder="e.g. src/index.js (or leave blank for all Git changes)"
+              className="bg-transparent text-xs text-slate-100 placeholder-slate-500 focus:outline-none w-48 lg:w-72 font-mono"
+              title="File path to analyze (leave empty to auto-detect all uncommitted Git changes)"
             />
           </div>
 
@@ -222,7 +214,7 @@ export function Header({
           <button
             type="submit"
             disabled={loading}
-            className="flex items-center gap-1.5 bg-gradient-to-r from-cyan-500 via-indigo-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold text-xs px-3.5 py-1.5 rounded-lg shadow-md shadow-cyan-500/20 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed transition-all whitespace-nowrap shrink-0"
+            className="flex items-center gap-1.5 bg-gradient-to-r from-cyan-500 via-indigo-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold text-xs px-3.5 py-1.5 rounded-lg shadow-md shadow-cyan-500/20 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed transition-all whitespace-nowrap shrink-0 cursor-pointer"
           >
             {loading ? (
               <>
@@ -238,29 +230,31 @@ export function Header({
           </button>
         </form>
 
-        {/* Right: Quick Scenarios (Fills the empty space on the right side!) */}
-        <div className="flex items-center gap-1.5 shrink-0 ml-auto">
-          <span className="text-[11px] text-slate-500 font-medium whitespace-nowrap">
-            Quick Scenarios:
-          </span>
-          {PRESETS.map((p) => {
-            const isActive = changedFile === p.file;
-            return (
-              <button
-                key={p.label}
-                type="button"
-                onClick={() => applyPreset(p.file)}
-                className={`px-2.5 py-1 rounded-md font-mono text-[11px] transition-all whitespace-nowrap ${
-                  isActive
-                    ? 'bg-cyan-950/80 text-cyan-300 border border-cyan-500/50 shadow-sm font-semibold'
-                    : 'bg-slate-800/70 hover:bg-slate-750 text-slate-300 hover:text-white border border-slate-700/60'
-                }`}
-                title={`Analyze ${p.file}`}
-              >
-                {p.label}
-              </button>
-            );
-          })}
+        {/* Right: Workspace Context Badge & Switcher */}
+        <div className="flex items-center gap-2 shrink-0 ml-auto">
+          {isDemoMode ? (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-emerald-950/70 text-emerald-300 border border-emerald-500/40 shadow-sm">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span>Demo Playground (mern-sample)</span>
+            </span>
+          ) : (
+            <span className="hidden sm:inline-flex items-center gap-1.5 text-[11px] text-slate-400 bg-slate-900/60 px-2.5 py-1 rounded-md border border-slate-800">
+              <Zap className="w-3 h-3 text-cyan-400" />
+              <span>Live Codebase Scanner</span>
+            </span>
+          )}
+
+          {onOpenProjectHub && (
+            <button
+              type="button"
+              onClick={onOpenProjectHub}
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-medium bg-slate-800/80 hover:bg-slate-750 text-slate-300 hover:text-white border border-slate-700/80 transition-colors cursor-pointer"
+              title="Open Project Hub to connect another repository or workspace"
+            >
+              <FolderPlus className="w-3 h-3 text-cyan-400" />
+              <span>Switch Project</span>
+            </button>
+          )}
         </div>
       </div>
     </header>

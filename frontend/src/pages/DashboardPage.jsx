@@ -17,6 +17,8 @@ import {
   connectGitHubRepository,
   syncGitHubRepositoryCommits,
   getGitHubRepositoryCommits,
+  analyzeGitHubPR,
+  getAnalysisHistory,
 } from '../services/api.js';
 import { AlertCircle, RefreshCw } from 'lucide-react';
 
@@ -37,8 +39,14 @@ export function DashboardPage() {
   // GitHub Connector Modal state
   const [isGitHubOpen, setIsGitHubOpen] = useState(false);
 
-  // Project Hub state (Full-screen onboarding & project chooser)
-  const [isProjectHubOpen, setIsProjectHubOpen] = useState(false);
+  // Project Hub state (Full-screen onboarding & project chooser - default on login!)
+  const [isProjectHubOpen, setIsProjectHubOpen] = useState(true);
+
+  // Demo Playground mode indicator
+  const [isDemoMode, setIsDemoMode] = useState(false);
+
+  // Recent analyses cache for Project Hub quick resume
+  const [recentAnalyses, setRecentAnalyses] = useState([]);
 
   // Connected GitHub Repository state (with Cumulative & Single Push tracking)
   const [connectedRepo, setConnectedRepo] = useState(null);
@@ -118,6 +126,7 @@ export function DashboardPage() {
     async ({ repoUrl, token }) => {
       setLoading(true);
       setError(null);
+      setIsDemoMode(false);
       try {
         const data = await connectGitHubRepository({ repoUrl, token });
         const latestSha = data.currentSha;
@@ -145,6 +154,27 @@ export function DashboardPage() {
       } catch (err) {
         console.error('Failed to connect GitHub repository:', err);
         setError(err.message || 'Failed to connect GitHub repository');
+      } finally {
+        setLoading(false);
+      }
+    },
+    [loadSavedAnalysis]
+  );
+
+  // Directly analyze a GitHub PR from Project Hub
+  const handleAnalyzeGitHubPR = useCallback(
+    async ({ prUrl, token }) => {
+      setLoading(true);
+      setError(null);
+      setIsDemoMode(false);
+      setConnectedRepo(null);
+      try {
+        const result = await analyzeGitHubPR({ prUrl, token });
+        await loadSavedAnalysis(result.analysisId);
+        setIsProjectHubOpen(false);
+      } catch (err) {
+        console.error('Failed to analyze GitHub PR:', err);
+        setError(err.message || 'Failed to analyze GitHub Pull Request');
       } finally {
         setLoading(false);
       }
@@ -266,6 +296,7 @@ export function DashboardPage() {
   const handleOpenLocalWorkspace = useCallback(
     async ({ repoPath }) => {
       setConnectedRepo(null);
+      setIsDemoMode(false);
       setIsProjectHubOpen(false);
       await executeAnalysis({ repoPath });
     },
@@ -274,6 +305,7 @@ export function DashboardPage() {
 
   const handleLaunchDemo = useCallback(async () => {
     setConnectedRepo(null);
+    setIsDemoMode(true);
     setIsProjectHubOpen(false);
     await executeAnalysis({ changedFiles: ['server/models/user.js'] });
   }, [executeAnalysis]);
@@ -313,21 +345,25 @@ export function DashboardPage() {
   const effectiveImpactData = simulationData ? simulationData.impactAnalysis : impactData;
   const effectiveExplanationData = simulationData ? simulationData.explanation : explanationData;
 
-  // Check health and run initial analysis on component mount
+  // Check health and fetch recent analyses on mount (DO NOT auto-run demo analysis)
   useEffect(() => {
     async function init() {
       try {
         await checkBackendHealth();
         setBackendStatus('online');
-        // Initial run with default fixture
-        executeAnalysis({ changedFiles: ['server/models/user.js'] });
+
+        // Fetch recent history to display on Project Hub
+        const historyRes = await getAnalysisHistory({ limit: 6 }).catch(() => null);
+        if (historyRes && Array.isArray(historyRes.analyses)) {
+          setRecentAnalyses(historyRes.analyses);
+        }
       } catch (err) {
         console.warn('Backend not responding yet:', err.message);
         setBackendStatus('offline');
       }
     }
     init();
-  }, [executeAnalysis]);
+  }, []);
 
   return (
     <div className="flex flex-col h-screen w-screen bg-slate-950 text-slate-100 overflow-hidden font-sans">
@@ -343,6 +379,7 @@ export function DashboardPage() {
         onOpenHistory={() => setIsHistoryOpen(true)}
         onOpenGitHub={() => setIsGitHubOpen(true)}
         onOpenProjectHub={() => setIsProjectHubOpen((prev) => !prev)}
+        isDemoMode={isDemoMode}
       />
 
       {/* Connected Repository Push Sync Bar */}
@@ -382,8 +419,15 @@ export function DashboardPage() {
       {isProjectHubOpen ? (
         <ProjectHub
           onConnectGitHubRepo={handleConnectGitHubRepo}
+          onAnalyzeGitHubPR={handleAnalyzeGitHubPR}
           onOpenLocalWorkspace={handleOpenLocalWorkspace}
           onLaunchDemo={handleLaunchDemo}
+          recentAnalyses={recentAnalyses}
+          onLoadSavedAnalysis={async (id) => {
+            setIsDemoMode(false);
+            await loadSavedAnalysis(id);
+            setIsProjectHubOpen(false);
+          }}
           loading={loading}
         />
       ) : (
