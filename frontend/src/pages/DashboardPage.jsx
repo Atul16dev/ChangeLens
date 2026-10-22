@@ -372,7 +372,15 @@ export function DashboardPage() {
         onAnalyze={executeAnalysis}
         loading={loading}
         backendStatus={backendStatus}
-        onRefresh={() => executeAnalysis({ changedFiles: ['server/models/user.js'] })}
+        onRefresh={() => {
+          if (connectedRepo) {
+            handleSyncLatestPush();
+          } else if (currentAnalysisId) {
+            loadSavedAnalysis(currentAnalysisId);
+          } else {
+            executeAnalysis();
+          }
+        }}
         isSimulating={isSimulating}
         simulatedFile={simulationData?.simulatedFile}
         onExitSimulation={handleExitSimulation}

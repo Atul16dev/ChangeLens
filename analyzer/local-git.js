@@ -14,15 +14,17 @@ const execFileAsync = promisify(execFile);
  * 
  * @param {Array<string>} args - Git arguments
  * @param {string} cwd - Directory path to execute within
+ * @param {object} [options={}] - Additional execFile options (timeout, etc.)
  * @returns {Promise<{ stdout: string, stderr: string }>}
  */
-export async function executeGit(args, cwd) {
+export async function executeGit(args, cwd, options = {}) {
   try {
     const { stdout, stderr } = await execFileAsync("git", args, {
       cwd,
-      timeout: 15000, // 15-second timeout safeguard
-      maxBuffer: 5 * 1024 * 1024, // 5MB buffer limit
+      timeout: options.timeout || 60000, // 60-second timeout safeguard for network & clone operations
+      maxBuffer: 10 * 1024 * 1024, // 10MB buffer limit
       windowsHide: true,
+      ...options,
     });
     return { stdout: stdout.trim(), stderr: stderr.trim() };
   } catch (error) {

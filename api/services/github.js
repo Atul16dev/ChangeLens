@@ -6,6 +6,7 @@ import { existsSync } from "node:fs";
 import { performAnalysis } from "../controllers/analyses.controller.js";
 import { formatPRMarkdownComment, calculateRiskLevel } from "../../analyzer/ai-explainer.js";
 import { analysesStore } from "../store.js";
+import { executeGit } from "../../analyzer/local-git.js";
 
 const execAsync = promisify(exec);
 
@@ -219,8 +220,26 @@ export async function analyzeGitHubPR({ prUrl, token, repoPath, maxDepth = 10, u
   const changedPaths = prFiles.map((f) => f.path);
 
   // 2. Perform end-to-end AST Blast Radius Analysis
-  // If repoPath is provided, use it; otherwise, use local workspace / sample fixture
-  const targetDir = repoPath || path.resolve(process.cwd(), "tests/fixtures/mern-sample");
+  // If repoPath is provided, use it; otherwise, clone or sync the PR repo to local cache
+  let targetDir = repoPath;
+  if (!targetDir) {
+    try {
+      targetDir = await ensureGitHubRepositoryCached({
+        owner: parsed.owner,
+        repo: parsed.repo,
+        commitSha: prDetails.head.sha,
+        token,
+      });
+    } catch (cloneErr) {
+      if (process.env.NODE_ENV === "test") {
+        targetDir = path.resolve(process.cwd(), "tests/fixtures/mern-sample");
+      } else {
+        throw new Error(
+          `Could not clone and inspect PR repository "${parsed.owner}/${parsed.repo}": ${cloneErr.message}. If this repository is private, please provide a GitHub Personal Access Token.`
+        );
+      }
+    }
+  }
 
   const analysisRecord = await performAnalysis(
     {
@@ -565,6 +584,81 @@ export async function compareCommits({ owner, repo, baseSha, headSha, token }) {
 }
 
 /**
+ * Ensures a remote GitHub repository is cloned or synced in the local cache.
+ * Uses shallow depth 1 clone for speed and minimal disk usage.
+ */
+export async function ensureGitHubRepositoryCached({ owner, repo, branch, commitSha, token }) {
+  const cacheBase = path.resolve(process.cwd(), ".changelens-cache", "repos");
+  const targetDir = path.resolve(cacheBase, `${owner}_${repo}`);
+
+  const effectiveToken =
+    token && typeof token === "string" && token.trim()
+      ? token.trim()
+      : (process.env.GITHUB_TOKEN || process.env.GH_TOKEN || "").trim();
+
+  const cloneUrl = effectiveToken
+    ? `https://x-access-token:${encodeURIComponent(effectiveToken)}@github.com/${owner}/${repo}.git`
+    : `https://github.com/${owner}/${repo}.git`;
+
+  await fs.mkdir(cacheBase, { recursive: true });
+
+  let isCloned = false;
+  try {
+    const s = await fs.stat(path.resolve(targetDir, ".git"));
+    isCloned = s.isDirectory();
+  } catch {
+    isCloned = false;
+  }
+
+  if (!isCloned) {
+    try {
+      await fs.rm(targetDir, { recursive: true, force: true });
+    } catch {}
+
+    const cloneArgs = ["clone", "--depth", "1"];
+    if (branch) {
+      cloneArgs.push("--branch", branch);
+    }
+    cloneArgs.push(cloneUrl, targetDir);
+
+    try {
+      await executeGit(cloneArgs, process.cwd(), { timeout: 60000 });
+    } catch (err) {
+      throw new Error(
+        `Failed to clone repository "${owner}/${repo}": ${err.message}. If this repository is private, please provide a GitHub Personal Access Token.`
+      );
+    }
+  } else {
+    try {
+      const fetchArgs = ["fetch", "--depth", "1", "origin"];
+      if (commitSha) {
+        fetchArgs.push(commitSha);
+      } else if (branch) {
+        fetchArgs.push(branch);
+      }
+      await executeGit(fetchArgs, targetDir, { timeout: 45000 });
+    } catch (err) {
+      console.warn(`[GitHub Cache] Fetch warning for ${owner}/${repo}:`, err.message);
+    }
+  }
+
+  if (commitSha) {
+    try {
+      await executeGit(["checkout", commitSha], targetDir);
+    } catch {
+      try {
+        await executeGit(["fetch", "--depth", "1", "origin", commitSha], targetDir);
+        await executeGit(["checkout", commitSha], targetDir);
+      } catch (err) {
+        console.warn(`[GitHub Cache] Checkout commitSha warning for ${commitSha}:`, err.message);
+      }
+    }
+  }
+
+  return targetDir;
+}
+
+/**
  * Analyzes repository pushes (either cumulative since last sync, or single latest commit).
  */
 export async function analyzeRepositorySync({
@@ -642,7 +736,7 @@ export async function analyzeRepositorySync({
       };
     }
   } catch (err) {
-    if (process.env.NODE_ENV === "test" || !token) {
+    if (process.env.NODE_ENV === "test") {
       changedPaths = ["server/models/user.js", "server/controllers/user-controller.js"];
       syncDetails = {
         ...syncDetails,
@@ -661,8 +755,26 @@ export async function analyzeRepositorySync({
     }
   }
 
-  // Fallback to sample fixture if local path not explicitly provided
-  const targetDir = repoPath || path.resolve(process.cwd(), "tests/fixtures/mern-sample");
+  // Use local path if explicitly provided; otherwise, clone or sync the remote GitHub repo to cache
+  let targetDir = repoPath;
+  if (!targetDir) {
+    try {
+      targetDir = await ensureGitHubRepositoryCached({
+        owner,
+        repo,
+        commitSha: syncDetails.commitSha || syncDetails.headSha,
+        token,
+      });
+    } catch (cloneErr) {
+      if (process.env.NODE_ENV === "test") {
+        targetDir = path.resolve(process.cwd(), "tests/fixtures/mern-sample");
+      } else {
+        throw new Error(
+          `Could not clone and analyze repository "${owner}/${repo}": ${cloneErr.message}. If this repository is private, please provide a GitHub Personal Access Token.`
+        );
+      }
+    }
+  }
 
   // Perform end-to-end AST Blast Radius Analysis
   const analysisRecord = await performAnalysis(

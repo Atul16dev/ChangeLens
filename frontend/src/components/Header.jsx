@@ -26,12 +26,7 @@ function GitHubIcon({ className = 'w-3.5 h-3.5' }) {
   );
 }
 
-const PRESETS = [
-  { label: 'Model (user.js)', file: 'server/models/user.js' },
-  { label: 'Controller (user-controller.js)', file: 'server/controllers/user-controller.js' },
-  { label: 'Route (user-routes.js)', file: 'server/routes/user-routes.js' },
-  { label: 'CSS (styles.css)', file: 'client/src/styles.css' },
-];
+
 
 export function Header({
   onAnalyze,

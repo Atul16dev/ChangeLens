@@ -153,14 +153,20 @@ export async function performAnalysis({
     }
   }
 
-  // Fallback to fixture modification if no changes detected in targetDir
-  if (changes.length === 0) {
-    changes = [{ path: "server/models/user.js", status: "modified", statusCode: "M" }];
-    changedFilesSet.add("server/models/user.js");
-  }
-
   // 2. Scan repository ASTs
   const scanReport = await scanRepository(targetDir);
+
+  // If no changes detected in targetDir, pick the primary entry point or first parsed file from the target directory
+  if (changes.length === 0) {
+    const candidate = scanReport.files.find(
+      (f) => f.status === "parsed" || f.status === "supported"
+    );
+    const fallbackPath = candidate
+      ? candidate.path.split(path.sep).join("/")
+      : (scanReport.files[0]?.path.split(path.sep).join("/") || "index.js");
+    changes = [{ path: fallbackPath, status: "modified", statusCode: "M" }];
+    changedFilesSet.add(fallbackPath);
+  }
 
   // 3. Resolve module dependencies & Build Symbol Table
   const dependencies = resolveRepositoryDependencies(scanReport);
