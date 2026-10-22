@@ -397,21 +397,48 @@ export function DashboardPage() {
         />
       )}
 
-      {/* Error Notification Banner */}
-      {error && (
-        <div className="bg-rose-950/90 border-b border-rose-500/50 px-6 py-2.5 flex items-center justify-between text-rose-200 text-xs backdrop-blur-md">
-          <div className="flex items-center gap-2">
+      {/* Error Notification Banner (only shown directly in dashboard if Hub is closed) */}
+      {error && !isProjectHubOpen && (
+        <div className="bg-rose-950/95 border-b border-rose-500/60 px-6 py-3 flex flex-wrap items-center justify-between text-rose-200 text-xs backdrop-blur-md gap-3 shadow-lg">
+          <div className="flex items-center gap-2.5">
             <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
-            <span>
-              <strong>Analysis Error:</strong> {error}
-            </span>
+            <div>
+              <strong className="text-white">Analysis Error:</strong> {error}
+              {error.toLowerCase().includes('rate limit') && (
+                <div className="text-[11px] text-rose-300/80 mt-0.5">
+                  GitHub unauthenticated IP rate limit is 60 requests/hr. Supplying a Personal Access Token unlocks 5,000 requests/hr.
+                </div>
+              )}
+            </div>
           </div>
-          <button
-            onClick={() => setError(null)}
-            className="hover:underline text-rose-400 font-semibold cursor-pointer"
-          >
-            Dismiss
-          </button>
+          <div className="flex items-center gap-2">
+            {error.toLowerCase().includes('rate limit') && (
+              <a
+                href="https://github.com/settings/tokens/new?description=ChangeLens&scopes=repo"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-3 py-1 bg-rose-900/80 hover:bg-rose-800 text-white rounded-lg font-medium border border-rose-600/50 flex items-center gap-1 transition-colors"
+              >
+                <span>Generate Free Token (30s)</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            )}
+            <button
+              onClick={() => {
+                setIsProjectHubOpen(true);
+              }}
+              className="px-3 py-1 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg font-medium shadow-sm transition-colors cursor-pointer"
+            >
+              Enter Token in Hub
+            </button>
+            <button
+              onClick={() => setError(null)}
+              className="text-rose-400 hover:text-white font-bold ml-2 cursor-pointer text-sm"
+              title="Dismiss"
+            >
+              ✕
+            </button>
+          </div>
         </div>
       )}
 
@@ -429,6 +456,8 @@ export function DashboardPage() {
             setIsProjectHubOpen(false);
           }}
           loading={loading}
+          apiError={error}
+          onClearApiError={() => setError(null)}
         />
       ) : (
         <div className="flex-1 flex overflow-hidden relative">

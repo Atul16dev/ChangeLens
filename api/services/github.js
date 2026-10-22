@@ -78,14 +78,20 @@ export function parseGitHubUrl(input) {
 
 /**
  * Builds standard GitHub REST API headers with optional Auth token.
+ * Falls back to process.env.GITHUB_TOKEN or process.env.GH_TOKEN if present.
  */
 function buildGitHubHeaders(token) {
+  const effectiveToken =
+    token && typeof token === "string" && token.trim()
+      ? token.trim()
+      : (process.env.GITHUB_TOKEN || process.env.GH_TOKEN || "").trim();
+
   const headers = {
     Accept: "application/vnd.github.v3+json",
     "User-Agent": "ChangeLens-SaaS-Connector/1.0",
   };
-  if (token && typeof token === "string" && token.trim()) {
-    headers.Authorization = `Bearer ${token.trim()}`;
+  if (effectiveToken) {
+    headers.Authorization = `Bearer ${effectiveToken}`;
   }
   return headers;
 }
@@ -450,6 +456,9 @@ export async function fetchLatestCommits({ owner, repo, branch, token, perPage =
   });
 
   if (!response.ok) {
+    if (response.status === 403 || response.status === 429) {
+      throw new Error("GitHub API rate limit exceeded or access forbidden. Please provide a GitHub Personal Access Token.");
+    }
     const errText = await response.text();
     throw new Error(`Failed to fetch commits for ${owner}/${repo} (${response.status}): ${errText}`);
   }
@@ -484,6 +493,9 @@ export async function fetchCommitFiles({ owner, repo, commitSha, token }) {
   });
 
   if (!response.ok) {
+    if (response.status === 403 || response.status === 429) {
+      throw new Error("GitHub API rate limit exceeded or access forbidden. Please provide a GitHub Personal Access Token.");
+    }
     const errText = await response.text();
     throw new Error(`Failed to fetch commit ${commitSha} (${response.status}): ${errText}`);
   }
@@ -520,6 +532,9 @@ export async function compareCommits({ owner, repo, baseSha, headSha, token }) {
   });
 
   if (!response.ok) {
+    if (response.status === 403 || response.status === 429) {
+      throw new Error("GitHub API rate limit exceeded or access forbidden. Please provide a GitHub Personal Access Token.");
+    }
     const errText = await response.text();
     throw new Error(`Failed to compare commits ${baseSha}...${headSha} (${response.status}): ${errText}`);
   }

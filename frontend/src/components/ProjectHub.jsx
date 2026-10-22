@@ -58,6 +58,8 @@ export function ProjectHub({
   recentAnalyses = [],
   onLoadSavedAnalysis,
   loading = false,
+  apiError = null,
+  onClearApiError,
 }) {
   const { user } = useAuth();
   const displayName = user?.name ? user.name.split(' ')[0] : 'Developer';
@@ -69,9 +71,11 @@ export function ProjectHub({
   const [isGuideModalOpen, setIsGuideModalOpen] = useState(false);
   const [currentGuideType, setCurrentGuideType] = useState('repo');
 
-  // Input refs for auto-focusing after guide modal closes
+  // Input refs for auto-focusing
   const repoInputRef = useRef(null);
+  const repoTokenRef = useRef(null);
   const prInputRef = useRef(null);
+  const prTokenRef = useRef(null);
   const localInputRef = useRef(null);
 
   // Form states - GitHub Repository
@@ -108,6 +112,31 @@ export function ProjectHub({
 
   // General error banner
   const [error, setError] = useState(null);
+
+  const effectiveError = error || apiError;
+  const isRateLimitError =
+    effectiveError &&
+    (effectiveError.toLowerCase().includes('rate limit') ||
+      effectiveError.toLowerCase().includes('access forbidden') ||
+      effectiveError.toLowerCase().includes('token'));
+
+  // Auto-expand token field if rate limit or access forbidden error occurred
+  useEffect(() => {
+    if (isRateLimitError) {
+      setShowRepoToken(true);
+      setShowPrToken(true);
+    }
+  }, [isRateLimitError]);
+
+  const focusTokenField = () => {
+    if (activeMode === 'repo') {
+      setShowRepoToken(true);
+      setTimeout(() => repoTokenRef.current?.focus(), 80);
+    } else if (activeMode === 'pr') {
+      setShowPrToken(true);
+      setTimeout(() => prTokenRef.current?.focus(), 80);
+    }
+  };
 
   // Load workflow YAML when PR CI tab or toggles change
   useEffect(() => {
@@ -375,19 +404,80 @@ export function ProjectHub({
         </div>
 
         {/* Global Error Banner */}
-        {error && (
-          <div className="w-full bg-rose-950/80 border border-rose-500/50 text-rose-300 px-4 py-3 rounded-2xl text-xs mb-6 text-left flex items-center justify-between shadow-lg">
-            <div className="flex items-center gap-2.5">
-              <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
-              <span>{error}</span>
+        {effectiveError && (
+          <div
+            className={`w-full rounded-2xl p-4 text-xs mb-6 text-left flex flex-col sm:flex-row items-start sm:items-center justify-between shadow-xl gap-3 transition-all ${
+              isRateLimitError
+                ? 'bg-amber-950/90 border border-amber-500/60 text-amber-200'
+                : 'bg-rose-950/90 border border-rose-500/50 text-rose-300'
+            }`}
+          >
+            <div className="flex items-start gap-3">
+              <div
+                className={`p-2 rounded-xl shrink-0 mt-0.5 ${
+                  isRateLimitError ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-rose-500/20 text-rose-400'
+                }`}
+              >
+                {isRateLimitError ? <KeyRound className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
+              </div>
+              <div>
+                <div className="font-bold text-slate-100 flex items-center gap-2">
+                  <span>{isRateLimitError ? 'GitHub API Rate Limit Exceeded' : 'Analysis Request Error'}</span>
+                  {isRateLimitError && (
+                    <span className="text-[10px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 font-mono">
+                      60 req/hr unauthenticated limit hit
+                    </span>
+                  )}
+                </div>
+                <p className="mt-1 text-slate-300 leading-relaxed text-[11px]">
+                  {isRateLimitError
+                    ? "GitHub restricts anonymous API requests to 60 per hour per IP. Providing a free GitHub Personal Access Token (PAT) unlocks 5,000 requests/hr and instantly resolves this error."
+                    : effectiveError}
+                </p>
+                {isRateLimitError && (
+                  <div className="mt-2 text-[10px] text-amber-300/80 font-mono flex items-center gap-1.5 flex-wrap">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                    <span>Permanent fix: Add <code className="text-white bg-slate-900 px-1.5 py-0.5 rounded border border-amber-500/30">GITHUB_TOKEN=your_token</code> in your project's <code className="text-white bg-slate-900 px-1 py-0.5 rounded">.env</code> file.</span>
+                  </div>
+                )}
+              </div>
             </div>
-            <button
-              type="button"
-              onClick={() => setError(null)}
-              className="text-rose-400 hover:text-white font-bold ml-2 cursor-pointer"
-            >
-              ✕
-            </button>
+
+            <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+              {isRateLimitError && (
+                <>
+                  <button
+                    type="button"
+                    onClick={focusTokenField}
+                    className="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-md active:scale-95 transition-all cursor-pointer flex items-center gap-1.5"
+                  >
+                    <KeyRound className="w-3.5 h-3.5" />
+                    <span>Enter Token Below</span>
+                  </button>
+
+                  <a
+                    href="https://github.com/settings/tokens/new?description=ChangeLens&scopes=repo"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white font-semibold text-xs border border-slate-700 transition-colors flex items-center gap-1.5"
+                  >
+                    <span>Generate Free Token (30s)</span>
+                    <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
+                  </a>
+                </>
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  setError(null);
+                  if (onClearApiError) onClearApiError();
+                }}
+                className="text-slate-400 hover:text-white font-bold p-1 cursor-pointer ml-1"
+                title="Dismiss"
+              >
+                ✕
+              </button>
+            </div>
           </div>
         )}
 
@@ -573,30 +663,46 @@ export function ProjectHub({
                 </div>
 
                 {/* Token Toggle */}
-                <div className="flex items-center justify-between text-xs">
+                <div className="flex items-center justify-between text-xs flex-wrap gap-2">
                   <button
                     type="button"
                     onClick={() => setShowRepoToken(!showRepoToken)}
                     className="text-cyan-400 hover:text-cyan-300 flex items-center gap-1.5 cursor-pointer font-medium"
                   >
                     <KeyRound className="w-3.5 h-3.5" />
-                    <span>{showRepoToken ? 'Hide Access Token' : '+ Add Personal Access Token (for Private Repos)'}</span>
+                    <span>
+                      {showRepoToken
+                        ? 'Hide Access Token'
+                        : '+ Add Personal Access Token (Recommended — avoids 60 req/hr rate limit)'}
+                    </span>
                   </button>
-                  <span className="text-slate-500 text-[11px]">Public repos require no token</span>
+                  <a
+                    href="https://github.com/settings/tokens/new?description=ChangeLens&scopes=repo"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-cyan-400/80 hover:text-cyan-300 text-[11px] flex items-center gap-1 hover:underline"
+                  >
+                    <span>Generate Free Token</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
                 </div>
 
                 {showRepoToken && (
                   <div className="animate-in fade-in duration-150">
                     <input
+                      ref={repoTokenRef}
                       type="password"
                       value={repoToken}
                       onChange={(e) => setRepoToken(e.target.value)}
                       placeholder="github_pat_... or ghp_..."
-                      className="w-full bg-slate-950 border border-slate-800 focus:border-cyan-500 rounded-xl px-4 py-2.5 text-xs text-slate-200 placeholder-slate-600 focus:outline-none font-mono shadow-inner"
+                      className={`w-full bg-slate-950 border rounded-xl px-4 py-2.5 text-xs text-slate-200 placeholder-slate-600 focus:outline-none font-mono shadow-inner transition-colors ${
+                        isRateLimitError ? 'border-amber-500 ring-1 ring-amber-500/50' : 'border-slate-800 focus:border-cyan-500'
+                      }`}
                     />
-                    <p className="text-[11px] text-slate-500 mt-1">
-                      Token only needs <code className="text-cyan-400">repo</code> read access. ChangeLens never stores your secrets on external servers.
-                    </p>
+                    <div className="flex items-center justify-between text-[11px] text-slate-400 mt-1.5 flex-wrap gap-1">
+                      <span>Only requires <code className="text-cyan-400 font-mono">repo</code> read scope. Increases rate limit from 60 to 5,000 req/hr.</span>
+                      <span className="text-emerald-400 font-mono text-[10px]">100% Private & In-Memory</span>
+                    </div>
                   </div>
                 )}
 
@@ -774,27 +880,46 @@ export function ProjectHub({
                     </div>
 
                     {/* Token Toggle */}
-                    <div className="flex items-center justify-between text-xs">
+                    <div className="flex items-center justify-between text-xs flex-wrap gap-2">
                       <button
                         type="button"
                         onClick={() => setShowPrToken(!showPrToken)}
                         className="text-indigo-400 hover:text-indigo-300 flex items-center gap-1.5 cursor-pointer font-medium"
                       >
                         <KeyRound className="w-3.5 h-3.5" />
-                        <span>{showPrToken ? 'Hide Token' : '+ Personal Access Token (for Private Repos or higher rate limits)'}</span>
+                        <span>
+                          {showPrToken
+                            ? 'Hide Token'
+                            : '+ Personal Access Token (Recommended — avoids 60 req/hr rate limit)'}
+                        </span>
                       </button>
-                      <span className="text-slate-500 text-[11px]">Optional for public PRs</span>
+                      <a
+                        href="https://github.com/settings/tokens/new?description=ChangeLens&scopes=repo"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-indigo-400/80 hover:text-indigo-300 text-[11px] flex items-center gap-1 hover:underline"
+                      >
+                        <span>Generate Free Token</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
                     </div>
 
                     {showPrToken && (
                       <div className="animate-in fade-in duration-150">
                         <input
+                          ref={prTokenRef}
                           type="password"
                           value={prToken}
                           onChange={(e) => setPrToken(e.target.value)}
-                          placeholder="github_pat_..."
-                          className="w-full bg-slate-950 border border-slate-800 focus:border-indigo-500 rounded-xl px-4 py-2.5 text-xs text-slate-200 placeholder-slate-600 focus:outline-none font-mono shadow-inner"
+                          placeholder="github_pat_... or ghp_..."
+                          className={`w-full bg-slate-950 border rounded-xl px-4 py-2.5 text-xs text-slate-200 placeholder-slate-600 focus:outline-none font-mono shadow-inner transition-colors ${
+                            isRateLimitError ? 'border-amber-500 ring-1 ring-amber-500/50' : 'border-slate-800 focus:border-indigo-500'
+                          }`}
                         />
+                        <div className="flex items-center justify-between text-[11px] text-slate-400 mt-1.5 flex-wrap gap-1">
+                          <span>Unlocks private repos and increases GitHub API limit to 5,000 req/hr.</span>
+                          <span className="text-indigo-400 font-mono text-[10px]">Required to post PR review comments</span>
+                        </div>
                       </div>
                     )}
 
