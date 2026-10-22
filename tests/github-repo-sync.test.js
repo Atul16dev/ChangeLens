@@ -107,5 +107,24 @@ test("GitHub Repository Connect & Cumulative Push Sync Test Suite", async (t) =>
     assert.ok(body.data.analysisId);
     assert.strictEqual(body.data.syncDetails.mode, "single");
     assert.ok(body.data.summary);
+
+    // Verify What-If simulation works on this GitHub repository analysis
+    const simRes = await fetch(`${baseUrl}/api/v1/analyses/${body.data.analysisId}/simulate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        simulatedFile: "server/models/user.js",
+        changeType: "modified",
+      }),
+    });
+
+    assert.strictEqual(simRes.status, 200);
+    const simBody = await simRes.json();
+    assert.strictEqual(simBody.success, true);
+    assert.strictEqual(simBody.data.simulatedFile, "server/models/user.js");
+    assert.ok(simBody.data.impactAnalysis);
+    assert.ok(simBody.data.graph);
+    assert.ok(simBody.data.explanation);
+    assert.strictEqual(simBody.data.summary.impactedFilesCount, 3);
   });
 });

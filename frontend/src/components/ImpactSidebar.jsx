@@ -575,7 +575,7 @@ export function ImpactSidebar({
               </div>
             </div>
             <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-black/40 border border-white/10">
-              {summary.impactedFilesCount} Files Impacted
+              {summary.totalImpactedFiles} Files Impacted
             </span>
           </div>
 

@@ -1,4 +1,5 @@
 import path from "node:path";
+import { existsSync } from "node:fs";
 import { scanRepository } from "../../analyzer/repository-scanner.js";
 import { resolveRepositoryDependencies } from "../../analyzer/dependency-resolver.js";
 import { buildDependencyGraph } from "../../analyzer/dependency-graph.js";
@@ -570,12 +571,18 @@ export async function simulateAnalysisImpact(req, res, next) {
     if (!graph && analysis.dependencies && analysis.allFiles) {
       graph = buildDependencyGraph(analysis.dependencies, analysis.allFiles);
     }
-    if (!graph || !analysis.symbolTable) {
-      const scanReport = await scanRepository(analysis.targetDir || "tests/fixtures/mern-sample");
+    if (!graph || !analysis.symbolTable || !analysis.dependencies) {
+      const effectiveDir =
+        analysis.targetDir && existsSync(analysis.targetDir)
+          ? analysis.targetDir
+          : path.resolve(process.cwd(), "tests/fixtures/mern-sample");
+      const scanReport = await scanRepository(effectiveDir);
       const dependencies = resolveRepositoryDependencies(scanReport);
       const allFiles = scanReport.files.map((f) => f.path.split(path.sep).join("/"));
       graph = buildDependencyGraph(dependencies, allFiles);
       analysis.dependencyGraph = graph;
+      analysis.dependencies = dependencies;
+      analysis.allFiles = allFiles;
       analysis.symbolTable = buildSymbolTable(scanReport.files);
     }
 
