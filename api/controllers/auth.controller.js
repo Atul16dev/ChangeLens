@@ -316,8 +316,24 @@ export const authController = {
       }
 
       const user = await userRepository.findByEmail(cleanEmail);
-      if (!user || !user.password_hash) {
-        // Generic timing-safe error
+      if (!user) {
+        return res.status(401).json({
+          success: false,
+          error: { code: "INVALID_CREDENTIALS", message: "Invalid email or password." },
+        });
+      }
+
+      if (!user.password_hash && user.auth_provider === "google") {
+        return res.status(400).json({
+          success: false,
+          error: {
+            code: "GOOGLE_ACCOUNT_NO_PASSWORD",
+            message: "This account was registered using Google. Please log in using 'Continue with Google' or use 'Forgot Password' to set a password.",
+          },
+        });
+      }
+
+      if (!user.password_hash) {
         return res.status(401).json({
           success: false,
           error: { code: "INVALID_CREDENTIALS", message: "Invalid email or password." },

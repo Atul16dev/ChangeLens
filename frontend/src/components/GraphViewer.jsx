@@ -235,7 +235,13 @@ function GraphViewerInternal({
   }, [edges, neighborhood]);
 
   return (
-    <div ref={containerRef} className="w-full h-full relative bg-slate-950 overflow-hidden select-none">
+    <div
+      ref={containerRef}
+      className="w-full h-full relative overflow-hidden select-none"
+      style={{
+        background: 'radial-gradient(circle at 50% 35%, #152136 0%, #0d1527 60%, #080d19 100%)',
+      }}
+    >
       <ReactFlow
         nodes={displayNodes}
         edges={displayEdges}
@@ -260,34 +266,34 @@ function GraphViewerInternal({
         edgesFocusable={false}
         defaultEdgeOptions={{ type: 'impactEdge' }}
       >
-        <Background color="#1e293b" gap={28} size={1.5} />
+        <Background variant="dots" color="rgba(148, 163, 184, 0.22)" gap={24} size={1.2} />
 
         <Controls
           position="bottom-left"
           showInteractive={false}
-          className="!bg-slate-900/95 !border-slate-800 !rounded-xl !shadow-2xl !fill-slate-300 [&>button]:!bg-slate-900 [&>button]:!border-slate-800 [&>button]:!text-slate-300 hover:[&>button]:!bg-slate-800 !bottom-4 !left-4"
+          className="!bg-[#0f172a]/95 !border-slate-700/80 !rounded-xl !shadow-2xl !fill-slate-200 [&>button]:!bg-[#0f172a] [&>button]:!border-slate-700/80 [&>button]:!text-slate-200 hover:[&>button]:!bg-slate-800 !bottom-4 !left-4"
         />
 
         <MiniMap
           position="top-right"
           nodeColor={(n) => {
-            if (n.data?.isChanged) return '#f59e0b';
-            if (n.data?.severity === 'CRITICAL') return '#ef4444';
-            if (n.data?.severity === 'HIGH') return '#f97316';
-            if (n.data?.severity === 'MEDIUM') return '#eab308';
-            return '#1e293b';
+            if (n.data?.isChanged) return '#fbbf24';
+            if (n.data?.severity === 'CRITICAL') return '#f43f5e';
+            if (n.data?.severity === 'HIGH') return '#fb923c';
+            if (n.data?.severity === 'MEDIUM') return '#facc15';
+            return '#334155';
           }}
-          maskColor="rgba(11, 15, 25, 0.85)"
+          maskColor="rgba(8, 13, 25, 0.8)"
           pannable={true}
           zoomable={true}
-          className="!bg-slate-900 !border-slate-800 !rounded-xl !shadow-2xl !top-4 !right-4 !w-44 !h-32"
+          className="!bg-[#0f172a] !border-slate-700/80 !rounded-xl !shadow-2xl !top-4 !right-4 !w-44 !h-32"
         />
 
         {/* TOP-LEFT TOOLBAR: CONTROLS, MODES & FILTERS */}
         <Panel position="top-left" className="m-4">
-          <div className="flex flex-wrap items-center gap-2 bg-slate-900/95 backdrop-blur-md p-1.5 rounded-xl border border-slate-800 shadow-2xl">
+          <div className="flex flex-wrap items-center gap-2 bg-[#0f172a]/95 backdrop-blur-md p-1.5 rounded-xl border border-slate-700/80 shadow-2xl">
             {/* View Scope Toggle */}
-            <div className="flex items-center bg-slate-950 p-0.5 rounded-lg border border-slate-800">
+            <div className="flex items-center bg-[#090e1a] p-0.5 rounded-lg border border-slate-800">
               <button
                 onClick={() => handleFilterToggle('all')}
                 className={`px-3 py-1 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all ${
@@ -318,7 +324,7 @@ function GraphViewerInternal({
             {/* Semantic Flow Toggle */}
             <button
               onClick={handleSemanticModeToggle}
-              className="px-2.5 py-1 rounded-lg bg-slate-950 hover:bg-slate-800 border border-slate-800 text-xs font-medium text-slate-300 hover:text-white flex items-center gap-1.5 transition-colors"
+              className="px-2.5 py-1 rounded-lg bg-[#090e1a] hover:bg-slate-800 border border-slate-800 text-xs font-medium text-slate-300 hover:text-white flex items-center gap-1.5 transition-colors"
               title={
                 semanticMode === 'impact'
                   ? 'Showing Change Impact Flow (Root Changes ➔ Downstream Consumers)'
@@ -334,14 +340,14 @@ function GraphViewerInternal({
             {/* Reset & Re-Layout Button */}
             <button
               onClick={handleResetLayout}
-              className="p-1.5 rounded-lg bg-slate-950 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-cyan-400 transition-colors"
+              className="p-1.5 rounded-lg bg-[#090e1a] hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-cyan-400 transition-colors"
               title="Recalculate deterministic ELK layout and center view"
             >
               <RotateCcw className={`w-3.5 h-3.5 ${isLayoutComputing ? 'animate-spin text-cyan-400' : ''}`} />
             </button>
 
             {/* Graph Snapshot Export (PNG & SVG) */}
-            <div className="flex items-center bg-slate-950 p-0.5 rounded-lg border border-slate-800">
+            <div className="flex items-center bg-[#090e1a] p-0.5 rounded-lg border border-slate-800">
               <button
                 onClick={handleExportPng}
                 disabled={isExporting}
@@ -405,30 +411,30 @@ function GraphViewerInternal({
 
         {/* BOTTOM-LEFT: REFINED COLOR & TIER LEGEND (SHIFTED RIGHT OF ZOOM CONTROLS) */}
         <Panel position="bottom-left" className="!mb-4 !ml-16 sm:!ml-[72px]">
-          <div className="bg-slate-900/95 backdrop-blur-md border border-slate-800 rounded-xl px-3.5 py-2 shadow-2xl flex flex-wrap items-center gap-3.5 text-xs text-slate-300">
+          <div className="bg-[#0f172a]/95 backdrop-blur-md border border-slate-700/80 rounded-xl px-3.5 py-2 shadow-2xl flex flex-wrap items-center gap-3.5 text-xs text-slate-300">
             <span className="font-bold text-slate-400 flex items-center gap-1 border-r border-slate-800 pr-3 text-[11px]">
               <Layers className="w-3.5 h-3.5 text-cyan-400" />
               Impact Legend
             </span>
             <div className="flex items-center gap-1.5 text-[11px]">
-              <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)]"></span>
+              <span className="w-2.5 h-2.5 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.8)]"></span>
               <span>Root Changed</span>
             </div>
             <div className="flex items-center gap-1.5 text-[11px]">
-              <span className="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.6)]"></span>
+              <span className="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.8)]"></span>
               <span>Critical Breaking</span>
             </div>
             <div className="flex items-center gap-1.5 text-[11px]">
-              <span className="w-2.5 h-2.5 rounded-full bg-orange-500"></span>
+              <span className="w-2.5 h-2.5 rounded-full bg-orange-400"></span>
               <span>Direct (Lv 1)</span>
             </div>
             <div className="flex items-center gap-1.5 text-[11px]">
-              <span className="w-2.5 h-2.5 rounded-full bg-yellow-500"></span>
+              <span className="w-2.5 h-2.5 rounded-full bg-yellow-400"></span>
               <span>Transitive (Lv 2+)</span>
             </div>
             <div className="flex items-center gap-1.5 text-[11px]">
-              <span className="w-2.5 h-2.5 rounded-full bg-slate-700"></span>
-              <span className="text-slate-500">Clean File</span>
+              <span className="w-2.5 h-2.5 rounded-full bg-slate-600 border border-slate-500/50"></span>
+              <span className="text-slate-300">Clean File</span>
             </div>
           </div>
         </Panel>

@@ -47,31 +47,31 @@ export const ImpactEdge = memo(({
   } = data;
 
   // Determine edge color and stroke width based on visual priority
-  let strokeColor = '#334155'; // Clean / background dependency
+  let strokeColor = '#475569'; // Clean / background dependency
   let strokeWidth = 1.5;
-  let labelBadgeBg = 'bg-slate-900/90 text-slate-400 border-slate-700/60';
+  let labelBadgeBg = 'bg-[#0f172a]/95 text-slate-300 border-slate-700/80';
   let labelText = specifier ? `${specifier}` : 'import';
 
   if (severity === 'CRITICAL') {
-    strokeColor = '#ef4444';
+    strokeColor = '#f43f5e';
     strokeWidth = 2.5;
-    labelBadgeBg = 'bg-rose-950 text-rose-300 border-rose-500/60 shadow-rose-500/20';
+    labelBadgeBg = 'bg-rose-950/95 text-rose-200 border-rose-500/80 shadow-rose-500/20';
     labelText = '⚡ breaking';
   } else if (isDirectImpact || severity === 'HIGH') {
-    strokeColor = '#f97316';
+    strokeColor = '#fb923c';
     strokeWidth = 2.5;
-    labelBadgeBg = 'bg-orange-950 text-orange-300 border-orange-500/60 shadow-orange-500/20';
+    labelBadgeBg = 'bg-orange-950/95 text-orange-200 border-orange-500/80 shadow-orange-500/20';
     labelText = mode === 'impact' ? '⚡ direct impact' : 'imports';
   } else if (isImpacted) {
-    strokeColor = '#eab308';
+    strokeColor = '#facc15';
     strokeWidth = 2;
-    labelBadgeBg = 'bg-yellow-950 text-yellow-300 border-yellow-500/50';
+    labelBadgeBg = 'bg-yellow-950/95 text-yellow-200 border-yellow-500/70';
     labelText = mode === 'impact' ? '↳ transitive' : 'imports';
   }
 
   if (isHighlighted || isHovered) {
     strokeWidth += 1.5;
-    strokeColor = isImpacted ? '#38bdf8' : '#94a3b8';
+    strokeColor = isImpacted ? '#38bdf8' : '#cbd5e1';
   }
 
   const opacity = isDimmed && !isHovered && !isHighlighted ? 0.15 : 1;

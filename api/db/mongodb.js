@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 let isConnected = false;
 
 export function isMongoConnected() {
-  return isConnected && mongoose.connection.readyState === 1;
+  return mongoose.connection.readyState === 1;
 }
 
 export async function connectMongoDB(uri = process.env.MONGODB_URI) {
@@ -25,6 +25,16 @@ export async function connectMongoDB(uri = process.env.MONGODB_URI) {
 
     isConnected = true;
     console.log(`🍃 [MongoDB] Successfully connected to MongoDB Atlas (${conn.connection.name})`);
+
+    mongoose.connection.on("connected", () => {
+      isConnected = true;
+      console.log("🍃 [MongoDB] Connection established.");
+    });
+
+    mongoose.connection.on("reconnected", () => {
+      isConnected = true;
+      console.log("🍃 [MongoDB] Connection re-established.");
+    });
 
     mongoose.connection.on("error", (err) => {
       console.error("🍃 [MongoDB Error]:", err.message);

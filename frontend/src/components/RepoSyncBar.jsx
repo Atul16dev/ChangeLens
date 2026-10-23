@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   GitCommit,
   GitBranch,
@@ -25,6 +25,32 @@ export function RepoSyncBar({
   onDisconnect,
 }) {
   const [showCommitDropdown, setShowCommitDropdown] = useState(false);
+  const dropdownRef = useRef(null);
+
+  // Close dropdown on click outside or escape key
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowCommitDropdown(false);
+      }
+    }
+
+    function handleKeyDown(event) {
+      if (event.key === 'Escape') {
+        setShowCommitDropdown(false);
+      }
+    }
+
+    if (showCommitDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleKeyDown);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [showCommitDropdown]);
 
   if (!repoInfo) return null;
 
@@ -38,7 +64,7 @@ export function RepoSyncBar({
   const latestCommit = commits.length > 0 ? commits[0] : null;
 
   return (
-    <div className="bg-slate-900/90 border-b border-cyan-900/40 px-4 py-2 flex flex-wrap items-center justify-between gap-3 text-xs backdrop-blur-md shrink-0 shadow-sm transition-all">
+    <div className="relative z-30 bg-[#0d1527]/95 border-b border-cyan-900/40 px-4 py-2 flex flex-wrap items-center justify-between gap-3 text-xs backdrop-blur-md shrink-0 shadow-sm transition-all">
       {/* Left: Connected Repository Identity & Branch */}
       <div className="flex items-center gap-2.5 min-w-0">
         <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-cyan-950/80 text-cyan-300 border border-cyan-800/60 font-semibold font-mono shadow-inner">
@@ -105,62 +131,91 @@ export function RepoSyncBar({
         </button>
 
         {/* Commit History Dropdown */}
-        <div className="relative">
+        <div className="relative" ref={dropdownRef}>
           <button
             type="button"
             onClick={() => setShowCommitDropdown((prev) => !prev)}
-            className="inline-flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium bg-slate-800/80 hover:bg-slate-750 text-slate-300 border border-slate-700/80 transition-all"
+            className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-all cursor-pointer ${
+              showCommitDropdown
+                ? 'bg-slate-750 text-white border-cyan-500/60 ring-1 ring-cyan-500/30'
+                : 'bg-slate-800/80 hover:bg-slate-750 text-slate-300 hover:text-white border-slate-700/80'
+            }`}
             title="Inspect a specific commit from history"
           >
-            <Clock className="w-3 h-3 text-slate-400" />
-            <ChevronDown className="w-3 h-3 text-slate-400" />
+            <Clock className="w-3.5 h-3.5 text-slate-400" />
+            <ChevronDown
+              className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${
+                showCommitDropdown ? 'rotate-180 text-cyan-400' : ''
+              }`}
+            />
           </button>
 
           {showCommitDropdown && (
-            <div className="absolute right-0 mt-1.5 w-72 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl p-2 z-50 animate-in fade-in zoom-in-95">
-              <div className="flex items-center justify-between px-2 py-1 border-b border-slate-800 mb-1 text-[11px] font-semibold text-slate-400">
-                <span>Recent Commits</span>
+            <div
+              className="absolute right-0 mt-2 w-80 bg-[#0f172a] border border-slate-700/90 rounded-xl shadow-2xl p-2.5 z-50 animate-in fade-in zoom-in-95"
+              style={{
+                boxShadow: '0 20px 35px -5px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.08)',
+              }}
+            >
+              <div className="flex items-center justify-between px-2 py-1.5 border-b border-slate-800 mb-1.5 text-[11px] font-semibold text-slate-400">
+                <div className="flex items-center gap-1.5 text-cyan-400">
+                  <Clock className="w-3.5 h-3.5" />
+                  <span>Recent Commits ({commits.length})</span>
+                </div>
                 <button
                   type="button"
                   onClick={() => setShowCommitDropdown(false)}
-                  className="hover:text-white"
+                  className="p-1 rounded text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+                  title="Close dropdown"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
               </div>
 
-              <div className="max-h-60 overflow-y-auto space-y-1">
-                {commits.map((c) => {
-                  const isLastSynced = c.sha === lastSyncedSha;
-                  return (
-                    <button
-                      key={c.sha}
-                      type="button"
-                      onClick={() => {
-                        setShowCommitDropdown(false);
-                        onSelectSpecificCommit(c.sha);
-                      }}
-                      className="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-slate-800 transition-colors flex flex-col gap-0.5 group"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="font-mono text-cyan-400 text-[11px] font-semibold">
-                          {c.shortSha}
-                        </span>
-                        {isLastSynced && (
-                          <span className="text-[9px] px-1.5 py-0.2 bg-emerald-500/20 text-emerald-400 rounded">
-                            Last Checked
+              <div className="max-h-64 overflow-y-auto space-y-1 pr-0.5">
+                {commits.length === 0 ? (
+                  <div className="px-3 py-6 text-center text-xs text-slate-500 font-medium">
+                    No commit history available
+                  </div>
+                ) : (
+                  commits.map((c) => {
+                    const isLastSynced = c.sha === lastSyncedSha;
+                    const authorName = c.author?.name || c.author || 'Author';
+                    return (
+                      <button
+                        key={c.sha}
+                        type="button"
+                        onClick={() => {
+                          setShowCommitDropdown(false);
+                          onSelectSpecificCommit(c.sha);
+                        }}
+                        className={`w-full text-left px-2.5 py-2 rounded-lg transition-all flex flex-col gap-1 group cursor-pointer border ${
+                          isLastSynced
+                            ? 'bg-cyan-950/40 border-cyan-800/60 hover:bg-cyan-900/50'
+                            : 'border-transparent hover:bg-slate-800/80 hover:border-slate-700'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="font-mono text-cyan-400 text-[11px] font-bold flex items-center gap-1.5">
+                            <GitCommit className="w-3 h-3 text-cyan-400 shrink-0" />
+                            {c.shortSha || c.sha?.slice(0, 7)}
                           </span>
-                        )}
-                      </div>
-                      <span className="text-xs text-slate-200 line-clamp-1 group-hover:text-cyan-200">
-                        {c.message}
-                      </span>
-                      <span className="text-[10px] text-slate-500">
-                        by {c.author.name}
-                      </span>
-                    </button>
-                  );
-                })}
+                          {isLastSynced && (
+                            <span className="text-[9px] px-1.5 py-0.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded font-semibold font-mono">
+                              Current
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-xs text-slate-200 line-clamp-1 group-hover:text-cyan-200 font-medium">
+                          {c.message}
+                        </span>
+                        <span className="text-[10px] text-slate-500">
+                          by {authorName}
+                        </span>
+                      </button>
+                    );
+                  })
+                )}
               </div>
             </div>
           )}
@@ -171,7 +226,7 @@ export function RepoSyncBar({
           <button
             type="button"
             onClick={onDisconnect}
-            className="text-slate-400 hover:text-rose-400 p-1.5 rounded-lg hover:bg-slate-800 transition-colors"
+            className="text-slate-400 hover:text-rose-400 p-1.5 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
             title="Disconnect repository and return to Project Hub"
           >
             <X className="w-3.5 h-3.5" />
