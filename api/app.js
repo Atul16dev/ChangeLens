@@ -10,6 +10,7 @@ import { healthRoutes } from "./routes/health.routes.js";
 import { analysesRoutes } from "./routes/analyses.routes.js";
 import { authRoutes } from "./routes/auth.routes.js";
 import { githubRoutes } from "./routes/github.routes.js";
+import { bridgeRoutes } from "./routes/bridge.routes.js";
 
 export function createApp({ sessionSecret, sessionStore } = {}) {
   const app = express();
@@ -92,6 +93,7 @@ export function createApp({ sessionSecret, sessionStore } = {}) {
   app.use("/api/v1/health", healthRoutes);
   app.use("/api/v1/auth", authRoutes);
   app.use("/api/v1/github", githubRoutes);
+  app.use("/api/v1/bridge", bridgeRoutes);
   app.use("/api/v1", analysesRoutes);
 
   // Serve compiled frontend UI if available

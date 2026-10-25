@@ -47,7 +47,10 @@ export function Header({
 
   const handleSubmit = (e) => {
     e?.preventDefault();
-    const changedFiles = changedFile.trim() ? [changedFile.trim()] : [];
+    // Supports comma-separated multiple files or auto-detection if left blank
+    const changedFiles = changedFile.trim()
+      ? changedFile.split(',').map((f) => f.trim()).filter(Boolean)
+      : [];
     onAnalyze({
       repoPath: repoPath.trim() || undefined,
       changedFiles,
@@ -177,16 +180,16 @@ export function Header({
             />
           </div>
 
-          {/* Changed File Input */}
+          {/* Changed File Input (Supports Comma-Separated Multi-Files or Blank for Auto-Detect) */}
           <div className="flex items-center bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1 focus-within:border-cyan-500 transition-colors shadow-inner">
             <GitPullRequest className="w-3.5 h-3.5 text-amber-400 mr-2 shrink-0" />
             <input
               type="text"
               value={changedFile}
               onChange={(e) => setChangedFile(e.target.value)}
-              placeholder="e.g. src/index.js (or leave blank for all Git changes)"
-              className="bg-transparent text-xs text-slate-100 placeholder-slate-500 focus:outline-none w-48 lg:w-72 font-mono"
-              title="File path to analyze (leave empty to auto-detect all uncommitted Git changes)"
+              placeholder="e.g. auth.js, api.js (or leave blank for Auto-Detect)"
+              className="bg-transparent text-xs text-slate-100 placeholder-slate-500 focus:outline-none w-52 lg:w-80 font-mono"
+              title="Comma-separated files to analyze, or leave empty to auto-detect all uncommitted Git changes"
             />
           </div>
 

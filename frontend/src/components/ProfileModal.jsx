@@ -1,4 +1,5 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import {
   X,
@@ -26,7 +27,39 @@ export function ProfileModal({ isOpen, onClose }) {
   const [errorMsg, setErrorMsg] = useState('');
   const fileInputRef = useRef(null);
 
+  // Sync state whenever modal opens or user updates
+  useEffect(() => {
+    if (isOpen && user) {
+      setName(user.name || '');
+      setAvatar(user.avatar || null);
+      setAvatarChanged(false);
+      setErrorMsg('');
+      setSuccessMsg('');
+    }
+  }, [isOpen, user]);
+
+  // Close on Escape key and lock body scroll while modal is active
+  useEffect(() => {
+    if (!isOpen) return;
+
+    function handleKeyDown(e) {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown);
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [isOpen, onClose]);
+
   if (!isOpen || !user) return null;
+  if (typeof document === 'undefined') return null;
 
   const initials = user.name
     ? user.name
@@ -127,16 +160,23 @@ export function ProfileModal({ isOpen, onClose }) {
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200">
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200 overflow-y-auto"
+      onClick={onClose}
+    >
       <div
-        className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col"
+        className="w-full max-w-md bg-slate-900 border border-slate-700/90 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] my-auto animate-in zoom-in-95 duration-200"
         role="dialog"
         aria-modal="true"
         aria-labelledby="profile-modal-title"
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.08)',
+        }}
       >
         {/* Modal Header */}
-        <div className="px-6 py-4 border-b border-slate-800/80 flex items-center justify-between bg-slate-950/50">
+        <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/70 shrink-0">
           <div className="flex items-center gap-2">
             <User className="w-4 h-4 text-indigo-400" />
             <h3 id="profile-modal-title" className="text-base font-bold text-white tracking-tight">
@@ -146,7 +186,7 @@ export function ProfileModal({ isOpen, onClose }) {
           <button
             type="button"
             onClick={onClose}
-            className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
             aria-label="Close modal"
           >
             <X className="w-5 h-5" />
@@ -154,7 +194,7 @@ export function ProfileModal({ isOpen, onClose }) {
         </div>
 
         {/* Modal Body */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+        <form onSubmit={handleSubmit} className="p-6 space-y-5 overflow-y-auto">
           {/* Circular Profile Avatar Header with Photo Upload Option */}
           <div className="flex items-center gap-4 p-4 rounded-xl bg-slate-950/70 border border-slate-800/90">
             <div className="relative group shrink-0">
@@ -344,6 +384,7 @@ export function ProfileModal({ isOpen, onClose }) {
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

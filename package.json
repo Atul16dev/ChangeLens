@@ -9,7 +9,9 @@
   "scripts": {
     "test": "node --test",
     "start": "node --watch api/server.js",
-    "dev": "npm run dev --prefix frontend",
+    "dev": "node scripts/dev.js",
+    "dev:frontend": "npm run dev --prefix frontend",
+    "dev:api": "node --watch api/server.js",
     "api": "node --watch api/server.js",
     "frontend:dev": "npm run dev --prefix frontend",
     "frontend:build": "npm run build --prefix frontend",
@@ -18,9 +20,11 @@
     "analyze:impact": "node scripts/analyze-impact.js",
     "analyze:diff": "node scripts/analyze-git-diff.js",
     "parsers:warm": "node scripts/warm-parsers.js",
-    "db:view": "node scripts/db-inspector.js"
+    "db:view": "node scripts/db-inspector.js",
+    "bridge": "node bin/changelens.js connect"
   },
   "bin": {
+    "changelens": "./bin/changelens.js",
     "changelens-ci": "./bin/changelens-ci.js"
   },
   "dependencies": {
@@ -34,6 +38,7 @@
     "express-session": "^1.19.0",
     "google-auth-library": "^11.3.1",
     "mongoose": "^9.11.2",
-    "nodemailer": "^10.1.7"
+    "nodemailer": "^10.1.7",
+    "ws": "^8.22.0"
   }
 }

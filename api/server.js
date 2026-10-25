@@ -1,6 +1,7 @@
 import "./env.js";
 import { connectMongoDB, isMongoConnected } from "./db/mongodb.js";
 import { createApp } from "./app.js";
+import { initBridgeRelay } from "./services/bridge-relay.js";
 
 const PORT = process.env.PORT || 5000;
 
@@ -24,13 +25,17 @@ async function startServer() {
     console.log(`📡 Server running on http://localhost:${PORT}`);
     console.log(`🩺 Health check:      http://localhost:${PORT}/api/v1/health`);
     console.log(`🔍 Trigger Analysis:  POST http://localhost:${PORT}/api/v1/analyze`);
+    console.log(`🌉 WebSocket Tunnel:  ws://localhost:${PORT}/api/v1/bridge/tunnel`);
     console.log(`🗄️ Database:          ${isMongoConnected() ? "🍃 MongoDB Atlas (Connected)" : "⚡ In-Memory (Dev/Test Fallback)"}`);
     console.log(`📧 Email Provider:    ${process.env.SMTP_HOST ? `${process.env.SMTP_HOST} (${process.env.SMTP_USER})` : "In-memory dev transport"}`);
     console.log("=================================================\n");
   });
 
+  const bridgeRelay = initBridgeRelay(server);
+
   function shutdown(signal) {
     console.log(`\n🛑 Received ${signal}. Closing server gracefully...`);
+    bridgeRelay.close().catch(() => {});
     server.close(() => {
       console.log("✅ ChangeLens API server closed.");
       process.exit(0);

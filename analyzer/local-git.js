@@ -66,6 +66,23 @@ export async function getGitRoot(directoryPath) {
 }
 
 /**
+ * Gets the current active Git branch name.
+ * 
+ * @param {string} directoryPath
+ * @returns {Promise<string|null>}
+ */
+export async function getGitBranch(directoryPath) {
+  try {
+    const isGit = await isGitRepository(directoryPath);
+    if (!isGit) return null;
+    const { stdout } = await executeGit(["rev-parse", "--abbrev-ref", "HEAD"], directoryPath);
+    return stdout.trim() || "HEAD";
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Detects working tree changes (uncommitted staged, unstaged, and untracked files).
  * 
  * @param {string} directoryPath

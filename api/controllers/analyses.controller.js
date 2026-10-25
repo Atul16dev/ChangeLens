@@ -4,9 +4,9 @@ import { scanRepository } from "../../analyzer/repository-scanner.js";
 import { resolveRepositoryDependencies } from "../../analyzer/dependency-resolver.js";
 import { buildDependencyGraph } from "../../analyzer/dependency-graph.js";
 import { classifyImpactPolicies } from "../../analyzer/change-classifier.js";
-import { generateImpactExplanation } from "../../analyzer/ai-explainer.js";
+import { generateImpactExplanation, calculateRiskLevel } from "../../analyzer/ai-explainer.js";
 import { computeGraphLayout } from "../../analyzer/graph-layout.js";
-import { isGitRepository, getWorkingTreeChanges, getCommitDiff, getGitRoot } from "../../analyzer/local-git.js";
+import { isGitRepository, getWorkingTreeChanges, getCommitDiff, getGitRoot, getGitBranch } from "../../analyzer/local-git.js";
 import { generateAnalysisChatResponse } from "../../services/chat-assistant.js";
 import { buildSymbolTable } from "../../analyzer/symbol-analyzer.js";
 import { analysesStore } from "../store.js";
@@ -117,23 +117,98 @@ export async function performAnalysis({
     ? path.resolve(repoPath)
     : path.resolve(process.cwd(), "tests/fixtures/mern-sample");
 
+  // 1. Scan repository ASTs first so we know all valid code files
+  const scanReport = await scanRepository(targetDir);
+  const allFiles = scanReport.files.map((f) => f.path.split(path.sep).join("/"));
+
   let changes = [];
   const changedFilesSet = new Set();
 
-  // 1. Determine changed files
-  if (Array.isArray(userChangedFiles) && userChangedFiles.length > 0) {
-    changes = userChangedFiles.map((p) => ({
-      path: p.split("\\").join("/").replace(/^\.\//, ""),
-      status: "modified",
-      statusCode: "M",
-    }));
-    for (const p of userChangedFiles) {
-      changedFilesSet.add(p.split("\\").join("/").replace(/^\.\//, ""));
+  // Parse user inputs (supports array of strings OR comma-separated string)
+  const rawUserInputs = Array.isArray(userChangedFiles)
+    ? userChangedFiles
+    : typeof userChangedFiles === "string"
+    ? userChangedFiles.split(",").map((s) => s.trim()).filter(Boolean)
+    : [];
+
+  const isManual = rawUserInputs.length > 0;
+  const analysisMode = isManual ? "manual" : "auto-detect";
+  let cleanWorkingTree = false;
+  let isGit = false;
+  let gitBranch = null;
+  const resolvedFiles = [];
+  const unresolvedFiles = [];
+
+  if (isManual) {
+    // ─── MODE 2: MANUAL INPUT MODE (Smart Path Resolution) ───
+    for (const raw of rawUserInputs) {
+      const normalized = raw.trim().replace(/^[.\\/]+/, "").split("\\").join("/");
+      if (!normalized) continue;
+
+      // a. Exact match against scanned repository files
+      if (allFiles.includes(normalized)) {
+        resolvedFiles.push(normalized);
+        changedFilesSet.add(normalized);
+        changes.push({
+          path: normalized,
+          status: "modified",
+          statusCode: "M",
+          isDirectRoot: true,
+        });
+        continue;
+      }
+
+      // b. Suffix match (e.g., "controllers/user-controller.js" -> "server/controllers/user-controller.js")
+      const suffixMatches = allFiles.filter(
+        (p) => p.endsWith(`/${normalized}`) || p === normalized
+      );
+      if (suffixMatches.length >= 1) {
+        const match = suffixMatches[0];
+        resolvedFiles.push(match);
+        changedFilesSet.add(match);
+        changes.push({
+          path: match,
+          status: "modified",
+          statusCode: "M",
+          originalInput: raw,
+          isDirectRoot: true,
+        });
+        continue;
+      }
+
+      // c. Basename match (e.g., "user-controller.js")
+      const base = path.basename(normalized);
+      const baseMatches = allFiles.filter((p) => path.basename(p) === base);
+      if (baseMatches.length >= 1) {
+        const match = baseMatches[0];
+        resolvedFiles.push(match);
+        changedFilesSet.add(match);
+        changes.push({
+          path: match,
+          status: "modified",
+          statusCode: "M",
+          originalInput: raw,
+          isDirectRoot: true,
+        });
+        continue;
+      }
+
+      // If unresolved against scan, still register as target so user gets feedback
+      unresolvedFiles.push(normalized);
+      changedFilesSet.add(normalized);
+      changes.push({
+        path: normalized,
+        status: "modified",
+        statusCode: "M",
+        unresolved: true,
+        isDirectRoot: true,
+      });
     }
   } else {
-    // Try detecting Git changes
-    const isGit = await isGitRepository(targetDir);
+    // ─── MODE 1: AUTO-DETECT MODE (Git Status & Working Tree) ───
+    isGit = await isGitRepository(targetDir);
     if (isGit) {
+      gitBranch = await getGitBranch(targetDir);
       const gitRoot = await getGitRoot(targetDir);
       const gitResult = baseRef
         ? await getCommitDiff({ directoryPath: targetDir, baseRef })
@@ -147,37 +222,60 @@ export async function performAnalysis({
             ...c,
             path: relToTarget,
             oldPath: c.oldPath ? path.relative(targetDir, path.resolve(gitRoot, c.oldPath)).split(path.sep).join("/") : null,
+            isDirectRoot: true,
           });
           changedFilesSet.add(relToTarget);
         }
       }
+
+      // If working tree is clean (0 changes), check recent commit diff (HEAD~1)
+      if (changes.length === 0 && !baseRef) {
+        try {
+          const commitDiff = await getCommitDiff({ directoryPath: targetDir, baseRef: "HEAD~1" });
+          for (const c of commitDiff.changes) {
+            const fullPath = path.resolve(gitRoot, c.path);
+            const relToTarget = path.relative(targetDir, fullPath).split(path.sep).join("/");
+            if (!relToTarget.startsWith("..") && !path.isAbsolute(relToTarget)) {
+              changes.push({
+                ...c,
+                path: relToTarget,
+                isDirectRoot: true,
+                fromCommit: "HEAD~1",
+              });
+              changedFilesSet.add(relToTarget);
+            }
+          }
+        } catch {
+          // Single commit or repo history unavailable
+        }
+      }
+
+      if (changes.length === 0) {
+        cleanWorkingTree = true;
+      }
+    }
+
+    // Fallback if 0 changes found: pick primary entry point or first parsed file
+    if (changes.length === 0) {
+      const candidate = scanReport.files.find(
+        (f) => f.status === "parsed" || f.status === "supported"
+      );
+      const fallbackPath = candidate
+        ? candidate.path.split(path.sep).join("/")
+        : (scanReport.files[0]?.path.split(path.sep).join("/") || "index.js");
+      changes = [{ path: fallbackPath, status: "modified", statusCode: "M", isFallback: true }];
+      changedFilesSet.add(fallbackPath);
     }
   }
 
-  // 2. Scan repository ASTs
-  const scanReport = await scanRepository(targetDir);
-
-  // If no changes detected in targetDir, pick the primary entry point or first parsed file from the target directory
-  if (changes.length === 0) {
-    const candidate = scanReport.files.find(
-      (f) => f.status === "parsed" || f.status === "supported"
-    );
-    const fallbackPath = candidate
-      ? candidate.path.split(path.sep).join("/")
-      : (scanReport.files[0]?.path.split(path.sep).join("/") || "index.js");
-    changes = [{ path: fallbackPath, status: "modified", statusCode: "M" }];
-    changedFilesSet.add(fallbackPath);
-  }
-
-  // 3. Resolve module dependencies & Build Symbol Table
+  // 2. Resolve module dependencies & Build Symbol Table
   const dependencies = resolveRepositoryDependencies(scanReport);
   const symbolTable = buildSymbolTable(scanReport.files);
 
-  // 4. Build directed dependency graph
-  const allFiles = scanReport.files.map((f) => f.path.split(path.sep).join("/"));
+  // 3. Build directed dependency graph
   const graph = buildDependencyGraph(dependencies, allFiles);
 
-  // 5. Apply change status impact policies (Reverse BFS & Symbol Analysis)
+  // 4. Apply change status impact policies (Reverse BFS & Symbol Analysis)
   const impactAnalysis = classifyImpactPolicies({
     changes,
     graph,
@@ -187,17 +285,34 @@ export async function performAnalysis({
     symbolTable,
   });
 
-  // 6. Generate React Flow visual graph with symbol metadata
+  // 5. Generate React Flow visual graph with symbol metadata
   const reactFlowGraph = await formatReactFlowGraph(graph, impactAnalysis, changedFilesSet, symbolTable);
+  const riskLevel = calculateRiskLevel(impactAnalysis.summary);
 
-  // 7. Store analysis run
+  // 6. Store analysis run
   const analysisId = `analysis_${Date.now()}`;
   const analysisRecord = {
     analysisId,
     targetDir,
+    mode: analysisMode,
+    detectionMetadata: {
+      mode: analysisMode,
+      isManual,
+      isGit,
+      gitBranch,
+      cleanWorkingTree,
+      userInputs: rawUserInputs,
+      resolvedFiles: isManual ? resolvedFiles : changes.map((c) => c.path),
+      unresolvedFiles,
+      totalChangesCount: changes.length,
+    },
     status: "completed",
     coverage: scanReport.coverage,
-    summary: impactAnalysis.summary,
+    summary: {
+      ...impactAnalysis.summary,
+      mode: analysisMode,
+      riskLevel,
+    },
     changes,
     graph: reactFlowGraph,
     rawGraphData: {

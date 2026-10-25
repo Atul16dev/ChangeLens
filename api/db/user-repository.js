@@ -1,9 +1,24 @@
 import crypto from "node:crypto";
+import mongoose from "mongoose";
 import { isMongoConnected } from "./mongodb.js";
 import { User } from "../models/User.js";
 
 // In-memory store for isolated unit tests
 const memoryUsers = new Map();
+
+/**
+ * Ensures MongoDB connection is ready if an active handshake is in progress
+ */
+async function ensureDbReady() {
+  if (isMongoConnected()) return true;
+  if (process.env.MONGODB_URI && mongoose.connection.readyState === 2) {
+    for (let i = 0; i < 15; i++) {
+      await new Promise((r) => setTimeout(r, 200));
+      if (isMongoConnected()) return true;
+    }
+  }
+  return isMongoConnected();
+}
 
 /**
  * Normalizes email address to lowercase and trimmed string
@@ -51,6 +66,7 @@ function formatUserDoc(doc) {
 export const userRepository = {
   async create({ name, email, passwordHash = null, authProvider = "local", googleId = null, isEmailVerified = 0 }) {
     const cleanEmail = normalizeEmail(email);
+    await ensureDbReady();
 
     if (isMongoConnected()) {
       const doc = await User.create({
@@ -84,6 +100,7 @@ export const userRepository = {
   },
 
   async findById(id) {
+    await ensureDbReady();
     if (isMongoConnected()) {
       try {
         const doc = await User.findById(id);
@@ -98,6 +115,7 @@ export const userRepository = {
 
   async findByEmail(email) {
     const cleanEmail = normalizeEmail(email);
+    await ensureDbReady();
 
     if (isMongoConnected()) {
       const doc = await User.findOne({ email: cleanEmail });

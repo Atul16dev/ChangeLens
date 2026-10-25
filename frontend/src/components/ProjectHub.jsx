@@ -109,6 +109,7 @@ export function ProjectHub({
 
   // Form states - Local Workspace
   const [localPath, setLocalPath] = useState('');
+  const [localFiles, setLocalFiles] = useState('');
 
   // General error banner
   const [error, setError] = useState(null);
@@ -221,8 +222,12 @@ export function ProjectHub({
   const handleLocalSubmit = (e) => {
     e.preventDefault();
     setError(null);
+    const changedFiles = localFiles.trim()
+      ? localFiles.split(',').map((f) => f.trim()).filter(Boolean)
+      : undefined;
     onOpenLocalWorkspace({
       repoPath: localPath.trim() || undefined,
+      changedFiles,
     });
   };
 
@@ -1268,6 +1273,24 @@ export function ProjectHub({
                     <span>
                       Inspects local git working tree (<code className="text-amber-300 font-mono">git status --porcelain</code>) to automatically pick up modified files in VS Code.
                     </span>
+                  </p>
+                </div>
+
+                {/* Optional Comma-Separated Target Files Input */}
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center justify-between">
+                    <span>Target Changed Files (Optional)</span>
+                    <span className="text-[10px] text-amber-400/80 font-normal">Comma-separated for multi-file blast radius</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={localFiles}
+                    onChange={(e) => setLocalFiles(e.target.value)}
+                    placeholder="e.g. server/models/user.js, api/auth.js (leave blank for Auto-Detect)"
+                    className="w-full bg-slate-950 border border-slate-800 focus:border-amber-500 rounded-xl px-4 py-2.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none font-mono shadow-inner transition-colors"
+                  />
+                  <p className="text-[11px] text-slate-500 mt-1">
+                    Leave blank to automatically detect all dirty files in your active workspace, or specify 1 or more comma-separated file paths.
                   </p>
                 </div>
 

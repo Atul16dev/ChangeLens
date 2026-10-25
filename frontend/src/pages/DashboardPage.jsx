@@ -294,11 +294,11 @@ export function DashboardPage() {
   }, []);
 
   const handleOpenLocalWorkspace = useCallback(
-    async ({ repoPath }) => {
+    async ({ repoPath, changedFiles }) => {
       setConnectedRepo(null);
       setIsDemoMode(false);
       setIsProjectHubOpen(false);
-      await executeAnalysis({ repoPath });
+      await executeAnalysis({ repoPath, changedFiles });
     },
     [executeAnalysis]
   );
