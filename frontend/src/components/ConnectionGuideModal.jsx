@@ -175,34 +175,77 @@ export function ConnectionGuideModal({
       actionLabel: 'Got It — Return to Comments',
     },
     local: {
-      title: 'Local Workspace Scan Guide',
-      subtitle: 'Analyze uncommitted code changes in VS Code completely offline.',
-      badge: 'Localhost & Offline Guide',
+      title: 'Local Workspace Bridge Guide',
+      subtitle: 'Connect your local machine and VS Code to ChangeLens completely private & offline.',
+      badge: 'Local Machine & CLI Guide',
       steps: [
         {
-          title: 'Find Your Project Folder Path',
-          instruction: 'Open your terminal or file explorer and copy the full path to your local project root.',
-          example: 'D:\\Newdxtop\\my-node-app or /Users/username/projects/app',
-          tip: 'You can also leave the field blank if ChangeLens is running inside the project root.',
+          title: 'Run Bridge in Your Terminal',
+          instruction: 'Open your project directory in terminal or VS Code, and run the ChangeLens bridge command (no install needed).',
+          example: 'npx changelens connect',
+          tip: 'ChangeLens spins up an outbound secure tunnel and generates your 6-character session code (e.g. CL-7842).',
         },
         {
-          title: 'Edit Code in VS Code',
-          instruction: 'Make any code edits or modifications in your editor. You do not need to commit or push them.',
-          tip: 'ChangeLens inspects local git working tree (git status --porcelain) directly from your hard drive.',
+          title: 'Pair with the Web Dashboard',
+          instruction: 'Enter your session pairing code into the input field or click the direct URL printed in your terminal.',
+          example: 'Session Code: CL-7842',
+          tip: 'The connection card will turn green showing your machine hostname, active Git branch, and detected uncommitted files.',
         },
         {
-          title: 'Click "Open Local Workspace"',
-          instruction: 'ChangeLens parses your source files using Tree-Sitter WASM parsers offline and renders your visual blast radius.',
-          tip: 'Zero external network calls or credentials required.',
+          title: 'Calculate Blast Radius',
+          instruction: 'Choose "Auto-Detect from Git" or specify comma-separated files, then click "Calculate Blast Radius".',
+          tip: 'Tree-sitter WASM parses your code directly on your laptop. Source code never leaves your computer.',
         },
       ],
-      actionLabel: 'Open Local Workspace',
+      actionLabel: 'Connect Local Workspace',
     },
   };
 
   const currentGuide = guides[guideType] || guides.repo;
   const currentStepData = currentGuide.steps[activeStep];
   const totalSteps = currentGuide.steps.length;
+
+  const isLocal = guideType === 'local';
+  const isPR = guideType === 'pr' || guideType === 'ci' || guideType === 'comment';
+
+  const theme = isLocal
+    ? {
+        iconBox: 'bg-amber-950 border border-amber-800/60 text-amber-400',
+        badge: 'bg-amber-500/10 text-amber-300 border border-amber-500/20',
+        progress: 'bg-gradient-to-r from-amber-500 to-orange-500',
+        stepCircle: 'bg-amber-500/10 border border-amber-500/30 text-amber-400',
+        exampleText: 'text-amber-300',
+        tipBox: 'bg-amber-950/30 border border-amber-800/30 text-amber-300',
+        activeStepBtn: 'bg-amber-950/70 border-amber-500/60 text-white font-semibold shadow-sm',
+        activeStepBadge: 'bg-amber-500 text-slate-950',
+        nextBtn: 'bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 shadow-amber-500/20',
+        actionBtn: 'bg-gradient-to-r from-amber-600 via-orange-600 to-amber-500 hover:from-amber-500 hover:to-orange-500 shadow-amber-500/20',
+      }
+    : isPR
+    ? {
+        iconBox: 'bg-indigo-950 border border-indigo-800/60 text-indigo-400',
+        badge: 'bg-indigo-500/10 text-indigo-300 border border-indigo-500/20',
+        progress: 'bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-400',
+        stepCircle: 'bg-indigo-500/10 border border-indigo-500/30 text-indigo-400',
+        exampleText: 'text-indigo-300',
+        tipBox: 'bg-indigo-950/30 border border-indigo-800/30 text-indigo-300',
+        activeStepBtn: 'bg-indigo-950/70 border-indigo-500/60 text-white font-semibold shadow-sm',
+        activeStepBadge: 'bg-indigo-500 text-white',
+        nextBtn: 'bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-500 hover:from-indigo-500 hover:to-purple-500 shadow-indigo-500/20',
+        actionBtn: 'bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-500 hover:from-indigo-500 hover:to-purple-500 shadow-indigo-500/20',
+      }
+    : {
+        iconBox: 'bg-cyan-950 border border-cyan-800/60 text-cyan-400',
+        badge: 'bg-cyan-500/10 text-cyan-300 border border-cyan-500/20',
+        progress: 'bg-gradient-to-r from-cyan-500 to-blue-500',
+        stepCircle: 'bg-cyan-500/10 border border-cyan-500/30 text-cyan-400',
+        exampleText: 'text-cyan-300',
+        tipBox: 'bg-cyan-950/30 border border-cyan-800/30 text-cyan-300',
+        activeStepBtn: 'bg-cyan-950/70 border-cyan-500/60 text-white font-semibold shadow-sm',
+        activeStepBadge: 'bg-cyan-500 text-slate-950',
+        nextBtn: 'bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 shadow-cyan-500/20',
+        actionBtn: 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 shadow-emerald-500/20',
+      };
 
   const handleFinish = () => {
     onClose();
@@ -225,12 +268,16 @@ export function ConnectionGuideModal({
         {/* Modal Top Header */}
         <div className="px-6 py-4 border-b border-slate-800/80 bg-slate-950/60 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-cyan-950 border border-cyan-800/60 flex items-center justify-center text-cyan-400 shadow-inner">
+            <div
+              className={`w-8 h-8 rounded-lg flex items-center justify-center shadow-inner ${theme.iconBox}`}
+            >
               <Sparkles className="w-4 h-4" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 font-mono">
+                <span
+                  className={`text-[10px] font-bold px-2 py-0.5 rounded font-mono ${theme.badge}`}
+                >
                   {currentGuide.badge}
                 </span>
                 <span className="text-xs text-slate-400 font-mono">
@@ -259,9 +306,7 @@ export function ConnectionGuideModal({
             <div
               key={idx}
               className={`flex-1 h-full transition-all duration-300 ${
-                idx <= activeStep
-                  ? 'bg-gradient-to-r from-cyan-500 to-blue-500'
-                  : 'bg-slate-800'
+                idx <= activeStep ? theme.progress : 'bg-slate-800'
               }`}
             />
           ))}
@@ -272,7 +317,9 @@ export function ConnectionGuideModal({
           {/* Step Detail Card */}
           <div className="bg-slate-950/70 border border-slate-800/90 rounded-xl p-5 shadow-inner">
             <div className="flex items-start gap-3.5">
-              <div className="w-8 h-8 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 flex items-center justify-center font-bold text-xs shrink-0">
+              <div
+                className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs shrink-0 ${theme.stepCircle}`}
+              >
                 {activeStep + 1}
               </div>
 
@@ -287,7 +334,7 @@ export function ConnectionGuideModal({
 
                 {/* Optional Example / Code Pill */}
                 {currentStepData.example && (
-                  <div className="flex items-center justify-between bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs font-mono text-cyan-300 mt-3 shadow-inner">
+                  <div className={`flex items-center justify-between bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs font-mono mt-3 shadow-inner ${theme.exampleText}`}>
                     <span className="truncate">{currentStepData.example}</span>
                     <button
                       type="button"
@@ -312,7 +359,7 @@ export function ConnectionGuideModal({
 
                 {/* Helpful Tip */}
                 {currentStepData.tip && (
-                  <div className="flex items-start gap-2 bg-cyan-950/30 border border-cyan-800/30 rounded-lg p-2.5 text-[11px] text-cyan-300 mt-3">
+                  <div className={`flex items-start gap-2 rounded-lg p-2.5 text-[11px] mt-3 ${theme.tipBox}`}>
                     <span className="font-semibold shrink-0">💡 Tip:</span>
                     <span>{currentStepData.tip}</span>
                   </div>
@@ -337,7 +384,7 @@ export function ConnectionGuideModal({
                     onClick={() => setActiveStep(idx)}
                     className={`text-left p-2.5 rounded-lg border text-xs transition-all flex items-center gap-2 cursor-pointer ${
                       isCurrent
-                        ? 'bg-cyan-950/70 border-cyan-500/60 text-white font-semibold shadow-sm'
+                        ? theme.activeStepBtn
                         : isPassed
                         ? 'bg-slate-950/40 border-slate-800/60 text-slate-400 hover:text-slate-200'
                         : 'bg-slate-950/20 border-slate-850 text-slate-500 hover:text-slate-400'
@@ -346,7 +393,7 @@ export function ConnectionGuideModal({
                     <span
                       className={`w-4 h-4 rounded-full text-[10px] flex items-center justify-center font-bold shrink-0 ${
                         isCurrent
-                          ? 'bg-cyan-500 text-slate-950'
+                          ? theme.activeStepBadge
                           : isPassed
                           ? 'bg-emerald-500/20 text-emerald-400'
                           : 'bg-slate-800 text-slate-400'
@@ -379,7 +426,7 @@ export function ConnectionGuideModal({
               <button
                 type="button"
                 onClick={() => setActiveStep((prev) => Math.min(totalSteps - 1, prev + 1))}
-                className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white shadow-sm shadow-cyan-500/20 active:scale-95 transition-all cursor-pointer"
+                className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-semibold text-white shadow-sm active:scale-95 transition-all cursor-pointer ${theme.nextBtn}`}
               >
                 <span>Next Step</span>
                 <ChevronRight className="w-3.5 h-3.5" />
@@ -388,7 +435,7 @@ export function ConnectionGuideModal({
               <button
                 type="button"
                 onClick={handleFinish}
-                className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-sm shadow-emerald-500/20 active:scale-95 transition-all cursor-pointer"
+                className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-semibold text-white shadow-sm active:scale-95 transition-all cursor-pointer ${theme.actionBtn}`}
               >
                 <span>{currentGuide.actionLabel}</span>
                 <ArrowRight className="w-3.5 h-3.5" />

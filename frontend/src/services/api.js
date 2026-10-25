@@ -281,6 +281,44 @@ export async function getGitHubRepositoryCommits({ repoUrl, token, branch, perPa
   return data.data;
 }
 
+/**
+ * Bridge Agent Client APIs (Local Workspace Tunnel)
+ */
+export async function checkBridgeStatus(sessionCode) {
+  if (!sessionCode) return { connected: false };
+  const res = await fetchWithRetry(`${API_BASE}/bridge/status/${encodeURIComponent(sessionCode)}`);
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error || 'Failed to check bridge status');
+  }
+  return data;
+}
+
+export async function getBridgeChanges(sessionCode) {
+  if (!sessionCode) return { success: false, changes: [] };
+  const res = await fetchWithRetry(`${API_BASE}/bridge/changes/${encodeURIComponent(sessionCode)}`);
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error || 'Failed to fetch bridge changes');
+  }
+  return data;
+}
+
+export async function runBridgeScan(sessionCode, { changedFiles, maxDepth = 10, mode } = {}) {
+  if (!sessionCode) throw new Error('Session code is required for local bridge scan');
+  const res = await fetchWithRetry(`${API_BASE}/bridge/scan/${encodeURIComponent(sessionCode)}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ changedFiles, maxDepth, mode }),
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error || 'Local bridge scan failed');
+  }
+  return data;
+}
+
+
 
 
 

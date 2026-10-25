@@ -294,10 +294,23 @@ export function DashboardPage() {
   }, []);
 
   const handleOpenLocalWorkspace = useCallback(
-    async ({ repoPath, changedFiles }) => {
+    async ({ repoPath, changedFiles, scanResult } = {}) => {
       setConnectedRepo(null);
       setIsDemoMode(false);
       setIsProjectHubOpen(false);
+
+      if (scanResult && scanResult.graph) {
+        setCurrentAnalysisId(scanResult.analysisId || `analysis_${Date.now()}`);
+        setGraphData(scanResult.graph);
+        setImpactData(scanResult.impactAnalysis?.summary || scanResult.summary);
+        setExplanationData(scanResult.impactAnalysis?.explanation || null);
+        setSelectedNodeId(null);
+        setSimulationData(null);
+        setIsSimulating(false);
+        setBackendStatus('online');
+        return;
+      }
+
       await executeAnalysis({ repoPath, changedFiles });
     },
     [executeAnalysis]

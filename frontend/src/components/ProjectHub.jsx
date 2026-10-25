@@ -32,6 +32,7 @@ import {
 import { useAuth } from '../context/AuthContext.jsx';
 import { BrandLogo } from './BrandLogo.jsx';
 import { ConnectionGuideModal } from './ConnectionGuideModal.jsx';
+import { LocalWorkshopSection } from './LocalWorkshopSection.jsx';
 import {
   inspectGitHubPR,
   getGitHubWorkflowTemplate,
@@ -580,7 +581,7 @@ export function ProjectHub({
                   <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
                 )}
               </div>
-              <div className="text-[10px] text-slate-400 truncate">VS Code Offline Tree</div>
+              <div className="text-[10px] text-slate-400 truncate">CLI Bridge & VS Code</div>
             </div>
           </button>
 
@@ -1225,130 +1226,15 @@ export function ProjectHub({
           )}
 
           {/* ========================================================================= */}
-          {/* MODE 3: LOCAL WORKSPACE (100% Offline / VS Code)                          */}
+          {/* MODE 3: LOCAL WORKSPACE (CLI Tunnel Bridge & VS Code)                     */}
           {/* ========================================================================= */}
           {activeMode === 'local' && (
-            <div className="animate-in fade-in duration-200">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-slate-800/80 gap-4">
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400 text-[10px] font-bold border border-amber-500/20">
-                      OFFLINE WORKSPACE SCANNER
-                    </span>
-                  </div>
-                  <h2 className="text-xl font-bold text-white">
-                    Scan Local Workspace Folder
-                  </h2>
-                  <p className="text-xs text-slate-400 mt-1 max-w-xl">
-                    Inspect uncommitted code changes in VS Code without pushing to GitHub. ChangeLens uses local Tree-Sitter WASM parsers completely offline.
-                  </p>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => openGuide('local')}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-950/70 hover:bg-amber-900/70 border border-amber-800/60 hover:border-amber-500 text-amber-300 font-semibold text-xs transition-all shadow-sm shrink-0 cursor-pointer group"
-                >
-                  <BookOpen className="w-4 h-4 text-amber-400 group-hover:scale-110 transition-transform" />
-                  <span>Steps to Scan Local Workspace</span>
-                </button>
-              </div>
-
-              {/* Form Input */}
-              <form onSubmit={handleLocalSubmit} className="mt-6 space-y-4">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                    Local Folder / Git Repository Path
-                  </label>
-                  <input
-                    ref={localInputRef}
-                    type="text"
-                    value={localPath}
-                    onChange={(e) => setLocalPath(e.target.value)}
-                    placeholder="e.g. D:/my-project (or leave blank to auto-detect current directory)"
-                    className="w-full bg-slate-950 border border-slate-800 focus:border-amber-500 rounded-xl px-4 py-3 text-xs text-slate-100 placeholder-slate-500 focus:outline-none font-mono shadow-inner transition-colors"
-                  />
-                  <p className="text-[11px] text-slate-500 mt-1.5 flex items-center gap-1.5">
-                    <Zap className="w-3.5 h-3.5 text-amber-400" />
-                    <span>
-                      Inspects local git working tree (<code className="text-amber-300 font-mono">git status --porcelain</code>) to automatically pick up modified files in VS Code.
-                    </span>
-                  </p>
-                </div>
-
-                {/* Optional Comma-Separated Target Files Input */}
-                <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center justify-between">
-                    <span>Target Changed Files (Optional)</span>
-                    <span className="text-[10px] text-amber-400/80 font-normal">Comma-separated for multi-file blast radius</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={localFiles}
-                    onChange={(e) => setLocalFiles(e.target.value)}
-                    placeholder="e.g. server/models/user.js, api/auth.js (leave blank for Auto-Detect)"
-                    className="w-full bg-slate-950 border border-slate-800 focus:border-amber-500 rounded-xl px-4 py-2.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none font-mono shadow-inner transition-colors"
-                  />
-                  <p className="text-[11px] text-slate-500 mt-1">
-                    Leave blank to automatically detect all dirty files in your active workspace, or specify 1 or more comma-separated file paths.
-                  </p>
-                </div>
-
-                <div className="pt-2 flex flex-col sm:flex-row items-center gap-3">
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-semibold text-xs rounded-xl shadow-lg shadow-amber-500/20 active:scale-95 disabled:opacity-50 transition-all flex items-center justify-center gap-2.5 cursor-pointer"
-                  >
-                    <Layers className="w-4 h-4 text-amber-200" />
-                    <span>Open Local Workspace</span>
-                  </button>
-
-                  <span className="text-[11px] text-slate-500">
-                    100% Offline execution with zero external network calls.
-                  </span>
-                </div>
-              </form>
-
-              {/* Offline perks */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8 pt-6 border-t border-slate-800/80 text-left">
-                <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800/80">
-                  <div className="w-8 h-8 rounded-lg bg-amber-950/80 text-amber-400 flex items-center justify-center mb-2.5 border border-amber-800/50">
-                    <ShieldCheck className="w-4 h-4" />
-                  </div>
-                  <h4 className="text-xs font-bold text-slate-200 mb-1">
-                    Air-Gapped & Private
-                  </h4>
-                  <p className="text-[11px] text-slate-400 leading-relaxed">
-                    Source code never leaves your workstation. No external API calls or third-party cloud uploads.
-                  </p>
-                </div>
-
-                <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800/80">
-                  <div className="w-8 h-8 rounded-lg bg-orange-950/80 text-orange-400 flex items-center justify-center mb-2.5 border border-orange-800/50">
-                    <Zap className="w-4 h-4" />
-                  </div>
-                  <h4 className="text-xs font-bold text-slate-200 mb-1">
-                    Instant Git Status Detection
-                  </h4>
-                  <p className="text-[11px] text-slate-400 leading-relaxed">
-                    Picks up dirty files in your active workspace before you ever type `git add` or `git commit`.
-                  </p>
-                </div>
-
-                <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800/80">
-                  <div className="w-8 h-8 rounded-lg bg-amber-950/80 text-amber-400 flex items-center justify-center mb-2.5 border border-amber-800/50">
-                    <Code2 className="w-4 h-4" />
-                  </div>
-                  <h4 className="text-xs font-bold text-slate-200 mb-1">
-                    Native Tree-Sitter Parsers
-                  </h4>
-                  <p className="text-[11px] text-slate-400 leading-relaxed">
-                    High-performance WebAssembly grammars for JS, TS, Python, and Go parse thousands of lines in milliseconds.
-                  </p>
-                </div>
-              </div>
-            </div>
+            <LocalWorkshopSection
+              onComplete={(scanResult) => {
+                onOpenLocalWorkspace({ scanResult });
+              }}
+              onFocusGuide={() => openGuide('local')}
+            />
           )}
 
           {/* ========================================================================= */}
