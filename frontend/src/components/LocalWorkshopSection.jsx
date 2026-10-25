@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Terminal,
   Copy,
@@ -37,6 +37,9 @@ export function LocalWorkshopSection({ onComplete, onFocusGuide }) {
   const [uncommittedChanges, setUncommittedChanges] = useState([]);
   const [loadingChanges, setLoadingChanges] = useState(false);
 
+  // Consecutive failure counter to prevent UI flickering on temporary network jitter
+  const missedHeartbeatsRef = useRef(0);
+
   // Analysis Configuration
   const [mode, setMode] = useState('auto'); // 'auto' | 'manual'
   const [manualFiles, setManualFiles] = useState('');
@@ -46,9 +49,32 @@ export function LocalWorkshopSection({ onComplete, onFocusGuide }) {
   const [successMessage, setSuccessMessage] = useState('');
   const [copiedCommand, setCopiedCommand] = useState(false);
 
-  const commandToRun = sessionCode.trim()
-    ? `npx changelens connect --session=${sessionCode.trim().toUpperCase()}`
-    : 'npx changelens connect';
+  // Dynamic command generator:
+  // On localhost: 'npx changelens connect --session=CL-...'
+  // On hosted production: attaches --cloud-url=wss://yourdomain.com/api/v1/bridge/tunnel
+  // so remote developers' terminals connect to the live hosted server effortlessly!
+  const getCommandToRun = () => {
+    const session = sessionCode.trim().toUpperCase();
+    const isLocalhost =
+      typeof window !== 'undefined' &&
+      (window.location.hostname === 'localhost' ||
+        window.location.hostname === '127.0.0.1' ||
+        window.location.hostname === '');
+
+    let cmd = 'npx changelens connect';
+    if (session) {
+      cmd += ` --session=${session}`;
+    }
+
+    if (!isLocalhost && typeof window !== 'undefined' && window.location.host) {
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      cmd += ` --cloud-url=${protocol}//${window.location.host}/api/v1/bridge/tunnel`;
+    }
+
+    return cmd;
+  };
+
+  const commandToRun = getCommandToRun();
 
   // Copy command to clipboard
   const handleCopyCommand = () => {
@@ -57,69 +83,112 @@ export function LocalWorkshopSection({ onComplete, onFocusGuide }) {
     setTimeout(() => setCopiedCommand(false), 2200);
   };
 
-  // Poll / Check bridge connection status
-  const checkStatus = useCallback(async (codeToCheck) => {
-    const code = (codeToCheck || sessionCode).trim().toUpperCase();
-    if (!code) {
-      setConnectionStatus('idle');
-      setWorkspaceInfo(null);
-      return;
-    }
-
-    setConnectionStatus('checking');
-    setErrorMessage('');
-
-    try {
-      const data = await checkBridgeStatus(code);
-      if (data.connected && data.workspace) {
-        setConnectionStatus('connected');
-        setWorkspaceInfo(data.workspace);
-        try {
-          localStorage.setItem('changelens_last_session', code);
-        } catch {}
-
-        // Fetch uncommitted changes
-        fetchChanges(code);
-      } else {
-        setConnectionStatus('disconnected');
-        setWorkspaceInfo(null);
-      }
-    } catch (err) {
-      setConnectionStatus('disconnected');
-      setWorkspaceInfo(null);
-    }
-  }, [sessionCode]);
-
   // Fetch uncommitted Git changes from local machine
-  const fetchChanges = async (codeToUse) => {
+  const fetchChanges = useCallback(async (codeToUse, isSilent = false) => {
     const code = (codeToUse || sessionCode).trim().toUpperCase();
     if (!code) return;
 
-    setLoadingChanges(true);
+    if (!isSilent) {
+      setLoadingChanges(true);
+    }
     try {
       const res = await getBridgeChanges(code);
       if (res.success && Array.isArray(res.changes)) {
         setUncommittedChanges(res.changes);
       }
     } catch (err) {
-      console.warn('Failed to fetch local git changes:', err);
+      if (!isSilent) {
+        console.warn('Failed to fetch local git changes:', err);
+      }
     } finally {
-      setLoadingChanges(false);
+      if (!isSilent) {
+        setLoadingChanges(false);
+      }
     }
-  };
+  }, [sessionCode]);
+
+  // Poll / Check bridge connection status
+  // isSilent = true means background heartbeat (never triggers 'checking' spinner or drops UI)
+  const checkStatus = useCallback(async (codeToCheck, isSilent = false) => {
+    const code = (codeToCheck || sessionCode).trim().toUpperCase();
+    if (!code) {
+      missedHeartbeatsRef.current = 0;
+      setConnectionStatus('idle');
+      setWorkspaceInfo(null);
+      return;
+    }
+
+    if (!isSilent) {
+      setConnectionStatus('checking');
+      setErrorMessage('');
+    }
+
+    try {
+      const data = await checkBridgeStatus(code);
+      if (data.connected && data.workspace) {
+        missedHeartbeatsRef.current = 0;
+        setConnectionStatus('connected');
+        setWorkspaceInfo((prev) => {
+          if (
+            prev &&
+            prev.hostname === data.workspace.hostname &&
+            prev.path === data.workspace.path &&
+            (prev.gitBranch || prev.branch) === (data.workspace.gitBranch || data.workspace.branch) &&
+            prev.uncommittedCount === data.workspace.uncommittedCount
+          ) {
+            return prev;
+          }
+          return data.workspace;
+        });
+
+        try {
+          localStorage.setItem('changelens_last_session', code);
+        } catch {}
+
+        // Silently fetch changes in background
+        fetchChanges(code, true);
+      } else {
+        if (isSilent) {
+          missedHeartbeatsRef.current += 1;
+          // Only show disconnected after 3 consecutive failed heartbeats (approx 12s)
+          if (missedHeartbeatsRef.current >= 3) {
+            setConnectionStatus('disconnected');
+            setWorkspaceInfo(null);
+          }
+        } else {
+          missedHeartbeatsRef.current = 3;
+          setConnectionStatus('disconnected');
+          setWorkspaceInfo(null);
+        }
+      }
+    } catch (err) {
+      if (isSilent) {
+        missedHeartbeatsRef.current += 1;
+        if (missedHeartbeatsRef.current >= 3) {
+          setConnectionStatus('disconnected');
+          setWorkspaceInfo(null);
+        }
+      } else {
+        missedHeartbeatsRef.current = 3;
+        setConnectionStatus('disconnected');
+        setWorkspaceInfo(null);
+      }
+    }
+  }, [sessionCode, fetchChanges]);
 
   // Auto-check on mount if session code is present
   useEffect(() => {
     if (sessionCode.trim()) {
-      checkStatus(sessionCode.trim());
+      checkStatus(sessionCode.trim(), false);
     }
   }, []);
 
-  // Periodic heartbeat poll (every 4 seconds) when waiting or connected
+  // Periodic heartbeat poll (every 4 seconds) - SILENT background check
   useEffect(() => {
-    if (!sessionCode.trim()) return;
+    const trimmed = sessionCode.trim();
+    if (!trimmed) return;
     const interval = setInterval(() => {
-      checkStatus(sessionCode.trim());
+      checkStatus(trimmed, true);
     }, 4000);
     return () => clearInterval(interval);
   }, [sessionCode, checkStatus]);
@@ -253,14 +322,22 @@ export function LocalWorkshopSection({ onComplete, onFocusGuide }) {
             id="bridge-session-input"
             type="text"
             value={sessionCode}
-            onChange={(e) => setSessionCode(e.target.value.toUpperCase())}
+            onChange={(e) => {
+              const val = e.target.value.toUpperCase();
+              setSessionCode(val);
+              if (!val.trim()) {
+                setConnectionStatus('idle');
+                setWorkspaceInfo(null);
+                missedHeartbeatsRef.current = 0;
+              }
+            }}
             placeholder="e.g. CL-7842"
             maxLength={10}
             className="flex-1 bg-slate-900 border border-slate-800 focus:border-amber-500 rounded-xl px-4 py-2.5 text-sm font-mono text-white placeholder-slate-600 outline-none focus:outline-none transition-colors uppercase"
           />
           <button
             type="button"
-            onClick={() => checkStatus()}
+            onClick={() => checkStatus(sessionCode.trim(), false)}
             disabled={connectionStatus === 'checking' || !sessionCode.trim()}
             className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-750 text-slate-200 hover:text-white font-semibold text-xs border border-slate-700 transition-colors flex items-center gap-2 cursor-pointer disabled:opacity-50 outline-none focus:outline-none"
           >
@@ -271,10 +348,13 @@ export function LocalWorkshopSection({ onComplete, onFocusGuide }) {
 
         {/* Connection Status Banner */}
         {connectionStatus === 'connected' && workspaceInfo && (
-          <div className="p-3.5 rounded-xl bg-emerald-950/50 border border-emerald-500/40 text-emerald-200 text-xs space-y-2 animate-in zoom-in-95 duration-150">
+          <div className="p-3.5 rounded-xl bg-emerald-950/50 border border-emerald-500/40 text-emerald-200 text-xs space-y-2 transition-all duration-200">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 font-bold text-emerald-400">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="relative flex h-2.5 w-2.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                </span>
                 <span>Local Machine Connected ({workspaceInfo.hostname || 'Local Host'})</span>
               </div>
               <span className="px-2 py-0.5 rounded-md text-[10px] font-mono bg-emerald-900/60 text-emerald-300 border border-emerald-700/50">
@@ -296,7 +376,7 @@ export function LocalWorkshopSection({ onComplete, onFocusGuide }) {
                 </span>
                 <span className="text-slate-500">•</span>
                 <span>
-                  <strong className="text-amber-400 font-mono">{workspaceInfo.uncommittedCount || uncommittedChanges.length}</strong> dirty files
+                  <strong className="text-amber-400 font-mono">{workspaceInfo.uncommittedCount ?? uncommittedChanges.length}</strong> dirty files
                 </span>
               </div>
             </div>
@@ -323,17 +403,17 @@ export function LocalWorkshopSection({ onComplete, onFocusGuide }) {
         </div>
 
         {/* Mode Selector Tabs */}
-        <div className="grid grid-cols-2 gap-2 bg-slate-900 p-1 rounded-xl border border-slate-800">
+        <div className="grid grid-cols-2 gap-2 bg-slate-900/90 p-1.5 rounded-xl border border-slate-800">
           <button
             type="button"
             onClick={() => setMode('auto')}
             className={`flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-semibold transition-all cursor-pointer outline-none focus:outline-none ${
               mode === 'auto'
-                ? 'bg-gradient-to-r from-amber-600 via-orange-600 to-amber-500 text-white shadow-md shadow-amber-500/25'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                ? 'bg-amber-500/15 border border-amber-500/40 text-amber-300 shadow-sm'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 border border-transparent'
             }`}
           >
-            <Zap className="w-3.5 h-3.5" />
+            <Zap className={`w-3.5 h-3.5 ${mode === 'auto' ? 'text-amber-400' : 'text-slate-400'}`} />
             <span>Mode 1: Auto-Detect from Git</span>
           </button>
 
@@ -342,11 +422,11 @@ export function LocalWorkshopSection({ onComplete, onFocusGuide }) {
             onClick={() => setMode('manual')}
             className={`flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-semibold transition-all cursor-pointer outline-none focus:outline-none ${
               mode === 'manual'
-                ? 'bg-gradient-to-r from-amber-600 via-orange-600 to-amber-500 text-white shadow-md shadow-amber-500/25'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                ? 'bg-amber-500/15 border border-amber-500/40 text-amber-300 shadow-sm'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 border border-transparent'
             }`}
           >
-            <Sliders className="w-3.5 h-3.5" />
+            <Sliders className={`w-3.5 h-3.5 ${mode === 'manual' ? 'text-amber-400' : 'text-slate-400'}`} />
             <span>Mode 2: Custom Target Files</span>
           </button>
         </div>

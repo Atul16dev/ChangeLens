@@ -40,6 +40,8 @@ export function Header({
   onOpenGitHub,
   onOpenProjectHub,
   isDemoMode = false,
+  isProjectHubOpen = false,
+  activeHubTab = 'repo',
 }) {
   const [repoPath, setRepoPath] = useState('');
   const [changedFile, setChangedFile] = useState('');
@@ -119,16 +121,42 @@ export function Header({
 
         {/* Right: Actions (Connect Repo, GitHub PR, History, Profile) */}
         <div className="flex items-center gap-2.5 shrink-0">
-          {/* Project Hub / Connect Repo Button */}
+          {/* Project Hub / Back to Workshop Button */}
           {onOpenProjectHub && (
             <button
               type="button"
               onClick={onOpenProjectHub}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-cyan-950/70 hover:bg-cyan-900/80 text-cyan-300 hover:text-cyan-200 border border-cyan-800/60 hover:border-cyan-500/60 transition-all shadow-sm active:scale-95 cursor-pointer"
-              title="Open Project Hub to connect GitHub repo or local folder"
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all shadow-sm active:scale-95 cursor-pointer ${
+                activeHubTab === 'local'
+                  ? 'bg-amber-950/70 hover:bg-amber-900/80 text-amber-300 hover:text-amber-200 border border-amber-800/60 hover:border-amber-500/60'
+                  : activeHubTab === 'pr'
+                  ? 'bg-indigo-950/70 hover:bg-indigo-900/80 text-indigo-300 hover:text-indigo-200 border border-indigo-800/60 hover:border-indigo-500/60'
+                  : 'bg-cyan-950/70 hover:bg-cyan-900/80 text-cyan-300 hover:text-cyan-200 border border-cyan-800/60 hover:border-cyan-500/60'
+              }`}
+              title={
+                !isProjectHubOpen
+                  ? `Return to ${activeHubTab === 'local' ? 'Local Workshop' : activeHubTab === 'pr' ? 'GitHub PR' : 'Project Hub'}`
+                  : 'Open Project Hub'
+              }
             >
-              <FolderPlus className="w-3.5 h-3.5 text-cyan-400" />
-              <span>Connect Repo</span>
+              <FolderPlus
+                className={`w-3.5 h-3.5 ${
+                  activeHubTab === 'local'
+                    ? 'text-amber-400'
+                    : activeHubTab === 'pr'
+                    ? 'text-indigo-400'
+                    : 'text-cyan-400'
+                }`}
+              />
+              <span>
+                {!isProjectHubOpen
+                  ? activeHubTab === 'local'
+                    ? 'Local Workshop'
+                    : activeHubTab === 'pr'
+                    ? 'GitHub PR'
+                    : 'Connect Repo'
+                  : 'Project Hub'}
+              </span>
             </button>
           )}
 
@@ -249,8 +277,12 @@ export function Header({
               className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-medium bg-slate-800/80 hover:bg-slate-750 text-slate-300 hover:text-white border border-slate-700/80 transition-colors cursor-pointer"
               title="Open Project Hub to connect another repository or workspace"
             >
-              <FolderPlus className="w-3 h-3 text-cyan-400" />
-              <span>Switch Project</span>
+              <FolderPlus
+                className={`w-3 h-3 ${activeHubTab === 'local' ? 'text-amber-400' : 'text-cyan-400'}`}
+              />
+              <span>
+                {activeHubTab === 'local' ? 'Local Workshop' : 'Switch Project'}
+              </span>
             </button>
           )}
         </div>

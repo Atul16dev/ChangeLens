@@ -61,12 +61,37 @@ export function ProjectHub({
   loading = false,
   apiError = null,
   onClearApiError,
+  initialActiveMode = 'repo',
+  onActiveModeChange,
 }) {
   const { user } = useAuth();
   const displayName = user?.name ? user.name.split(' ')[0] : 'Developer';
 
-  // Active top-level mode: 'repo' | 'pr' | 'local' | 'demo'
-  const [activeMode, setActiveMode] = useState('repo');
+  // Active top-level mode: 'repo' | 'pr' | 'local' | 'demo' (remembers last active tab)
+  const [activeMode, setActiveModeState] = useState(() => {
+    if (initialActiveMode) return initialActiveMode;
+    try {
+      return localStorage.getItem('changelens_active_tab') || 'repo';
+    } catch {
+      return 'repo';
+    }
+  });
+
+  const setActiveMode = (mode) => {
+    setActiveModeState(mode);
+    try {
+      localStorage.setItem('changelens_active_tab', mode);
+    } catch {}
+    if (onActiveModeChange) {
+      onActiveModeChange(mode);
+    }
+  };
+
+  useEffect(() => {
+    if (initialActiveMode && initialActiveMode !== activeMode) {
+      setActiveModeState(initialActiveMode);
+    }
+  }, [initialActiveMode]);
 
   // Interactive Blur Walkthrough Modal State
   const [isGuideModalOpen, setIsGuideModalOpen] = useState(false);
@@ -84,8 +109,21 @@ export function ProjectHub({
   const [repoToken, setRepoToken] = useState('');
   const [showRepoToken, setShowRepoToken] = useState(false);
 
-  // Form states - GitHub Pull Request
-  const [prSubTab, setPrSubTab] = useState('analyze'); // 'analyze' | 'ci' | 'comment'
+  // Form states - GitHub Pull Request (persists subtab in localStorage)
+  const [prSubTab, setPrSubTabState] = useState(() => {
+    try {
+      return localStorage.getItem('changelens_pr_subtab') || 'analyze';
+    } catch {
+      return 'analyze';
+    }
+  });
+
+  const setPrSubTab = (subTab) => {
+    setPrSubTabState(subTab);
+    try {
+      localStorage.setItem('changelens_pr_subtab', subTab);
+    } catch {}
+  };
   const [prUrl, setPrUrl] = useState('');
   const [prToken, setPrToken] = useState('');
   const [showPrToken, setShowPrToken] = useState(false);
@@ -1333,18 +1371,20 @@ export function ProjectHub({
         </div>
 
         {/* RECENT CONNECTED PROJECTS SECTION */}
-        {recentAnalyses.length > 0 && (
-          <div className="w-full text-left mt-8 pt-6 border-t border-slate-800/80">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xs font-bold text-slate-300 flex items-center gap-2">
-                <Clock className="w-3.5 h-3.5 text-cyan-400" />
-                <span>Recent Analyses & Connected Repositories</span>
-              </h3>
-              <span className="text-[11px] text-slate-500">
-                Click any previous project to reopen its visual graph
-              </span>
-            </div>
+        <div className="w-full text-left mt-8 pt-6 border-t border-slate-800/80">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-xs font-bold text-slate-300 flex items-center gap-2">
+              <Clock className="w-3.5 h-3.5 text-cyan-400" />
+              <span>Recent Analyses & Connected Repositories</span>
+            </h3>
+            <span className="text-[11px] text-slate-500 font-mono">
+              {recentAnalyses.length > 0
+                ? `Showing latest ${Math.min(recentAnalyses.length, 6)} runs`
+                : 'Live history tracking'}
+            </span>
+          </div>
 
+          {recentAnalyses.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
               {recentAnalyses.slice(0, 6).map((item) => (
                 <button
@@ -1354,11 +1394,11 @@ export function ProjectHub({
                   className="p-3.5 bg-slate-900/60 hover:bg-slate-850 border border-slate-800 hover:border-cyan-500/50 rounded-2xl text-left transition-all group flex flex-col justify-between cursor-pointer shadow-sm hover:shadow-cyan-500/5"
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-semibold text-slate-200 group-hover:text-cyan-300 line-clamp-1">
+                    <span className="text-xs font-semibold text-slate-200 group-hover:text-cyan-300 line-clamp-1 pr-2">
                       {item.title || item.analysisId}
                     </span>
                     <span
-                      className={`text-[9px] px-2 py-0.5 rounded-full font-bold ${
+                      className={`text-[9px] px-2 py-0.5 rounded-full font-bold uppercase shrink-0 ${
                         item.summary?.riskLevel === 'CRITICAL'
                           ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
                           : item.summary?.riskLevel === 'HIGH'
@@ -1370,11 +1410,13 @@ export function ProjectHub({
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between text-[11px] text-slate-500 font-mono">
-                    <span className="truncate max-w-[200px]">
-                      {item.changedFiles?.length > 0 ? item.changedFiles[0] : item.targetDir || 'Repository'}
+                  <div className="flex items-center justify-between text-[11px] text-slate-500 font-mono pt-1">
+                    <span className="truncate max-w-[180px]" title={item.targetDir || item.changedFiles?.[0]}>
+                      {item.changedFiles?.length > 0
+                        ? `${item.changedFiles[0]}${item.changedFiles.length > 1 ? ` (+${item.changedFiles.length - 1})` : ''}`
+                        : item.targetDir || 'Repository'}
                     </span>
-                    <span className="flex items-center gap-1 text-cyan-400 group-hover:translate-x-0.5 transition-transform font-sans font-semibold text-[10px]">
+                    <span className="flex items-center gap-1 text-cyan-400 group-hover:translate-x-0.5 transition-transform font-sans font-semibold text-[10px] shrink-0">
                       <span>Resume</span>
                       <ArrowRight className="w-3 h-3" />
                     </span>
@@ -1382,8 +1424,12 @@ export function ProjectHub({
                 </button>
               ))}
             </div>
-          </div>
-        )}
+          ) : (
+            <div className="p-6 rounded-2xl bg-slate-900/40 border border-slate-800/60 text-center text-xs text-slate-500">
+              No recent analyses recorded yet. Scan a project using GitHub Repository, Pull Request, or Local Workshop above to populate your live history here.
+            </div>
+          )}
+        </div>
       </div>
 
       {/* FULL-SCREEN BLURRED WALKTHROUGH POPUP MODAL */}

@@ -103,6 +103,16 @@ test("ChangeLens Cloud & Terminal WebSocket Tunnel Relay Suite (Phase 2)", async
       assert.ok(Array.isArray(data.graph.nodes));
       assert.ok(Array.isArray(data.graph.edges));
       assert.ok(data.graph.nodes.length >= 3);
+      assert.ok(data.analysisId, "Bridge scan must assign an analysisId");
+
+      // Verify that this local scan was persisted to analysesStore so it works in Recent Analyses
+      const graphRes = await fetch(`${baseUrl}/api/v1/analyses/${data.analysisId}/graph`);
+      assert.equal(graphRes.status, 200, "Saved graph must be retrievable from store");
+      const graphData = await graphRes.json();
+      assert.ok(graphData.data.nodes.length >= 3);
+
+      const impactRes = await fetch(`${baseUrl}/api/v1/analyses/${data.analysisId}/impact`);
+      assert.equal(impactRes.status, 200, "Saved impact must be retrievable from store");
     } finally {
       agentTunnel.close();
     }

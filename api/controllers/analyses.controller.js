@@ -456,14 +456,15 @@ export async function getAnalysisImpact(req, res, next) {
       });
     }
 
+    const impact = analysis.impactAnalysis || {};
     res.status(200).json({
       success: true,
       data: {
-        summary: analysis.summary,
-        brokenImports: analysis.impactAnalysis.brokenImports,
-        staleRenames: analysis.impactAnalysis.staleRenames,
-        blastRadius: analysis.impactAnalysis.blastRadius,
-        allFindings: analysis.impactAnalysis.allFindings,
+        summary: analysis.summary || {},
+        brokenImports: impact.brokenImports || [],
+        staleRenames: impact.staleRenames || [],
+        blastRadius: impact.blastRadius || {},
+        allFindings: impact.allFindings || [],
       },
     });
   } catch (error) {
@@ -590,10 +591,13 @@ export async function getAnalysisExplanation(req, res, next) {
       });
     }
 
-    const explanation = generateImpactExplanation({
-      impactAnalysis: analysis.impactAnalysis,
-      changes: analysis.changes,
-    });
+    let explanation = analysis.explanation;
+    if (!explanation) {
+      explanation = generateImpactExplanation({
+        impactAnalysis: analysis.impactAnalysis || {},
+        changes: analysis.changes || [],
+      });
+    }
 
     res.status(200).json({
       success: true,
