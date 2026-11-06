@@ -31,6 +31,17 @@ async function startServer() {
     console.log("=================================================\n");
   });
 
+  server.on("error", (err) => {
+    if (err.code === "EADDRINUSE") {
+      console.error(`\n❌ [PORT CONFLICT] Port ${PORT} is already in use by another running Node process.`);
+      console.error(`💡 To free port ${PORT}, run this in PowerShell:`);
+      console.error(`   Get-Process -Id (Get-NetTCPConnection -LocalPort ${PORT}).OwningProcess | Stop-Process -Force\n`);
+    } else {
+      console.error("❌ Fatal server error:", err);
+    }
+    process.exit(1);
+  });
+
   const bridgeRelay = initBridgeRelay(server);
 
   function shutdown(signal) {
