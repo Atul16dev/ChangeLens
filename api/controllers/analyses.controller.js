@@ -15,7 +15,7 @@ import { analysesStore } from "../store.js";
  * Formats in-memory graph nodes and edges using ELK.js layered layout.
  * Provides deterministic positions, crossing minimization, and rich semantic edge metadata.
  */
-async function formatReactFlowGraph(graph, impactAnalysis, changedFilesSet, symbolTable = null) {
+async function formatReactFlowGraph(graph, impactAnalysis, changedFilesSet, symbolTable = null, changes = []) {
   const impactedFilesMap = new Map();
   for (const f of impactAnalysis.allFindings) {
     if (f.affectedFile) {
@@ -26,13 +26,31 @@ async function formatReactFlowGraph(graph, impactAnalysis, changedFilesSet, symb
     }
   }
 
+  const changeTypeMap = new Map();
+  if (Array.isArray(changes)) {
+    for (const c of changes) {
+      if (c && c.path) {
+        changeTypeMap.set(c.path, c.status || (c.statusCode === "D" ? "deleted" : "modified"));
+      }
+    }
+  }
+
   // 1. Build initial React Flow nodes
   const rawNodes = graph.nodes.map((nodePath) => {
     const fileName = path.basename(nodePath);
     const isChanged = changedFilesSet.has(nodePath);
+    const changeStatus = changeTypeMap.get(nodePath) || (isChanged ? "modified" : null);
+    const isDeleted = changeStatus === "deleted";
     const impactInfo = impactedFilesMap.get(nodePath);
     const isImpacted = Boolean(impactInfo);
     const symbolInfo = symbolTable?.get(nodePath);
+
+    let nodeSeverity = impactInfo?.severity || "NONE";
+    if (isDeleted) {
+      nodeSeverity = "DELETED";
+    } else if (isChanged) {
+      nodeSeverity = "CHANGED";
+    }
 
     return {
       id: nodePath,
@@ -41,8 +59,10 @@ async function formatReactFlowGraph(graph, impactAnalysis, changedFilesSet, symb
         label: fileName,
         fullPath: nodePath,
         isChanged,
+        isDeleted,
+        changeType: changeStatus,
         isImpacted,
-        severity: impactInfo?.severity || (isChanged ? "CHANGED" : "NONE"),
+        severity: nodeSeverity,
         depth: impactInfo?.depth || 0,
         publicSymbols: symbolInfo ? Array.from(symbolInfo.publicSymbols) : [],
         declarationsCount: symbolInfo ? symbolInfo.declarations.size : 0,
@@ -57,9 +77,12 @@ async function formatReactFlowGraph(graph, impactAnalysis, changedFilesSet, symb
     const targetImpact = impactedFilesMap.get(edge.target);
     const isSourceChanged = changedFilesSet.has(edge.source);
     const isTargetChanged = changedFilesSet.has(edge.target);
+    const isTargetDeleted = changeTypeMap.get(edge.target) === "deleted";
+    const isSourceDeleted = changeTypeMap.get(edge.source) === "deleted";
+    const isBrokenEdge = isTargetDeleted || isSourceDeleted;
 
-    const isEdgeImpacted = Boolean(sourceImpact || isSourceChanged || targetImpact || isTargetChanged);
-    const isDirectImpact = isTargetChanged || isSourceChanged;
+    const isEdgeImpacted = Boolean(sourceImpact || isSourceChanged || targetImpact || isTargetChanged || isBrokenEdge);
+    const isDirectImpact = isTargetChanged || isSourceChanged || isBrokenEdge;
 
     return {
       id: `edge_${idx}_${edge.source}->${edge.target}`,
@@ -74,12 +97,14 @@ async function formatReactFlowGraph(graph, impactAnalysis, changedFilesSet, symb
         importedNames: edge.importedNames || [],
         isImpacted: isEdgeImpacted,
         isDirectImpact,
-        impactLevel: isDirectImpact ? "direct" : isEdgeImpacted ? "transitive" : "none",
-        severity: isTargetChanged ? (impactedFilesMap.get(edge.source)?.severity || "HIGH") : "NONE",
+        isBrokenEdge,
+        impactLevel: isBrokenEdge ? "broken" : isDirectImpact ? "direct" : isEdgeImpacted ? "transitive" : "none",
+        severity: isBrokenEdge ? "CRITICAL" : isTargetChanged ? (impactedFilesMap.get(edge.source)?.severity || "HIGH") : "NONE",
       },
       style: {
-        stroke: isDirectImpact ? "#f97316" : isEdgeImpacted ? "#f59e0b" : "#475569",
-        strokeWidth: isEdgeImpacted ? 2 : 1,
+        stroke: isBrokenEdge ? "#f43f5e" : isDirectImpact ? "#f97316" : isEdgeImpacted ? "#f59e0b" : "#475569",
+        strokeWidth: isBrokenEdge ? 2.5 : isEdgeImpacted ? 2 : 1,
+        strokeDasharray: isBrokenEdge ? "5 5" : undefined,
         opacity: isEdgeImpacted ? 1 : 0.35,
       },
     };
@@ -116,6 +141,10 @@ export async function performAnalysis({
   const targetDir = repoPath
     ? path.resolve(repoPath)
     : path.resolve(process.cwd(), "tests/fixtures/mern-sample");
+
+  if (!existsSync(targetDir)) {
+    throw new Error(`Target repository directory does not exist: "${targetDir}"`);
+  }
 
   // 1. Scan repository ASTs first so we know all valid code files
   const scanReport = await scanRepository(targetDir);
@@ -286,7 +315,7 @@ export async function performAnalysis({
   });
 
   // 5. Generate React Flow visual graph with symbol metadata
-  const reactFlowGraph = await formatReactFlowGraph(graph, impactAnalysis, changedFilesSet, symbolTable);
+  const reactFlowGraph = await formatReactFlowGraph(graph, impactAnalysis, changedFilesSet, symbolTable, changes);
   const riskLevel = calculateRiskLevel(impactAnalysis.summary);
 
   // 6. Store analysis run
@@ -331,22 +360,12 @@ export async function performAnalysis({
 }
 
 /**
- * Helper to fetch analysis record or auto-seed if store is empty.
+ * Helper to fetch analysis record by ID from store.
+ * Returns null if the record does not exist.
  */
 async function getAnalysisRecord(id) {
-  let analysis = await analysesStore.get(id);
-  if (analysis) return analysis;
-
-  analysis = analysesStore.getLatest();
-  if (analysis) return analysis;
-
-  try {
-    analysis = await performAnalysis();
-    return analysis;
-  } catch (err) {
-    console.error("Auto-seed analysis failed:", err);
-    return null;
-  }
+  if (!id || typeof id !== "string") return null;
+  return await analysesStore.get(id);
 }
 
 /**
@@ -728,7 +747,8 @@ export async function simulateAnalysisImpact(req, res, next) {
       graph,
       simulatedImpact,
       new Set([cleanSimulatedPath]),
-      analysis.symbolTable || null
+      analysis.symbolTable || null,
+      simulatedChanges
     );
 
     const simulatedExplanation = generateImpactExplanation({

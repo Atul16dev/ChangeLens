@@ -319,26 +319,26 @@ export function ProjectHub({
   };
 
   return (
-    <div className="flex-1 w-full bg-slate-950 overflow-y-auto px-4 sm:px-6 lg:px-12 py-8 flex flex-col items-center">
+    <div className="flex-1 w-full bg-[#0b0f19] overflow-y-auto px-4 sm:px-6 lg:px-12 py-8 flex flex-col items-center">
       <div className="w-full max-w-7xl mx-auto flex flex-col">
         {/* TOP BRAND EYEBROW - Left-aligned and sleek */}
         <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
-          <div className="inline-flex items-center gap-2.5 px-3 py-1 rounded-full bg-cyan-950/70 border border-cyan-800/60 text-cyan-400 text-xs font-mono font-medium shadow-sm">
+          <div className="inline-flex items-center gap-2.5 px-3 py-1 rounded-full bg-cyan-950/80 border border-cyan-500/40 text-cyan-300 text-xs font-mono font-medium shadow-sm">
             <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
             <span>Deterministic Blast Radius & AST Engine</span>
           </div>
 
-          <div className="flex items-center gap-2 text-[11px] font-mono text-slate-400">
+          <div className="flex items-center gap-2 text-[11px] font-mono text-slate-300">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             <span>Engine Ready • AST Parsers Active</span>
           </div>
         </div>
 
         {/* HERO BANNER: Split Layout with Engaging Title on Left & Visual DAG Architecture Graphic on Right */}
-        <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-6 items-center mb-8 bg-gradient-to-br from-slate-900/90 via-slate-900/40 to-slate-950 p-6 sm:p-8 rounded-3xl border border-slate-800/80 shadow-2xl relative overflow-hidden">
+        <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-6 items-center mb-8 bg-gradient-to-br from-[#131d2e] via-[#101726] to-[#0c1322] p-6 sm:p-8 rounded-3xl border border-slate-700/80 shadow-2xl ring-1 ring-white/5 relative overflow-hidden">
           {/* Subtle background glow */}
-          <div className="absolute top-0 right-1/4 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute top-0 right-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
 
           {/* Left Column: Greeting & Mission */}
           <div className="lg:col-span-7 flex flex-col justify-center text-left">
@@ -350,21 +350,21 @@ export function ProjectHub({
               How would you like to connect your project to ChangeLens?
             </p>
 
-            <p className="text-xs sm:text-sm text-slate-400 max-w-xl leading-relaxed mb-6">
+            <p className="text-xs sm:text-sm text-slate-300 max-w-xl leading-relaxed mb-6">
               Connect your GitHub repository to track commits as you push, analyze pull request diffs, or scan your local VS Code workspace offline. ChangeLens maps every AST dependency and identifies breaking changes before they hit production.
             </p>
 
             {/* Quick telemetry chips */}
             <div className="flex items-center gap-2.5 flex-wrap">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-800/80 border border-slate-700/60 text-slate-300 text-xs font-mono">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-[#162035] border border-slate-600/70 text-slate-200 text-xs font-mono shadow-sm">
                 <Zap className="w-3.5 h-3.5 text-yellow-400" />
                 Zero Heavy Clones
               </span>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-800/80 border border-slate-700/60 text-slate-300 text-xs font-mono">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-[#162035] border border-slate-600/70 text-slate-200 text-xs font-mono shadow-sm">
                 <GitBranch className="w-3.5 h-3.5 text-cyan-400" />
                 Cumulative Push Diff
               </span>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-800/80 border border-slate-700/60 text-slate-300 text-xs font-mono">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-[#162035] border border-slate-600/70 text-slate-200 text-xs font-mono shadow-sm">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
                 Broken Symbol Detection
               </span>
@@ -373,13 +373,13 @@ export function ProjectHub({
 
           {/* Right Column: Visual DAG Blast Radius Architecture Graphic */}
           <div className="lg:col-span-5 flex flex-col items-center justify-center">
-            <div className="w-full bg-slate-950/90 border border-cyan-900/40 rounded-2xl p-4 shadow-xl relative overflow-hidden font-mono text-xs">
-              <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-800 text-[11px] text-slate-400">
+            <div className="w-full bg-[#0d1424] border border-cyan-500/40 rounded-2xl p-4 shadow-xl ring-1 ring-cyan-500/10 relative overflow-hidden font-mono text-xs">
+              <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-700/80 text-[11px] text-slate-300">
                 <span className="flex items-center gap-1.5 text-cyan-400 font-semibold">
                   <Activity className="w-3.5 h-3.5 text-cyan-400" />
                   Live AST Blast Radius Preview
                 </span>
-                <span className="px-2 py-0.5 rounded bg-rose-500/10 text-rose-400 border border-rose-500/20 font-bold">
+                <span className="px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/40 font-bold">
                   HIGH RISK (3 TIERS)
                 </span>
               </div>
@@ -387,59 +387,59 @@ export function ProjectHub({
               {/* Visual Node Flow */}
               <div className="space-y-2">
                 {/* Node 1: Root Change */}
-                <div className="p-2.5 rounded-xl bg-slate-900 border border-rose-500/40 flex items-center justify-between shadow-sm">
+                <div className="p-2.5 rounded-xl bg-[#141d2f] border border-rose-500/60 flex items-center justify-between shadow-sm">
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-rose-400 animate-ping" />
                     <div>
-                      <div className="text-slate-100 font-bold">server/models/user.js</div>
-                      <div className="text-[10px] text-rose-400">Modified: `findUserById` signature changed</div>
+                      <div className="text-white font-bold">server/models/user.js</div>
+                      <div className="text-[10px] text-rose-300">Modified: `findUserById` signature changed</div>
                     </div>
                   </div>
-                  <span className="text-[10px] bg-rose-950 text-rose-300 px-2 py-0.5 rounded border border-rose-800">
+                  <span className="text-[10px] bg-rose-950 text-rose-300 px-2 py-0.5 rounded border border-rose-700 font-bold">
                     +18 / -4 lines
                   </span>
                 </div>
 
                 {/* Connecting Arrow */}
-                <div className="flex justify-center -my-1 text-slate-600">
+                <div className="flex justify-center -my-1 text-slate-400 font-semibold">
                   <span className="text-xs">↓ calls export</span>
                 </div>
 
                 {/* Node 2: Direct Consumer */}
-                <div className="p-2.5 rounded-xl bg-slate-900 border border-amber-500/40 flex items-center justify-between shadow-sm">
+                <div className="p-2.5 rounded-xl bg-[#141d2f] border border-amber-500/60 flex items-center justify-between shadow-sm">
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-amber-400" />
                     <div>
-                      <div className="text-slate-100 font-bold">server/controllers/userController.js</div>
-                      <div className="text-[10px] text-amber-400">Impacted: `getUserProfile` caller</div>
+                      <div className="text-white font-bold">server/controllers/userController.js</div>
+                      <div className="text-[10px] text-amber-300">Impacted: `getUserProfile` caller</div>
                     </div>
                   </div>
-                  <span className="text-[10px] bg-amber-950 text-amber-300 px-2 py-0.5 rounded border border-amber-800">
+                  <span className="text-[10px] bg-amber-950 text-amber-300 px-2 py-0.5 rounded border border-amber-700 font-bold">
                     Tier 1 Consumer
                   </span>
                 </div>
 
                 {/* Connecting Arrow */}
-                <div className="flex justify-center -my-1 text-slate-600">
+                <div className="flex justify-center -my-1 text-slate-400 font-semibold">
                   <span className="text-xs">↓ invokes route</span>
                 </div>
 
                 {/* Node 3: Endpoint */}
-                <div className="p-2.5 rounded-xl bg-slate-900 border border-cyan-500/40 flex items-center justify-between shadow-sm">
+                <div className="p-2.5 rounded-xl bg-[#141d2f] border border-cyan-500/60 flex items-center justify-between shadow-sm">
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-cyan-400" />
                     <div>
-                      <div className="text-slate-100 font-bold">server/routes/userRoutes.js</div>
-                      <div className="text-[10px] text-cyan-400">Exposed API: `GET /api/v1/users/:id`</div>
+                      <div className="text-white font-bold">server/routes/userRoutes.js</div>
+                      <div className="text-[10px] text-cyan-300">Exposed API: `GET /api/v1/users/:id`</div>
                     </div>
                   </div>
-                  <span className="text-[10px] bg-cyan-950 text-cyan-300 px-2 py-0.5 rounded border border-cyan-800">
+                  <span className="text-[10px] bg-cyan-950 text-cyan-300 px-2 py-0.5 rounded border border-cyan-700 font-bold">
                     Tier 2 Route
                   </span>
                 </div>
               </div>
 
-              <div className="mt-3 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[10px] text-slate-400">
+              <div className="mt-3 pt-2 border-t border-slate-700/80 flex items-center justify-between text-[10px] text-slate-300">
                 <span>Deterministic Dependency Traversal</span>
                 <span className="text-cyan-400 font-semibold">100% Symbol Accuracy</span>
               </div>
@@ -526,21 +526,21 @@ export function ProjectHub({
         )}
 
         {/* INTEGRATION MODE SELECTOR: Horizontal Segmented Tab Ribbon */}
-        <div className="w-full bg-slate-900/80 p-1.5 rounded-2xl border border-slate-800 grid grid-cols-2 md:grid-cols-4 gap-2 mb-6 shadow-lg">
+        <div className="w-full bg-[#0d1424] p-2 rounded-2xl border border-slate-700/80 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 mb-6 shadow-xl">
           {/* TAB 1: GitHub Repository */}
           <button
             type="button"
             onClick={() => setActiveMode('repo')}
-            className={`p-3.5 rounded-xl flex items-center gap-3 transition-all cursor-pointer text-left ${
+            className={`p-3 rounded-xl flex items-center gap-3 transition-all cursor-pointer text-left ${
               activeMode === 'repo'
-                ? 'bg-gradient-to-r from-cyan-950/90 to-slate-900 border border-cyan-500/60 text-white shadow-md shadow-cyan-500/10'
-                : 'hover:bg-slate-800/60 text-slate-400 hover:text-slate-200 border border-transparent'
+                ? 'bg-gradient-to-r from-cyan-950 via-[#10243e] to-[#0d1c31] border border-cyan-400 text-white shadow-lg shadow-cyan-500/10'
+                : 'bg-[#131b2c]/80 hover:bg-[#1a253c] text-slate-300 hover:text-white border border-slate-700/60 hover:border-slate-600'
             }`}
           >
             <div
               className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
                 activeMode === 'repo'
-                  ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30'
+                  ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40'
                   : 'bg-slate-800 text-slate-400'
               }`}
             >
@@ -559,7 +559,7 @@ export function ProjectHub({
                   <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
                 )}
               </div>
-              <div className="text-[10px] text-slate-400 truncate">Continuous Push Tracker</div>
+              <div className="text-[11px] text-slate-300 font-medium truncate">Continuous Push Tracker</div>
             </div>
           </button>
 
@@ -567,16 +567,16 @@ export function ProjectHub({
           <button
             type="button"
             onClick={() => setActiveMode('pr')}
-            className={`p-3.5 rounded-xl flex items-center gap-3 transition-all cursor-pointer text-left ${
+            className={`p-3 rounded-xl flex items-center gap-3 transition-all cursor-pointer text-left ${
               activeMode === 'pr'
-                ? 'bg-gradient-to-r from-indigo-950/90 to-slate-900 border border-indigo-500/60 text-white shadow-md shadow-indigo-500/10'
-                : 'hover:bg-slate-800/60 text-slate-400 hover:text-slate-200 border border-transparent'
+                ? 'bg-gradient-to-r from-indigo-950 via-[#171a40] to-[#111634] border border-indigo-400 text-white shadow-lg shadow-indigo-500/10'
+                : 'bg-[#131b2c]/80 hover:bg-[#1a253c] text-slate-300 hover:text-white border border-slate-700/60 hover:border-slate-600'
             }`}
           >
             <div
               className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
                 activeMode === 'pr'
-                  ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30'
+                  ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/40'
                   : 'bg-slate-800 text-slate-400'
               }`}
             >
@@ -589,7 +589,7 @@ export function ProjectHub({
                   <span className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
                 )}
               </div>
-              <div className="text-[10px] text-slate-400 truncate">Diffs, CI/CD & Review Bot</div>
+              <div className="text-[11px] text-slate-300 font-medium truncate">Diffs, CI/CD & Review Bot</div>
             </div>
           </button>
 
@@ -597,16 +597,16 @@ export function ProjectHub({
           <button
             type="button"
             onClick={() => setActiveMode('local')}
-            className={`p-3.5 rounded-xl flex items-center gap-3 transition-all cursor-pointer text-left ${
+            className={`p-3 rounded-xl flex items-center gap-3 transition-all cursor-pointer text-left ${
               activeMode === 'local'
-                ? 'bg-gradient-to-r from-amber-950/90 to-slate-900 border border-amber-500/60 text-white shadow-md shadow-amber-500/10'
-                : 'hover:bg-slate-800/60 text-slate-400 hover:text-slate-200 border border-transparent'
+                ? 'bg-gradient-to-r from-amber-950 via-[#261f10] to-[#1c180e] border border-amber-400 text-white shadow-lg shadow-amber-500/10'
+                : 'bg-[#131b2c]/80 hover:bg-[#1a253c] text-slate-300 hover:text-white border border-slate-700/60 hover:border-slate-600'
             }`}
           >
             <div
               className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
                 activeMode === 'local'
-                  ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                  ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
                   : 'bg-slate-800 text-slate-400'
               }`}
             >
@@ -619,7 +619,7 @@ export function ProjectHub({
                   <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
                 )}
               </div>
-              <div className="text-[10px] text-slate-400 truncate">CLI Bridge & VS Code</div>
+              <div className="text-[11px] text-slate-300 font-medium truncate">CLI Bridge & VS Code</div>
             </div>
           </button>
 
@@ -627,20 +627,20 @@ export function ProjectHub({
           <button
             type="button"
             onClick={() => setActiveMode('demo')}
-            className={`p-3.5 rounded-xl flex items-center gap-3 transition-all cursor-pointer text-left ${
+            className={`p-3 rounded-xl flex items-center gap-3 transition-all cursor-pointer text-left ${
               activeMode === 'demo'
-                ? 'bg-gradient-to-r from-emerald-950/90 to-slate-900 border border-emerald-500/60 text-white shadow-md shadow-emerald-500/10'
-                : 'hover:bg-slate-800/60 text-slate-400 hover:text-slate-200 border border-transparent'
+                ? 'bg-gradient-to-r from-emerald-950 via-[#102a20] to-[#0c1f17] border border-emerald-400 text-white shadow-lg shadow-emerald-500/10'
+                : 'bg-[#131b2c]/80 hover:bg-[#1a253c] text-slate-300 hover:text-white border border-slate-700/60 hover:border-slate-600'
             }`}
           >
             <div
               className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
                 activeMode === 'demo'
-                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
                   : 'bg-slate-800 text-slate-400'
               }`}
             >
-              <Play className="w-4 h-4 fill-current" />
+              <Play className="w-5 h-5 fill-current" />
             </div>
             <div className="overflow-hidden">
               <div className="text-xs font-bold leading-tight flex items-center gap-1.5">
@@ -649,30 +649,30 @@ export function ProjectHub({
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                 )}
               </div>
-              <div className="text-[10px] text-slate-400 truncate">1-Click MERN Sandbox</div>
+              <div className="text-[11px] text-slate-300 font-medium truncate">1-Click MERN Sandbox</div>
             </div>
           </button>
         </div>
 
         {/* ACTIVE INTEGRATION WORKSPACE CONTAINER */}
-        <div className="w-full bg-slate-900/90 rounded-3xl border border-slate-800 p-6 sm:p-8 shadow-2xl relative">
+        <div className="w-full bg-[#101726] rounded-3xl border border-slate-700/80 p-6 sm:p-8 shadow-2xl ring-1 ring-white/5 relative">
           {/* ========================================================================= */}
           {/* MODE 1: GITHUB REPOSITORY (Continuous Push Sync)                          */}
           {/* ========================================================================= */}
           {activeMode === 'repo' && (
             <div className="animate-in fade-in duration-200">
               {/* Header and prominent Step-by-Step popup guide trigger */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-slate-800/80 gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-slate-700/80 gap-4">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="px-2.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 text-[10px] font-bold border border-cyan-500/20">
+                    <span className="px-2.5 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 text-[10px] font-bold border border-cyan-500/30">
                       CONTINUOUS GIT PUSH TRACKER
                     </span>
                   </div>
                   <h2 className="text-xl font-bold text-white">
                     Connect GitHub Repository
                   </h2>
-                  <p className="text-xs text-slate-400 mt-1 max-w-xl">
+                  <p className="text-xs text-slate-300 mt-1 max-w-xl">
                     Connect your repository to track commits pushed from VS Code. ChangeLens performs cumulative blast radius comparisons across all commits pushed while you worked.
                   </p>
                 </div>
@@ -681,7 +681,7 @@ export function ProjectHub({
                 <button
                   type="button"
                   onClick={() => openGuide('repo')}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-cyan-950/70 hover:bg-cyan-900/70 border border-cyan-800/60 hover:border-cyan-500 text-cyan-300 font-semibold text-xs transition-all shadow-sm shrink-0 cursor-pointer group"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-cyan-950/80 hover:bg-cyan-900 border border-cyan-500/40 hover:border-cyan-400 text-cyan-200 font-semibold text-xs transition-all shadow-sm shrink-0 cursor-pointer group"
                 >
                   <BookOpen className="w-4 h-4 text-cyan-400 group-hover:scale-110 transition-transform" />
                   <span>Steps to Connect GitHub Repository</span>
@@ -691,7 +691,7 @@ export function ProjectHub({
               {/* Form Input Area */}
               <form onSubmit={handleGitHubRepoSubmit} className="mt-6 space-y-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                  <label className="block text-xs font-semibold text-slate-200 mb-1.5">
                     GitHub Repository URL or Shorthand
                   </label>
                   <div className="relative">
@@ -701,7 +701,7 @@ export function ProjectHub({
                       value={githubUrl}
                       onChange={(e) => setGithubUrl(e.target.value)}
                       placeholder="https://github.com/owner/repo or owner/repo"
-                      className="w-full bg-slate-950 border border-slate-800 focus:border-cyan-500 rounded-xl px-4 py-3 text-xs text-slate-100 placeholder-slate-500 focus:outline-none font-mono shadow-inner transition-colors"
+                      className="w-full bg-[#090e1a] border border-slate-600/80 focus:border-cyan-400 rounded-xl px-4 py-3 text-xs text-white placeholder-slate-400 focus:outline-none font-mono shadow-inner transition-colors"
                     />
                   </div>
                 </div>
@@ -724,7 +724,7 @@ export function ProjectHub({
                     href="https://github.com/settings/tokens/new?description=ChangeLens&scopes=repo"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-cyan-400/80 hover:text-cyan-300 text-[11px] flex items-center gap-1 hover:underline"
+                    className="text-cyan-300 hover:text-cyan-200 text-[11px] flex items-center gap-1 hover:underline"
                   >
                     <span>Generate Free Token</span>
                     <ExternalLink className="w-3 h-3" />
@@ -739,12 +739,12 @@ export function ProjectHub({
                       value={repoToken}
                       onChange={(e) => setRepoToken(e.target.value)}
                       placeholder="github_pat_... or ghp_..."
-                      className={`w-full bg-slate-950 border rounded-xl px-4 py-2.5 text-xs text-slate-200 placeholder-slate-600 focus:outline-none font-mono shadow-inner transition-colors ${
-                        isRateLimitError ? 'border-amber-500 ring-1 ring-amber-500/50' : 'border-slate-800 focus:border-cyan-500'
+                      className={`w-full bg-[#090e1a] border rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-400 focus:outline-none font-mono shadow-inner transition-colors ${
+                        isRateLimitError ? 'border-amber-500 ring-1 ring-amber-500/50' : 'border-slate-600/80 focus:border-cyan-400'
                       }`}
                     />
-                    <div className="flex items-center justify-between text-[11px] text-slate-400 mt-1.5 flex-wrap gap-1">
-                      <span>Only requires <code className="text-cyan-400 font-mono">repo</code> read scope. Increases rate limit from 60 to 5,000 req/hr.</span>
+                    <div className="flex items-center justify-between text-[11px] text-slate-300 mt-1.5 flex-wrap gap-1">
+                      <span>Only requires <code className="text-cyan-300 font-mono">repo</code> read scope. Increases rate limit from 60 to 5,000 req/hr.</span>
                       <span className="text-emerald-400 font-mono text-[10px]">100% Private & In-Memory</span>
                     </div>
                   </div>
@@ -752,13 +752,13 @@ export function ProjectHub({
 
                 {/* Quick Presets */}
                 <div className="flex items-center gap-2 flex-wrap pt-1">
-                  <span className="text-[11px] text-slate-400 font-medium">Quick Presets:</span>
+                  <span className="text-[11px] text-slate-300 font-medium">Quick Presets:</span>
                   {REPO_PRESETS.map((p) => (
                     <button
                       key={p.name}
                       type="button"
                       onClick={() => setGithubUrl(p.url)}
-                      className="text-[11px] bg-slate-800/80 hover:bg-slate-750 text-slate-300 hover:text-white px-2.5 py-1 rounded-lg font-mono border border-slate-700/60 transition-colors cursor-pointer"
+                      className="text-[11px] bg-[#162035] hover:bg-[#1f2d4a] text-slate-200 hover:text-white px-2.5 py-1 rounded-lg font-mono border border-slate-600/60 transition-colors cursor-pointer"
                     >
                       {p.name}
                     </button>
@@ -770,52 +770,52 @@ export function ProjectHub({
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-cyan-600 via-indigo-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-semibold text-xs rounded-xl shadow-lg shadow-cyan-500/20 active:scale-95 disabled:opacity-50 transition-all flex items-center justify-center gap-2.5 cursor-pointer"
+                    className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-cyan-600 via-indigo-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-cyan-500/20 active:scale-95 disabled:opacity-50 transition-all flex items-center justify-center gap-2.5 cursor-pointer"
                   >
                     <Zap className="w-4 h-4 text-yellow-300 fill-yellow-300" />
                     <span>Connect & Inspect Repository</span>
                   </button>
 
-                  <span className="text-[11px] text-slate-500">
+                  <span className="text-[11px] text-slate-400">
                     Connects directly without downloading huge archives.
                   </span>
                 </div>
               </form>
 
               {/* 3 Pillar Summary Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8 pt-6 border-t border-slate-800/80 text-left">
-                <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800/80">
-                  <div className="w-8 h-8 rounded-lg bg-cyan-950/80 text-cyan-400 flex items-center justify-center mb-2.5 border border-cyan-800/50">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8 pt-6 border-t border-slate-700/80 text-left">
+                <div className="p-4 rounded-2xl bg-[#131d2e] border border-slate-700/80 hover:border-slate-600 shadow-sm transition-all">
+                  <div className="w-8 h-8 rounded-lg bg-cyan-950/90 text-cyan-400 flex items-center justify-center mb-2.5 border border-cyan-700/50">
                     <GitBranch className="w-4 h-4" />
                   </div>
-                  <h4 className="text-xs font-bold text-slate-200 mb-1">
+                  <h4 className="text-xs font-bold text-white mb-1">
                     Cumulative Push Diff
                   </h4>
-                  <p className="text-[11px] text-slate-400 leading-relaxed">
+                  <p className="text-[11px] text-slate-300 leading-relaxed">
                     Even if you pushed 5 times before checking ChangeLens, our engine calculates the cumulative blast radius across all new commits.
                   </p>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800/80">
-                  <div className="w-8 h-8 rounded-lg bg-indigo-950/80 text-indigo-400 flex items-center justify-center mb-2.5 border border-indigo-800/50">
+                <div className="p-4 rounded-2xl bg-[#131d2e] border border-slate-700/80 hover:border-slate-600 shadow-sm transition-all">
+                  <div className="w-8 h-8 rounded-lg bg-indigo-950/90 text-indigo-400 flex items-center justify-center mb-2.5 border border-indigo-700/50">
                     <ShieldCheck className="w-4 h-4" />
                   </div>
-                  <h4 className="text-xs font-bold text-slate-200 mb-1">
+                  <h4 className="text-xs font-bold text-white mb-1">
                     Broken Symbol Auditing
                   </h4>
-                  <p className="text-[11px] text-slate-400 leading-relaxed">
+                  <p className="text-[11px] text-slate-300 leading-relaxed">
                     Instantly flags function signature mismatches, deleted exports, and broken call sites across all your files.
                   </p>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800/80">
-                  <div className="w-8 h-8 rounded-lg bg-emerald-950/80 text-emerald-400 flex items-center justify-center mb-2.5 border border-emerald-800/50">
+                <div className="p-4 rounded-2xl bg-[#131d2e] border border-slate-700/80 hover:border-slate-600 shadow-sm transition-all">
+                  <div className="w-8 h-8 rounded-lg bg-emerald-950/90 text-emerald-400 flex items-center justify-center mb-2.5 border border-emerald-700/50">
                     <Zap className="w-4 h-4" />
                   </div>
-                  <h4 className="text-xs font-bold text-slate-200 mb-1">
+                  <h4 className="text-xs font-bold text-white mb-1">
                     Zero Heavy Downloads
                   </h4>
-                  <p className="text-[11px] text-slate-400 leading-relaxed">
+                  <p className="text-[11px] text-slate-300 leading-relaxed">
                     Operates securely via GitHub REST APIs. No cloning multi-gigabyte repositories to your local disk.
                   </p>
                 </div>

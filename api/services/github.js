@@ -6,7 +6,7 @@ import { existsSync } from "node:fs";
 import { performAnalysis } from "../controllers/analyses.controller.js";
 import { formatPRMarkdownComment, calculateRiskLevel } from "../../analyzer/ai-explainer.js";
 import { analysesStore } from "../store.js";
-import { executeGit } from "../../analyzer/local-git.js";
+import { executeGit, maskGitCredentials } from "../../analyzer/local-git.js";
 
 const execAsync = promisify(exec);
 
@@ -624,8 +624,9 @@ export async function ensureGitHubRepositoryCached({ owner, repo, branch, commit
     try {
       await executeGit(cloneArgs, process.cwd(), { timeout: 60000 });
     } catch (err) {
+      const safeErr = maskGitCredentials(err.message);
       throw new Error(
-        `Failed to clone repository "${owner}/${repo}": ${err.message}. If this repository is private, please provide a GitHub Personal Access Token.`
+        `Failed to clone repository "${owner}/${repo}": ${safeErr}. If this repository is private, please provide a GitHub Personal Access Token.`
       );
     }
   } else {
@@ -769,8 +770,9 @@ export async function analyzeRepositorySync({
       if (process.env.NODE_ENV === "test") {
         targetDir = path.resolve(process.cwd(), "tests/fixtures/mern-sample");
       } else {
+        const safeCloneErr = maskGitCredentials(cloneErr.message);
         throw new Error(
-          `Could not clone and analyze repository "${owner}/${repo}": ${cloneErr.message}. If this repository is private, please provide a GitHub Personal Access Token.`
+          `Could not clone and analyze repository "${owner}/${repo}": ${safeCloneErr}. If this repository is private, please provide a GitHub Personal Access Token.`
         );
       }
     }

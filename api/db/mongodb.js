@@ -11,7 +11,7 @@ export function isMongoConnected() {
 mongoose.connection.on("connected", () => {
   console.log("🍃 [MongoDB] Connection established.");
   if (reconnectTimer) {
-    clearInterval(reconnectTimer);
+    clearTimeout(reconnectTimer);
     reconnectTimer = null;
   }
 });
@@ -19,7 +19,7 @@ mongoose.connection.on("connected", () => {
 mongoose.connection.on("reconnected", () => {
   console.log("🍃 [MongoDB] Connection re-established.");
   if (reconnectTimer) {
-    clearInterval(reconnectTimer);
+    clearTimeout(reconnectTimer);
     reconnectTimer = null;
   }
 });
@@ -71,21 +71,25 @@ export async function connectMongoDB(uri = process.env.MONGODB_URI, maxRetries =
   // Background retry if initial attempts failed (e.g. WiFi handshake latency on boot)
   if (!reconnectTimer && mongoose.connection.readyState !== 1) {
     console.log("🍃 [MongoDB] Background reconnect scheduled (retrying every 5s)...");
-    reconnectTimer = setInterval(async () => {
-      if (mongoose.connection.readyState === 1) {
-        clearInterval(reconnectTimer);
-        reconnectTimer = null;
-        return;
+    const scheduleNextRetry = () => {
+      reconnectTimer = setTimeout(async () => {
+        if (mongoose.connection.readyState === 1) {
+          reconnectTimer = null;
+          return;
+        }
+        try {
+          await mongoose.connect(uri, { serverSelectionTimeoutMS: 8000 });
+          console.log("🍃 [MongoDB] Reconnected to MongoDB Atlas in background.");
+          reconnectTimer = null;
+        } catch {
+          scheduleNextRetry();
+        }
+      }, 5000);
+      if (typeof reconnectTimer.unref === "function") {
+        reconnectTimer.unref();
       }
-      try {
-        await mongoose.connect(uri, { serverSelectionTimeoutMS: 8000 });
-        console.log("🍃 [MongoDB] Reconnected to MongoDB Atlas in background.");
-        clearInterval(reconnectTimer);
-        reconnectTimer = null;
-      } catch {
-        // Silently retry in background
-      }
-    }, 5000);
+    };
+    scheduleNextRetry();
   }
 
   return null;
@@ -93,7 +97,7 @@ export async function connectMongoDB(uri = process.env.MONGODB_URI, maxRetries =
 
 export async function closeMongoDB() {
   if (reconnectTimer) {
-    clearInterval(reconnectTimer);
+    clearTimeout(reconnectTimer);
     reconnectTimer = null;
   }
   if (mongoose.connection.readyState !== 0) {

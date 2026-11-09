@@ -44,7 +44,7 @@ npm test tests/auth.test.js
   };
 
   return (
-    <section id="preview" className="py-14 sm:py-20 md:py-32 relative bg-slate-950 overflow-hidden">
+    <section id="preview" className="py-14 sm:py-20 md:py-32 relative bg-[#0b0f19] overflow-hidden">
       {/* Background ambient glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[550px] bg-cyan-950/20 blur-[160px] rounded-full pointer-events-none animate-pulse-glow" />
 
@@ -58,14 +58,14 @@ npm test tests/auth.test.js
           <h2 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-white">
             Developer-First UI Crafted for Clarity.
           </h2>
-          <p className="text-sm sm:text-base md:text-lg text-slate-400 max-w-2xl mx-auto">
+          <p className="text-sm sm:text-base md:text-lg text-slate-300 max-w-2xl mx-auto">
             Switch between the visual blast radius graph, symbol isolation analyzer, automated Gemini PR summary, and the live What-If simulator.
           </p>
         </ScrollReveal>
 
         {/* Tab Controls (Smooth horizontal swipe on mobile) */}
         <ScrollReveal animation="fade-down" delay={100} duration={650} className="flex items-center justify-center mb-6 sm:mb-8">
-          <div className="inline-flex items-center p-1 sm:p-1.5 rounded-xl bg-slate-900 border border-slate-800 shadow-inner overflow-x-auto max-w-full gap-1">
+          <div className="inline-flex items-center p-1 sm:p-1.5 rounded-xl bg-[#101726] border border-slate-700/80 shadow-inner overflow-x-auto max-w-full gap-1">
             <button
               type="button"
               onClick={() => setActiveTab('graph')}
@@ -118,12 +118,12 @@ npm test tests/auth.test.js
         </ScrollReveal>
 
         {/* Tab Content Display Window */}
-        <ScrollReveal animation="scale-up" delay={200} duration={800} className="relative rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl overflow-hidden">
+        <ScrollReveal animation="scale-up" delay={200} duration={800} className="relative rounded-2xl bg-[#101726] border border-slate-700/80 shadow-2xl shadow-cyan-950/20 overflow-hidden">
           {/* Laser Scanline Beam Effect */}
           <div className="scanline-effect" />
 
           {/* Title Bar */}
-          <div className="px-4 sm:px-5 py-2.5 sm:py-3.5 bg-slate-950/80 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
+          <div className="px-4 sm:px-5 py-2.5 sm:py-3.5 bg-[#0c1220] border-b border-slate-700/80 flex items-center justify-between text-xs text-slate-400">
             <div className="flex items-center gap-2 sm:gap-3">
               <div className="flex items-center gap-1.5">
                 <span className="w-2.5 h-2.5 rounded-full bg-rose-500/80" />
@@ -134,15 +134,15 @@ npm test tests/auth.test.js
                 changelens-viewer / {activeTab === 'graph' ? 'dag-layout.elk' : activeTab === 'symbols' ? 'symbol-table.ast' : activeTab === 'ai' ? 'pr-risk-review.md' : 'what-if.json'}
               </span>
             </div>
-            <span className="text-[10px] sm:text-[11px] font-mono bg-slate-900 px-2 py-0.5 rounded border border-slate-800 shrink-0">
+            <span className="text-[10px] sm:text-[11px] font-mono bg-[#0a0f1d] px-2 py-0.5 rounded border border-slate-700/80 shrink-0 text-cyan-300">
               Interactive
             </span>
           </div>
 
           {/* TAB 1: Visual Blast Radius */}
           {activeTab === 'graph' && (
-            <div className="p-4 sm:p-8 bg-slate-950/70 space-y-4 sm:space-y-6">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 pb-3 sm:pb-4 border-b border-slate-800/80 text-xs">
+            <div className="p-4 sm:p-8 bg-[#0b0f19]/80 space-y-4 sm:space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 pb-3 sm:pb-4 border-b border-slate-700/80 text-xs">
                 <div>
                   <h4 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
                     <span>Target: server/models/user.js</span>
@@ -150,12 +150,12 @@ npm test tests/auth.test.js
                       MODIFIED
                     </span>
                   </h4>
-                  <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5">
+                  <p className="text-[11px] sm:text-xs text-slate-300 mt-0.5">
                     Reverse BFS calculated across 18 repository files. Click any node to inspect.
                   </p>
                 </div>
                 <div className="flex items-center gap-2 text-xs">
-                  <span className="text-slate-400">
+                  <span className="text-slate-300">
                     Selected: <strong className="text-cyan-400 font-mono">{selectedNode}</strong>
                   </span>
                 </div>
@@ -177,11 +177,11 @@ npm test tests/auth.test.js
                       className={`p-3 sm:p-4 rounded-xl border transition-all cursor-pointer ${
                         isNodeActive
                           ? 'bg-cyan-950/40 border-cyan-500 shadow-lg shadow-cyan-950/50 ring-2 ring-cyan-500/30'
-                          : 'bg-slate-900/60 border-slate-800 hover:border-slate-700'
+                          : 'bg-[#131d2e] border-slate-700/80 hover:border-slate-600'
                       }`}
                     >
                       <div className="flex items-center justify-between mb-1.5">
-                        <span className="text-[9px] sm:text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-950 text-slate-400 border border-slate-800">
+                        <span className="text-[9px] sm:text-[10px] font-mono px-1.5 py-0.5 rounded bg-[#0a0f1d] text-slate-300 border border-slate-700/80">
                           {node.depth}
                         </span>
                         <span className="text-[9px] sm:text-[10px] font-bold uppercase text-cyan-400 truncate">
@@ -194,7 +194,7 @@ npm test tests/auth.test.js
                           {node.label}
                         </h5>
                       </div>
-                      <p className="text-[10px] sm:text-[11px] text-slate-400 leading-tight">
+                      <p className="text-[10px] sm:text-[11px] text-slate-300 leading-tight">
                         {node.desc}
                       </p>
                     </div>
@@ -203,7 +203,7 @@ npm test tests/auth.test.js
               </div>
 
               {/* Edge Connection Bar */}
-              <div className="p-2.5 sm:p-3 bg-slate-900/70 border border-slate-800 rounded-xl text-xs flex items-center justify-between flex-wrap gap-2">
+              <div className="p-2.5 sm:p-3 bg-[#0a0f1d] border border-slate-700/80 rounded-xl text-xs flex items-center justify-between flex-wrap gap-2">
                 <div className="flex items-center gap-2 text-slate-300 text-[11px] sm:text-xs">
                   <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
                   <span>Layout Engine: <strong>ELK.js</strong> crossing minimization</span>
@@ -217,7 +217,7 @@ npm test tests/auth.test.js
 
           {/* TAB 2: Symbol Isolation */}
           {activeTab === 'symbols' && (
-            <div className="p-4 sm:p-8 bg-slate-950/70 space-y-4 sm:space-y-6">
+            <div className="p-4 sm:p-8 bg-[#0b0f19]/80 space-y-4 sm:space-y-6">
               <div>
                 <h4 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
                   <span>Symbol Table & Missing Export Verification</span>
@@ -225,40 +225,40 @@ npm test tests/auth.test.js
                     AST PRECISION
                   </span>
                 </h4>
-                <p className="text-xs text-slate-400 mt-1">
+                <p className="text-xs text-slate-300 mt-1">
                   ChangeLens inspects individual exported function contracts rather than whole-file imports.
                 </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-                <div className="p-3.5 sm:p-4 rounded-xl bg-slate-900/70 border border-slate-800 space-y-2.5">
+                <div className="p-3.5 sm:p-4 rounded-xl bg-[#131d2e] border border-slate-700/80 space-y-2.5">
                   <span className="text-xs font-bold text-slate-300 block uppercase tracking-wider font-mono">
                     Exported Symbols (user.js)
                   </span>
                   <div className="space-y-1.5 font-mono text-xs">
-                    <div className="p-2 rounded bg-slate-950 border border-slate-800 flex items-center justify-between text-[11px]">
+                    <div className="p-2 rounded bg-[#0a0f1d] border border-slate-700/80 flex items-center justify-between text-[11px]">
                       <span className="text-cyan-300">UserSchema</span>
-                      <span className="text-[10px] text-slate-500">Mongoose.Schema</span>
+                      <span className="text-[10px] text-slate-400">Mongoose.Schema</span>
                     </div>
-                    <div className="p-2 rounded bg-slate-950 border border-slate-800 flex items-center justify-between text-[11px]">
+                    <div className="p-2 rounded bg-[#0a0f1d] border border-slate-700/80 flex items-center justify-between text-[11px]">
                       <span className="text-cyan-300">toSafeObject()</span>
-                      <span className="text-[10px] text-slate-500">Schema.methods</span>
+                      <span className="text-[10px] text-slate-400">Schema.methods</span>
                     </div>
-                    <div className="p-2 rounded bg-slate-950 border border-slate-800 flex items-center justify-between text-[11px]">
+                    <div className="p-2 rounded bg-[#0a0f1d] border border-slate-700/80 flex items-center justify-between text-[11px]">
                       <span className="text-cyan-300">User</span>
-                      <span className="text-[10px] text-slate-500">Mongoose.model</span>
+                      <span className="text-[10px] text-slate-400">Mongoose.model</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="p-3.5 sm:p-4 rounded-xl bg-slate-900/70 border border-slate-800 space-y-2.5">
+                <div className="p-3.5 sm:p-4 rounded-xl bg-[#131d2e] border border-slate-700/80 space-y-2.5">
                   <span className="text-xs font-bold text-emerald-400 flex items-center gap-1.5 uppercase tracking-wider font-mono">
                     <CheckCircle2 className="w-4 h-4" />
                     Broken Symbol Diagnostics
                   </span>
-                  <div className="p-3 bg-emerald-950/20 border border-emerald-800/30 rounded-lg text-xs space-y-1.5 text-slate-300">
+                  <div className="p-3 bg-emerald-950/30 border border-emerald-800/40 rounded-lg text-xs space-y-1.5 text-slate-300">
                     <p className="font-semibold text-emerald-300">0 Broken Symbol References</p>
-                    <p className="text-slate-400 text-[11px]">
+                    <p className="text-slate-300 text-[11px]">
                       All consumers importing <code className="text-slate-200">User</code> and <code className="text-slate-200">UserSchema</code> have valid syntax bindings matching AST declarations.
                     </p>
                   </div>
@@ -269,21 +269,21 @@ npm test tests/auth.test.js
 
           {/* TAB 3: AI PR Explainer */}
           {activeTab === 'ai' && (
-            <div className="p-4 sm:p-8 bg-slate-950/70 space-y-4 sm:space-y-5">
-              <div className="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-800">
+            <div className="p-4 sm:p-8 bg-[#0b0f19]/80 space-y-4 sm:space-y-5">
+              <div className="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-700/80">
                 <div>
                   <h4 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
                     <Sparkles className="w-4 h-4 text-purple-400" />
                     <span>Gemini Pull Request Review</span>
                   </h4>
-                  <p className="text-xs text-slate-400 mt-0.5">
+                  <p className="text-xs text-slate-300 mt-0.5">
                     Auto-generated impact breakdown ready for GitHub PR discussions.
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={handleCopyMarkdown}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#131d2e] hover:bg-[#182337] text-slate-200 border border-slate-700/80 transition-colors"
                 >
                   {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                   <span>{copied ? 'Copied' : 'Copy PR Markdown'}</span>
@@ -291,9 +291,9 @@ npm test tests/auth.test.js
               </div>
 
               {/* Markdown Box */}
-              <div className="p-3.5 sm:p-5 rounded-xl bg-slate-900/90 border border-slate-800 font-mono text-xs space-y-2.5 text-slate-300">
+              <div className="p-3.5 sm:p-5 rounded-xl bg-[#0a0f1d] border border-slate-700/80 font-mono text-xs space-y-2.5 text-slate-300">
                 <div className="text-cyan-400 font-bold">### 🔍 ChangeLens Blast Radius Report</div>
-                <div className="text-slate-400 text-[11px] sm:text-xs">
+                <div className="text-slate-300 text-[11px] sm:text-xs">
                   - <strong>Target File:</strong> <code>server/models/user.js</code> (Modified)<br />
                   - <strong>Impact:</strong> 7 affected files across 3 depth levels<br />
                   - <strong>Risk Score:</strong> <span className="text-amber-400 font-bold">78 / 100 (HIGH RISK)</span><br />
@@ -301,7 +301,7 @@ npm test tests/auth.test.js
                 </div>
                 <div className="text-slate-300 pt-2 border-t border-slate-800">
                   <span className="font-bold text-slate-100 text-[11px]">Recommended Test Command:</span>
-                  <pre className="mt-1 p-2 rounded bg-slate-950 text-emerald-400 border border-slate-800 text-[10px] sm:text-xs overflow-x-auto">
+                  <pre className="mt-1 p-2 rounded bg-[#070b14] text-emerald-400 border border-slate-800 text-[10px] sm:text-xs overflow-x-auto">
                     npm test tests/auth.test.js tests/history.test.js
                   </pre>
                 </div>
@@ -311,18 +311,18 @@ npm test tests/auth.test.js
 
           {/* TAB 4: What-If Simulator */}
           {activeTab === 'whatif' && (
-            <div className="p-4 sm:p-8 bg-slate-950/70 space-y-4 sm:space-y-6">
+            <div className="p-4 sm:p-8 bg-[#0b0f19]/80 space-y-4 sm:space-y-6">
               <div>
                 <h4 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
                   <Zap className="w-4 h-4 text-amber-400 animate-pulse" />
                   <span>Interactive What-If Blast Radius Simulator</span>
                 </h4>
-                <p className="text-xs text-slate-400 mt-0.5">
+                <p className="text-xs text-slate-300 mt-0.5">
                   Hypothetically simulate touching any file without changing code to preview downstream ripples.
                 </p>
               </div>
 
-              <div className="p-3.5 sm:p-4 rounded-xl bg-purple-950/20 border border-purple-800/40 space-y-2">
+              <div className="p-3.5 sm:p-4 rounded-xl bg-purple-950/30 border border-purple-800/50 space-y-2">
                 <div className="flex items-center justify-between text-xs">
                   <span className="font-semibold text-purple-300 text-[11px] sm:text-xs">Target: server/routes/user-routes.js</span>
                   <span className="px-2 py-0.5 rounded bg-purple-900/50 text-purple-200 border border-purple-700/50 text-[10px]">
@@ -338,7 +338,7 @@ npm test tests/auth.test.js
         </ScrollReveal>
 
         {/* Workspace Quick Launch Bar */}
-        <ScrollReveal animation="fade-up" delay={250} duration={750} className="mt-6 sm:mt-8 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-slate-900 via-slate-900/90 to-cyan-950/40 border border-slate-800">
+        <ScrollReveal animation="fade-up" delay={250} duration={750} className="mt-6 sm:mt-8 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 p-4 sm:p-5 rounded-2xl bg-[#101726] border border-slate-700/80 shadow-lg">
           <div className="flex items-center gap-3 w-full sm:w-auto">
             <div className="w-9 h-9 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center shrink-0">
               <Sparkles className="w-4 h-4 text-cyan-400" />

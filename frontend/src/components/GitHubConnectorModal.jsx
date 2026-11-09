@@ -200,12 +200,12 @@ export function GitHubConnectorModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200">
       <div
-        className="w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+        className="w-full max-w-2xl bg-[#101726] border border-slate-700/80 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
         role="dialog"
         aria-modal="true"
       >
         {/* Modal Header */}
-        <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/60">
+        <div className="px-6 py-4 border-b border-slate-700/80 flex items-center justify-between bg-[#0c1220]">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-100">
               <GitHubIcon className="w-5 h-5" />
@@ -226,14 +226,14 @@ export function GitHubConnectorModal({
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Navigation Tabs */}
-        <div className="flex items-center gap-1 px-6 pt-3 border-b border-slate-800/80 bg-slate-950/30 text-xs">
+        <div className="flex items-center gap-1 px-6 pt-3 border-b border-slate-700/80 bg-[#0c1220]/60 text-xs">
           <button
             type="button"
             onClick={() => setActiveTab('analyze')}
@@ -282,22 +282,22 @@ export function GitHubConnectorModal({
               {/* Form Input */}
               <form onSubmit={handleInspect} className="space-y-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-slate-200 mb-1">
                     GitHub Pull Request URL
                   </label>
                   <div className="relative">
-                    <GitPullRequest className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <GitPullRequest className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                     <input
                       type="text"
                       value={prUrl}
                       onChange={(e) => setPrUrl(e.target.value)}
                       placeholder="https://github.com/owner/repo/pull/123"
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-24 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500 font-mono text-xs shadow-inner"
+                      className="w-full bg-[#090e1a] border border-slate-600/80 rounded-xl pl-10 pr-24 py-2.5 text-sm text-white placeholder-slate-400 focus:outline-none focus:border-cyan-400 font-mono text-xs shadow-inner transition-colors"
                     />
                     <button
                       type="submit"
                       disabled={loading || !prUrl.trim()}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-xs rounded-lg transition-all disabled:opacity-50"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-xs rounded-lg transition-all disabled:opacity-50 cursor-pointer"
                     >
                       {loading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : 'Inspect'}
                     </button>
@@ -306,7 +306,7 @@ export function GitHubConnectorModal({
 
                 {/* Quick Presets */}
                 <div className="flex items-center gap-1.5 flex-wrap text-xs">
-                  <span className="text-[11px] text-slate-500">Sample PRs:</span>
+                  <span className="text-[11px] text-slate-400">Sample PRs:</span>
                   {DEMO_PRESETS.map((p) => (
                     <button
                       key={p.name}
@@ -315,7 +315,7 @@ export function GitHubConnectorModal({
                         setPrUrl(p.url);
                         setError(null);
                       }}
-                      className="px-2 py-0.5 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700/60 font-mono text-[11px] transition-colors"
+                      className="px-2 py-0.5 rounded-full bg-[#182338] hover:bg-[#1f2d48] text-slate-300 hover:text-white border border-slate-600/80 font-mono text-[11px] transition-colors cursor-pointer"
                     >
                       {p.name}
                     </button>
@@ -327,7 +327,7 @@ export function GitHubConnectorModal({
                   <button
                     type="button"
                     onClick={() => setShowTokenInput(!showTokenInput)}
-                    className="text-[11px] text-slate-400 hover:text-cyan-400 flex items-center gap-1 transition-colors"
+                    className="text-[11px] text-slate-400 hover:text-cyan-400 flex items-center gap-1 transition-colors cursor-pointer"
                   >
                     <KeyRound className="w-3 h-3" />
                     <span>{showTokenInput ? 'Hide GitHub Token' : '+ Add Personal Access Token (for private repos or high rate limits)'}</span>
@@ -340,7 +340,7 @@ export function GitHubConnectorModal({
                         value={token}
                         onChange={(e) => setToken(e.target.value)}
                         placeholder="ghp_xxxxxxxxxxxx (Optional, stored in memory only)"
-                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500 font-mono"
+                        className="w-full bg-[#090e1a] border border-slate-600/80 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-cyan-400 font-mono transition-colors"
                       />
                     </div>
                   )}
@@ -357,11 +357,11 @@ export function GitHubConnectorModal({
 
               {/* Inspected PR Details Card */}
               {inspectedPR && (
-                <div className="p-4 rounded-xl bg-slate-950/80 border border-slate-800 space-y-3 animate-in fade-in duration-150">
+                <div className="p-4 rounded-xl bg-[#131d2e] border border-slate-700/80 space-y-3 animate-in fade-in duration-150 shadow-sm">
                   <div className="flex items-start justify-between gap-3">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-xs font-mono font-bold text-slate-400">
+                        <span className="text-xs font-mono font-bold text-slate-300">
                           {inspectedPR.owner}/{inspectedPR.repo} #{inspectedPR.number}
                         </span>
                         <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
@@ -382,7 +382,7 @@ export function GitHubConnectorModal({
                       href={inspectedPR.htmlUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-1.5 text-slate-400 hover:text-white rounded-lg bg-slate-900 border border-slate-800 transition-colors"
+                      className="p-1.5 text-slate-400 hover:text-white rounded-lg bg-[#0a0f1d] border border-slate-700/80 transition-colors"
                       title="Open PR on GitHub"
                     >
                       <ExternalLink className="w-4 h-4" />
@@ -391,16 +391,16 @@ export function GitHubConnectorModal({
 
                   {/* Metrics Bar */}
                   <div className="grid grid-cols-3 gap-2 text-center text-xs pt-1">
-                    <div className="p-2 rounded-lg bg-slate-900 border border-slate-800">
-                      <span className="text-slate-500 block text-[10px] uppercase font-bold">Files Changed</span>
+                    <div className="p-2 rounded-lg bg-[#0a0f1d] border border-slate-700/80 shadow-inner">
+                      <span className="text-slate-400 block text-[10px] uppercase font-bold">Files Changed</span>
                       <strong className="text-sm text-cyan-400 font-mono">{inspectedPR.changedFilesCount}</strong>
                     </div>
-                    <div className="p-2 rounded-lg bg-slate-900 border border-slate-800">
-                      <span className="text-slate-500 block text-[10px] uppercase font-bold">Additions</span>
+                    <div className="p-2 rounded-lg bg-[#0a0f1d] border border-slate-700/80 shadow-inner">
+                      <span className="text-slate-400 block text-[10px] uppercase font-bold">Additions</span>
                       <strong className="text-sm text-emerald-400 font-mono">+{inspectedPR.additions}</strong>
                     </div>
-                    <div className="p-2 rounded-lg bg-slate-900 border border-slate-800">
-                      <span className="text-slate-500 block text-[10px] uppercase font-bold">Deletions</span>
+                    <div className="p-2 rounded-lg bg-[#0a0f1d] border border-slate-700/80 shadow-inner">
+                      <span className="text-slate-400 block text-[10px] uppercase font-bold">Deletions</span>
                       <strong className="text-sm text-rose-400 font-mono">-{inspectedPR.deletions}</strong>
                     </div>
                   </div>
@@ -408,15 +408,15 @@ export function GitHubConnectorModal({
                   {/* Modified Files List Preview */}
                   {prFiles.length > 0 && (
                     <div className="space-y-1.5 pt-2">
-                      <span className="text-xs font-semibold text-slate-300 flex items-center justify-between">
+                      <span className="text-xs font-semibold text-slate-200 flex items-center justify-between">
                         <span>Modified Files for Blast Radius Traversal</span>
-                        <span className="text-[10px] text-slate-500 font-mono">{prFiles.length} detected</span>
+                        <span className="text-[10px] text-slate-400 font-mono">{prFiles.length} detected</span>
                       </span>
                       <div className="max-h-40 overflow-y-auto space-y-1 font-mono text-xs pr-1">
                         {prFiles.map((file) => (
                           <div
                             key={file.path}
-                            className="p-2 rounded-lg bg-slate-900 border border-slate-800/80 flex items-center justify-between gap-2"
+                            className="p-2 rounded-lg bg-[#0a0f1d] border border-slate-700/70 flex items-center justify-between gap-2"
                           >
                             <div className="flex items-center gap-2 truncate">
                               <span
@@ -482,39 +482,39 @@ export function GitHubConnectorModal({
               </div>
 
               {/* Configuration Toggles */}
-              <div className="p-3 rounded-xl bg-slate-950/70 border border-slate-800 space-y-2 text-xs">
+              <div className="p-3.5 rounded-xl bg-[#131d2e] border border-slate-700/80 space-y-2.5 text-xs shadow-sm">
                 <span className="text-slate-400 font-semibold block uppercase text-[10px] tracking-wider">
                   Workflow Guard Policies
                 </span>
-                <label className="flex items-center gap-2.5 cursor-pointer text-slate-300">
+                <label className="flex items-center gap-2.5 cursor-pointer text-slate-200">
                   <input
                     type="checkbox"
                     checked={failOnCritical}
                     onChange={(e) => setFailOnCritical(e.target.checked)}
-                    className="rounded bg-slate-900 border-slate-700 text-cyan-500 focus:ring-cyan-500"
+                    className="rounded bg-[#090e1a] border-slate-600 text-cyan-500 focus:ring-cyan-500"
                   />
                   <span>Fail CI build if <strong>CRITICAL</strong> risk or broken export is detected (Recommended)</span>
                 </label>
-                <label className="flex items-center gap-2.5 cursor-pointer text-slate-300">
+                <label className="flex items-center gap-2.5 cursor-pointer text-slate-200">
                   <input
                     type="checkbox"
                     checked={failOnHigh}
                     onChange={(e) => setFailOnHigh(e.target.checked)}
-                    className="rounded bg-slate-900 border-slate-700 text-cyan-500 focus:ring-cyan-500"
+                    className="rounded bg-[#090e1a] border-slate-600 text-cyan-500 focus:ring-cyan-500"
                   />
                   <span>Fail CI build if <strong>HIGH</strong> risk threshold (Blast Radius &gt; 75) is exceeded</span>
                 </label>
               </div>
 
               {/* YAML Code Box */}
-              <div className="relative rounded-xl bg-slate-950 border border-slate-800 overflow-hidden">
-                <div className="px-4 py-2 bg-slate-900/90 border-b border-slate-800 flex items-center justify-between text-xs font-mono text-slate-400">
+              <div className="relative rounded-xl bg-[#0a0f1d] border border-slate-700/80 overflow-hidden shadow-inner">
+                <div className="px-4 py-2 bg-[#0e1627] border-b border-slate-700/80 flex items-center justify-between text-xs font-mono text-slate-300">
                   <span>.github/workflows/changelens.yml</span>
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
                       onClick={handleCopyWorkflow}
-                      className="flex items-center gap-1 px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors text-xs font-sans"
+                      className="flex items-center gap-1 px-2.5 py-1 rounded bg-[#182338] hover:bg-[#1f2d48] text-slate-200 border border-slate-600/80 transition-colors text-xs font-sans cursor-pointer shadow-sm"
                     >
                       {copiedWorkflow ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                       <span>{copiedWorkflow ? 'Copied' : 'Copy YAML'}</span>
@@ -522,7 +522,7 @@ export function GitHubConnectorModal({
                     <button
                       type="button"
                       onClick={handleDownloadWorkflow}
-                      className="flex items-center gap-1 px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors text-xs font-sans"
+                      className="flex items-center gap-1 px-2.5 py-1 rounded bg-[#182338] hover:bg-[#1f2d48] text-slate-200 border border-slate-600/80 transition-colors text-xs font-sans cursor-pointer shadow-sm"
                     >
                       <Download className="w-3.5 h-3.5" />
                       <span>Download</span>
@@ -530,7 +530,7 @@ export function GitHubConnectorModal({
                   </div>
                 </div>
 
-                <pre className="p-4 text-xs font-mono text-slate-300 overflow-x-auto max-h-60 leading-relaxed">
+                <pre className="p-4 text-xs font-mono text-slate-200 overflow-x-auto max-h-60 leading-relaxed">
                   {workflowYaml || 'Loading workflow template...'}
                 </pre>
               </div>
@@ -564,19 +564,19 @@ export function GitHubConnectorModal({
                 </div>
               )}
 
-              <div className="p-4 rounded-xl bg-slate-950/70 border border-slate-800 space-y-3 text-xs">
+              <div className="p-4 rounded-xl bg-[#131d2e] border border-slate-700/80 space-y-3 text-xs shadow-sm">
                 <div>
-                  <label className="block text-slate-400 font-semibold mb-1">Target Pull Request</label>
+                  <label className="block text-slate-300 font-semibold mb-1">Target Pull Request</label>
                   <input
                     type="text"
                     disabled
                     value={inspectedPR ? `${inspectedPR.owner}/${inspectedPR.repo} #${inspectedPR.number} (${inspectedPR.title})` : 'No PR inspected yet (Use the Analyze tab)'}
-                    className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-slate-300 font-mono text-xs opacity-80"
+                    className="w-full bg-[#0a0f1d] border border-slate-700/80 rounded-lg px-3 py-2 text-slate-300 font-mono text-xs opacity-90"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-slate-400 font-semibold mb-1">
+                  <label className="block text-slate-300 font-semibold mb-1">
                     GitHub Personal Access Token (PAT)
                   </label>
                   <input
@@ -584,7 +584,7 @@ export function GitHubConnectorModal({
                     value={token}
                     onChange={(e) => setToken(e.target.value)}
                     placeholder="ghp_xxxxxxxxxxxx (Requires repo / pull-requests write scope)"
-                    className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-slate-100 font-mono text-xs focus:outline-none focus:border-cyan-500"
+                    className="w-full bg-[#090e1a] border border-slate-600/80 rounded-lg px-3 py-2 text-white font-mono text-xs focus:outline-none focus:border-cyan-400 transition-colors"
                   />
                 </div>
 
@@ -593,7 +593,7 @@ export function GitHubConnectorModal({
                     type="button"
                     onClick={handlePostComment}
                     disabled={postingComment || !inspectedPR || !token.trim()}
-                    className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold text-xs py-2.5 rounded-lg shadow-md transition-all disabled:opacity-50"
+                    className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold text-xs py-2.5 rounded-lg shadow-md transition-all disabled:opacity-50 cursor-pointer"
                   >
                     {postingComment ? (
                       <>

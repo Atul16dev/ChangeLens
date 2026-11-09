@@ -3,6 +3,7 @@ import {
   ReactFlow,
   Background,
   Controls,
+  ControlButton,
   MiniMap,
   Panel,
   useNodesState,
@@ -19,9 +20,9 @@ import {
   Flame,
   Layers,
   Maximize2,
+  Minimize2,
   Filter,
   ArrowRightLeft,
-  RotateCcw,
   Sparkles,
   Network,
   HelpCircle,
@@ -30,6 +31,7 @@ import {
   Camera,
   Download,
   Check,
+  Trash2,
 } from 'lucide-react';
 import { exportGraphToPng, exportGraphToSvg } from '../utils/export.js';
 
@@ -39,7 +41,9 @@ function GraphViewerInternal({
   selectedNodeId,
   isSimulating,
   simulatedFile,
+  simulatedChangeType = 'modified',
   onExitSimulation,
+  children,
 }) {
   const containerRef = useRef(null);
   const [isExporting, setIsExporting] = useState(false);
@@ -75,11 +79,129 @@ function GraphViewerInternal({
 
   const nodeTypes = useMemo(() => ({ fileNode: FileNode }), []);
   const edgeTypes = useMemo(() => ({ impactEdge: ImpactEdge }), []);
-  const { fitView } = useReactFlow();
+  const { fitView, getViewport, setViewport } = useReactFlow();
 
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const [filterMode, setFilterMode] = useState('all'); // 'all' | 'blast_only'
   const [semanticMode, setSemanticMode] = useState('impact'); // 'impact' | 'dependency'
   const [isLayoutComputing, setIsLayoutComputing] = useState(false);
+
+  const lastDimensionsRef = useRef({ width: 0, height: 0 });
+  const lastViewportRef = useRef({ x: 0, y: 0, zoom: 1 });
+
+  // Record dimensions and viewport state before fullscreen transitions
+  const recordCurrentViewport = useCallback(() => {
+    if (containerRef.current) {
+      lastDimensionsRef.current = {
+        width: containerRef.current.clientWidth,
+        height: containerRef.current.clientHeight,
+      };
+      lastViewportRef.current = getViewport();
+    }
+  }, [getViewport]);
+
+  const toggleFullscreen = useCallback(async () => {
+    try {
+      recordCurrentViewport();
+      const isCurrentlyFull = Boolean(document.fullscreenElement || document.webkitFullscreenElement);
+      if (!isCurrentlyFull) {
+        if (containerRef.current?.requestFullscreen) {
+          await containerRef.current.requestFullscreen();
+        } else if (containerRef.current?.webkitRequestFullscreen) {
+          await containerRef.current.webkitRequestFullscreen();
+        } else {
+          // Fallback to CSS fullscreen
+          setIsFullscreen(true);
+        }
+      } else {
+        if (document.exitFullscreen) {
+          await document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+          await document.webkitExitFullscreen();
+        } else {
+          setIsFullscreen(false);
+        }
+      }
+    } catch (err) {
+      console.warn('Fullscreen request failed, falling back to CSS fullscreen:', err);
+      setIsFullscreen((prev) => !prev);
+    }
+  }, [recordCurrentViewport]);
+
+  // Listen for fullscreen changes (including pressing Escape key or browser exit)
+  // Preserves exact node focus, pan position, and zoom level without resetting to fitView
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      const isFull = Boolean(document.fullscreenElement || document.webkitFullscreenElement);
+      setIsFullscreen(isFull);
+
+      setTimeout(() => {
+        if (!containerRef.current) return;
+        const newWidth = containerRef.current.clientWidth;
+        const newHeight = containerRef.current.clientHeight;
+        const { width: oldWidth, height: oldHeight } = lastDimensionsRef.current;
+        const oldViewport = lastViewportRef.current;
+
+        // Shift viewport offset by center delta so whatever node was in view remains centered at current zoom
+        if (oldWidth > 0 && oldHeight > 0 && oldViewport) {
+          const deltaX = (newWidth - oldWidth) / 2;
+          const deltaY = (newHeight - oldHeight) / 2;
+          setViewport(
+            {
+              x: oldViewport.x + deltaX,
+              y: oldViewport.y + deltaY,
+              zoom: oldViewport.zoom,
+            },
+            { duration: 250 }
+          );
+        }
+
+        lastDimensionsRef.current = { width: newWidth, height: newHeight };
+        lastViewportRef.current = getViewport();
+      }, 100);
+    };
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && isFullscreen && !document.fullscreenElement) {
+        recordCurrentViewport();
+        setIsFullscreen(false);
+
+        setTimeout(() => {
+          if (!containerRef.current) return;
+          const newWidth = containerRef.current.clientWidth;
+          const newHeight = containerRef.current.clientHeight;
+          const { width: oldWidth, height: oldHeight } = lastDimensionsRef.current;
+          const oldViewport = lastViewportRef.current;
+
+          if (oldWidth > 0 && oldHeight > 0 && oldViewport) {
+            const deltaX = (newWidth - oldWidth) / 2;
+            const deltaY = (newHeight - oldHeight) / 2;
+            setViewport(
+              {
+                x: oldViewport.x + deltaX,
+                y: oldViewport.y + deltaY,
+                zoom: oldViewport.zoom,
+              },
+              { duration: 250 }
+            );
+          }
+
+          lastDimensionsRef.current = { width: newWidth, height: newHeight };
+          lastViewportRef.current = getViewport();
+        }, 100);
+      }
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isFullscreen, getViewport, setViewport, recordCurrentViewport]);
 
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
@@ -237,7 +359,9 @@ function GraphViewerInternal({
   return (
     <div
       ref={containerRef}
-      className="w-full h-full relative overflow-hidden select-none"
+      className={`w-full h-full relative overflow-hidden select-none transition-all ${
+        isFullscreen && !document.fullscreenElement ? 'fixed inset-0 z-50 w-screen h-screen' : ''
+      }`}
       style={{
         background: 'radial-gradient(circle at 50% 35%, #152136 0%, #0d1527 60%, #080d19 100%)',
       }}
@@ -272,7 +396,19 @@ function GraphViewerInternal({
           position="bottom-left"
           showInteractive={false}
           className="!bg-[#0f172a]/95 !border-slate-700/80 !rounded-xl !shadow-2xl !fill-slate-200 [&>button]:!bg-[#0f172a] [&>button]:!border-slate-700/80 [&>button]:!text-slate-200 hover:[&>button]:!bg-slate-800 !bottom-4 !left-4"
-        />
+        >
+          <ControlButton
+            onClick={toggleFullscreen}
+            title={isFullscreen ? 'Exit Fullscreen (Esc)' : 'Cover Whole Screen (YouTube Style)'}
+            aria-label={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
+          >
+            {isFullscreen ? (
+              <Minimize2 className="w-3.5 h-3.5 text-cyan-400" />
+            ) : (
+              <Maximize2 className="w-3.5 h-3.5 text-cyan-400" />
+            )}
+          </ControlButton>
+        </Controls>
 
         <MiniMap
           position="top-right"
@@ -286,7 +422,7 @@ function GraphViewerInternal({
           maskColor="rgba(8, 13, 25, 0.8)"
           pannable={true}
           zoomable={true}
-          className="!bg-[#0f172a] !border-slate-700/80 !rounded-xl !shadow-2xl !top-4 !right-4 !w-44 !h-32"
+          className="!bg-[#0f172a] !border-slate-700/80 !rounded-xl !shadow-2xl !top-4 !right-4 !w-44 !h-32 hidden md:block"
         />
 
         {/* TOP-LEFT TOOLBAR: CONTROLS, MODES & FILTERS */}
@@ -337,15 +473,6 @@ function GraphViewerInternal({
               </span>
             </button>
 
-            {/* Reset & Re-Layout Button */}
-            <button
-              onClick={handleResetLayout}
-              className="p-1.5 rounded-lg bg-[#090e1a] hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-cyan-400 transition-colors"
-              title="Recalculate deterministic ELK layout and center view"
-            >
-              <RotateCcw className={`w-3.5 h-3.5 ${isLayoutComputing ? 'animate-spin text-cyan-400' : ''}`} />
-            </button>
-
             {/* Graph Snapshot Export (PNG & SVG) */}
             <div className="flex items-center bg-[#090e1a] p-0.5 rounded-lg border border-slate-800">
               <button
@@ -387,10 +514,24 @@ function GraphViewerInternal({
 
             {/* What-If Simulation Mode Indicator */}
             {isSimulating && (
-              <div className="flex items-center gap-1.5 bg-gradient-to-r from-purple-950 via-indigo-950 to-slate-950 border border-purple-500/50 px-2.5 py-1 rounded-lg text-xs font-semibold text-purple-200 shadow-lg">
-                <Zap className="w-3.5 h-3.5 text-amber-400 animate-pulse shrink-0" />
-                <span className="text-[10px] text-amber-400 font-bold uppercase tracking-wider">
-                  Simulation:
+              <div
+                className={`flex items-center gap-1.5 border px-2.5 py-1 rounded-lg text-xs font-semibold shadow-lg ${
+                  simulatedChangeType === 'deleted'
+                    ? 'bg-gradient-to-r from-rose-950 via-[#2f1322] to-slate-950 border-rose-500/60 text-rose-200'
+                    : 'bg-gradient-to-r from-purple-950 via-indigo-950 to-slate-950 border-purple-500/50 text-purple-200'
+                }`}
+              >
+                {simulatedChangeType === 'deleted' ? (
+                  <Trash2 className="w-3.5 h-3.5 text-rose-400 animate-pulse shrink-0" />
+                ) : (
+                  <Zap className="w-3.5 h-3.5 text-amber-400 animate-pulse shrink-0" />
+                )}
+                <span
+                  className={`text-[10px] font-bold uppercase tracking-wider ${
+                    simulatedChangeType === 'deleted' ? 'text-rose-400' : 'text-amber-400'
+                  }`}
+                >
+                  {simulatedChangeType === 'deleted' ? 'Simulate (Delete):' : 'Simulation:'}
                 </span>
                 <span className="font-mono text-[11px] text-white truncate max-w-[140px]" title={simulatedFile}>
                   {simulatedFile?.split('/').pop()}
@@ -398,7 +539,7 @@ function GraphViewerInternal({
                 {onExitSimulation && (
                   <button
                     onClick={onExitSimulation}
-                    className="ml-1 p-0.5 rounded text-purple-300 hover:text-white hover:bg-purple-800 transition-colors"
+                    className="ml-1 p-0.5 rounded text-slate-300 hover:text-white hover:bg-slate-800 transition-colors"
                     title="Exit simulation"
                   >
                     <X className="w-3.5 h-3.5" />
@@ -410,7 +551,7 @@ function GraphViewerInternal({
         </Panel>
 
         {/* BOTTOM-LEFT: REFINED COLOR & TIER LEGEND (SHIFTED RIGHT OF ZOOM CONTROLS) */}
-        <Panel position="bottom-left" className="!mb-4 !ml-16 sm:!ml-[72px]">
+        <Panel position="bottom-left" className="!mb-4 !ml-16 sm:!ml-[72px] hidden sm:block">
           <div className="bg-[#0f172a]/95 backdrop-blur-md border border-slate-700/80 rounded-xl px-3.5 py-2 shadow-2xl flex flex-wrap items-center gap-3.5 text-xs text-slate-300">
             <span className="font-bold text-slate-400 flex items-center gap-1 border-r border-slate-800 pr-3 text-[11px]">
               <Layers className="w-3.5 h-3.5 text-cyan-400" />
@@ -439,6 +580,9 @@ function GraphViewerInternal({
           </div>
         </Panel>
       </ReactFlow>
+
+      {/* Embedded overlays like ChatAssistant that persist in fullscreen mode */}
+      {children}
     </div>
   );
 }

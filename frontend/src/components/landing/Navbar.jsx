@@ -44,8 +44,8 @@ export function Navbar() {
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled
-          ? 'bg-slate-950/90 backdrop-blur-xl border-b border-slate-800/80 shadow-lg shadow-black/40'
-          : 'bg-slate-950/40 backdrop-blur-md border-b border-slate-800/40'
+          ? 'bg-[#0e1422]/95 backdrop-blur-xl border-b border-slate-700/80 shadow-2xl shadow-black/60'
+          : 'bg-[#0b0f19]/70 backdrop-blur-md border-b border-slate-700/50'
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

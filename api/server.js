@@ -1,7 +1,8 @@
 import "./env.js";
-import { connectMongoDB, isMongoConnected } from "./db/mongodb.js";
+import { connectMongoDB, closeMongoDB, isMongoConnected } from "./db/mongodb.js";
 import { createApp } from "./app.js";
 import { initBridgeRelay } from "./services/bridge-relay.js";
+import { isCloudinaryConfigured } from "./services/cloudinary.js";
 
 const PORT = process.env.PORT || 5000;
 
@@ -28,6 +29,7 @@ async function startServer() {
     console.log(`🌉 WebSocket Tunnel:  ws://localhost:${PORT}/api/v1/bridge/tunnel`);
     console.log(`🗄️ Database:          ${isMongoConnected() ? "🍃 MongoDB Atlas (Connected)" : "⚡ In-Memory (Dev/Test Fallback)"}`);
     console.log(`📧 Email Provider:    ${process.env.SMTP_HOST ? `${process.env.SMTP_HOST} (${process.env.SMTP_USER})` : "In-memory dev transport"}`);
+    console.log(`☁️ Cloud Media:       ${isCloudinaryConfigured() ? `Cloudinary (${process.env.CLOUDINARY_CLOUD_NAME})` : "Local / Base64 Fallback"}`);
     console.log("=================================================\n");
   });
 
@@ -44,9 +46,14 @@ async function startServer() {
 
   const bridgeRelay = initBridgeRelay(server);
 
-  function shutdown(signal) {
+  async function shutdown(signal) {
     console.log(`\n🛑 Received ${signal}. Closing server gracefully...`);
-    bridgeRelay.close().catch(() => {});
+    try {
+      await bridgeRelay.close();
+    } catch {}
+    try {
+      await closeMongoDB();
+    } catch {}
     server.close(() => {
       console.log("✅ ChangeLens API server closed.");
       process.exit(0);

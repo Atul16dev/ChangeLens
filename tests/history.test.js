@@ -145,6 +145,16 @@ test("ChangeLens Analysis History & Saved Reports Test Suite", async (t) => {
     assert.strictEqual(styleBody.data.analyses[0].changedFiles[0], "client/src/styles.css");
   });
 
+  await t.test("GET /api/v1/analyses/history safely handles special regex characters in search", async () => {
+    const specialRes = await fetch(`${baseUrl}/api/v1/analyses/history?search=${encodeURIComponent("[*+(")}`, {
+      headers: { Cookie: aliceCookie },
+    });
+    assert.strictEqual(specialRes.status, 200, "Search with regex characters should return 200");
+    const specialBody = await specialRes.json();
+    assert.strictEqual(specialBody.success, true);
+    assert.strictEqual(specialBody.data.total, 0, "No records match literal '[*+('");
+  });
+
   await t.test("Bob cannot delete Alice's analysis report (ownership enforcement)", async () => {
     const aliceHistoryRes = await fetch(`${baseUrl}/api/v1/analyses/history`, {
       headers: { Cookie: aliceCookie },

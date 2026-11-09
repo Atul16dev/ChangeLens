@@ -66,7 +66,7 @@ export async function callGeminiAPI({
     throw new TypeError("Either a non-empty 'prompt' string or 'contents' array is required.");
   }
 
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${sanitizedKey}`;
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(sanitizedKey)}`;
 
   const payload = {
     contents: formattedContents,
@@ -84,7 +84,10 @@ export async function callGeminiAPI({
 
   const response = await fetch(endpoint, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "x-goog-api-key": sanitizedKey,
+    },
     body: JSON.stringify(payload),
   });
 

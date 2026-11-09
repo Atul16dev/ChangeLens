@@ -110,8 +110,8 @@ export function HeroSection() {
           </ScrollReveal>
 
           <ScrollReveal animation="fade-up" delay={200} duration={800}>
-            <p className="text-sm sm:text-lg md:text-xl text-slate-300 max-w-2xl mx-auto leading-relaxed">
-              ChangeLens analyzes code changes, traces dependencies, and helps developers understand the potential impact before merging.
+            <p className="text-sm sm:text-lg md:text-xl text-slate-300 max-w-3xl mx-auto leading-relaxed">
+              Deterministic AST blast radius intelligence for your code changes. Connect via <strong className="text-white font-semibold">GitHub Repos</strong>, <strong className="text-white font-semibold">Pull Requests</strong>, or <strong className="text-white font-semibold">Local Offline Workspaces</strong> to visualize multi-hop impact, catch broken symbols, and consult an in-workspace AI copilot before merging.
             </p>
           </ScrollReveal>
 
@@ -183,28 +183,28 @@ export function HeroSection() {
 
         {/* Interactive Product Preview Mockup */}
         <ScrollReveal animation="scale-up" delay={250} duration={900} className="mt-10 sm:mt-14 max-w-5xl mx-auto" id="hero-preview">
-          <div className="relative rounded-2xl bg-gradient-to-b from-slate-800/60 to-slate-900/90 p-1 sm:p-2 border border-slate-800 shadow-2xl shadow-cyan-950/20 backdrop-blur-xl overflow-hidden">
+          <div className="relative rounded-2xl bg-[#101726] p-1 sm:p-2 border border-slate-700/80 shadow-2xl shadow-cyan-950/30 backdrop-blur-xl overflow-hidden">
             {/* Laser Scanline Beam Effect */}
             <div className="scanline-effect" />
 
             {/* Window Titlebar */}
-            <div className="px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-950/80 rounded-t-xl border-b border-slate-800/80 flex items-center justify-between flex-wrap gap-2">
+            <div className="px-3 sm:px-4 py-2.5 sm:py-3 bg-[#0c1220] rounded-t-xl border-b border-slate-700/80 flex items-center justify-between flex-wrap gap-2">
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-1.5">
                   <span className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-rose-500/80" />
                   <span className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-amber-500/80" />
                   <span className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-emerald-500/80" />
                 </div>
-                <span className="text-xs font-mono text-slate-400 ml-2 hidden sm:inline">
+                <span className="text-xs font-mono text-slate-300 ml-2 hidden sm:inline font-semibold">
                   ChangeLens Visual Blast Radius Engine • Interactive Demo
                 </span>
-                <span className="text-[11px] font-mono text-slate-400 ml-1 sm:hidden">
+                <span className="text-[11px] font-mono text-slate-300 ml-1 sm:hidden font-semibold">
                   ChangeLens Engine Demo
                 </span>
               </div>
 
               {/* Demo Scenario Tabs */}
-              <div className="flex items-center gap-1 bg-slate-900 p-0.5 sm:p-1 rounded-lg border border-slate-800 text-[11px] sm:text-xs">
+              <div className="flex items-center gap-1 bg-[#090e1a] p-0.5 sm:p-1 rounded-lg border border-slate-700/80 text-[11px] sm:text-xs">
                 {DEMO_PRESETS.map((preset) => (
                   <button
                     key={preset.id}
@@ -212,7 +212,7 @@ export function HeroSection() {
                     onClick={() => setActiveDemo(preset)}
                     className={`px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md font-medium transition-all ${
                       activeDemo.id === preset.id
-                        ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 shadow-sm'
+                        ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm font-semibold'
                         : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
                     }`}
                   >
@@ -223,41 +223,41 @@ export function HeroSection() {
             </div>
 
             {/* Inner Dashboard Preview Body */}
-            <div className="p-3 sm:p-6 bg-slate-950/90 rounded-b-xl space-y-4 sm:space-y-6">
+            <div className="p-3 sm:p-6 bg-[#0e1627] rounded-b-xl space-y-4 sm:space-y-6">
               {/* Header Status Bar inside demo */}
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 p-3 sm:p-4 rounded-xl bg-slate-900/70 border border-slate-800/80">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 p-3 sm:p-4 rounded-xl bg-[#131d2e] border border-slate-700/80 shadow-sm">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-[11px] sm:text-xs font-mono text-slate-400">Target File:</span>
-                    <span className="text-xs sm:text-sm font-bold font-mono text-amber-300 bg-amber-950/40 px-2 py-0.5 rounded border border-amber-800/40 truncate max-w-[200px] sm:max-w-none">
+                    <span className="text-xs sm:text-sm font-bold font-mono text-amber-300 bg-amber-950/60 px-2 py-0.5 rounded border border-amber-500/40 truncate max-w-[200px] sm:max-w-none">
                       {activeDemo.name}
                     </span>
                     <span
                       className={`text-[9px] sm:text-[10px] font-bold uppercase px-2 py-0.5 rounded border ${
                         activeDemo.risk === 'CRITICAL'
-                          ? 'bg-rose-500/20 text-rose-300 border-rose-500/30'
+                          ? 'bg-rose-500/20 text-rose-300 border-rose-500/40'
                           : activeDemo.risk === 'HIGH'
-                          ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
-                          : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+                          ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                          : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
                       }`}
                     >
                       {activeDemo.risk} RISK ({activeDemo.riskScore}/100)
                     </span>
                   </div>
-                  <p className="text-[11px] sm:text-xs text-slate-400">{activeDemo.change}</p>
+                  <p className="text-[11px] sm:text-xs text-slate-300">{activeDemo.change}</p>
                 </div>
 
                 {/* Metric Counters (Clean 3-column grid on mobile to eliminate overflow) */}
                 <div className="grid grid-cols-3 gap-2 text-xs w-full sm:w-auto">
-                  <div className="text-center px-2 sm:px-3 py-1.5 bg-slate-950/60 rounded-lg border border-slate-800">
+                  <div className="text-center px-2 sm:px-3 py-1.5 bg-[#0a0f1d] rounded-lg border border-slate-700/80 shadow-inner">
                     <span className="text-slate-400 block text-[9px] sm:text-[10px] uppercase font-bold">Affected</span>
                     <strong className="text-sm sm:text-base font-extrabold text-cyan-400">{activeDemo.affectedCount}</strong>
                   </div>
-                  <div className="text-center px-2 sm:px-3 py-1.5 bg-slate-950/60 rounded-lg border border-slate-800">
+                  <div className="text-center px-2 sm:px-3 py-1.5 bg-[#0a0f1d] rounded-lg border border-slate-700/80 shadow-inner">
                     <span className="text-slate-400 block text-[9px] sm:text-[10px] uppercase font-bold">Direct</span>
                     <strong className="text-sm sm:text-base font-extrabold text-slate-200">{activeDemo.directCount}</strong>
                   </div>
-                  <div className="text-center px-2 sm:px-3 py-1.5 bg-slate-950/60 rounded-lg border border-slate-800">
+                  <div className="text-center px-2 sm:px-3 py-1.5 bg-[#0a0f1d] rounded-lg border border-slate-700/80 shadow-inner">
                     <span className="text-slate-400 block text-[9px] sm:text-[10px] uppercase font-bold">Depth</span>
                     <strong className="text-sm sm:text-base font-extrabold text-indigo-400">{activeDemo.maxDepth} Hops</strong>
                   </div>
@@ -265,13 +265,13 @@ export function HeroSection() {
               </div>
 
               {/* Visual Graph Demonstration Flow */}
-              <div className="p-3 sm:p-6 rounded-xl bg-slate-900/40 border border-slate-800/80 relative overflow-hidden">
+              <div className="p-3 sm:p-6 rounded-xl bg-[#131d2e] border border-slate-700/80 relative overflow-hidden shadow-sm">
                 <div className="flex items-center justify-between mb-3 sm:mb-4">
-                  <span className="text-[11px] sm:text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5 sm:gap-2">
+                  <span className="text-[11px] sm:text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1.5 sm:gap-2">
                     <Activity className="w-3.5 h-3.5 text-cyan-400" />
                     Blast Radius Propagation
                   </span>
-                  <span className="text-[10px] sm:text-[11px] text-slate-500 font-mono hidden sm:inline">
+                  <span className="text-[10px] sm:text-[11px] text-slate-400 font-mono hidden sm:inline">
                     ELK.js Layered Layout
                   </span>
                 </div>
@@ -283,14 +283,14 @@ export function HeroSection() {
                       key={node.name}
                       className={`p-2.5 sm:p-3.5 rounded-xl border transition-all ${
                         node.status === 'changed'
-                          ? 'bg-amber-950/30 border-amber-500/50 shadow-lg shadow-amber-950/30 ring-1 ring-amber-500/30'
+                          ? 'bg-amber-950/40 border-amber-500/60 shadow-lg shadow-amber-950/40 ring-1 ring-amber-500/40'
                           : node.status === 'direct'
-                          ? 'bg-orange-950/20 border-orange-500/40'
-                          : 'bg-slate-900/80 border-slate-800 hover:border-slate-700'
+                          ? 'bg-orange-950/30 border-orange-500/50'
+                          : 'bg-[#0a0f1d] border-slate-700/80 hover:border-slate-600'
                       }`}
                     >
                       <div className="flex items-center justify-between mb-1.5">
-                        <span className="text-[9px] sm:text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-950/80 text-slate-400 border border-slate-800">
+                        <span className="text-[9px] sm:text-[10px] font-mono px-1.5 py-0.5 rounded bg-[#090e1a] text-slate-300 border border-slate-700">
                           D{node.depth}
                         </span>
                         <span
@@ -307,7 +307,7 @@ export function HeroSection() {
                       </div>
                       <div className="flex items-center gap-1.5">
                         <FileCode2 className={`w-3.5 h-3.5 shrink-0 ${node.status === 'changed' ? 'text-amber-400' : 'text-cyan-400'}`} />
-                        <span className="text-[11px] sm:text-xs font-mono font-semibold text-slate-200 truncate">
+                        <span className="text-[11px] sm:text-xs font-mono font-semibold text-slate-100 truncate">
                           {node.name}
                         </span>
                       </div>
@@ -316,18 +316,18 @@ export function HeroSection() {
                 </div>
 
                 {/* AI Reviewer Notification Box */}
-                <div className="mt-3 sm:mt-4 p-2.5 sm:p-3 bg-indigo-950/30 border border-indigo-800/40 rounded-xl flex items-start gap-2.5 text-xs">
+                <div className="mt-3 sm:mt-4 p-2.5 sm:p-3 bg-[#0a0f1d] border border-indigo-700/50 rounded-xl flex items-start gap-2.5 text-xs shadow-inner">
                   <Cpu className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
                   <div>
                     <span className="font-semibold text-indigo-300">Gemini Assessment: </span>
-                    <span className="text-slate-300 text-[11px] sm:text-xs">{activeDemo.aiInsight}</span>
+                    <span className="text-slate-200 text-[11px] sm:text-xs leading-relaxed">{activeDemo.aiInsight}</span>
                   </div>
                 </div>
               </div>
 
               {/* Bottom Illustrative Banner */}
-              <div className="text-center text-[10px] sm:text-[11px] text-slate-500 font-mono">
-                * Illustrative real-time preview based on ChangeLens AST dependency resolution benchmarks.
+              <div className="text-center text-[10px] sm:text-[11px] text-slate-400 font-mono">
+                * Real-time deterministic preview powered by ChangeLens AST dependency resolution engine.
               </div>
             </div>
           </div>

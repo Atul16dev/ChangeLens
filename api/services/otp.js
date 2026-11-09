@@ -1,5 +1,10 @@
 import crypto from "node:crypto";
 
+const isProd = process.env.NODE_ENV === "production";
+if (isProd && (!process.env.OTP_SECRET || process.env.OTP_SECRET.includes("change-me"))) {
+  throw new Error("[SECURITY CRITICAL] OTP_SECRET must be configured with a strong secret in production.");
+}
+
 const OTP_SECRET = process.env.OTP_SECRET || "changelens-secure-otp-secret-key-at-least-32-chars-long";
 
 /**

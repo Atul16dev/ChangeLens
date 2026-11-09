@@ -30,6 +30,7 @@
   "dependencies": {
     "@node-rs/argon2": "^2.2.2",
     "@xberg-io/tree-sitter-language-pack-wasm": "1.22.1",
+    "cloudinary": "^2.11.0",
     "connect-mongo": "^6.0.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",

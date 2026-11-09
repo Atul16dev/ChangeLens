@@ -1,8 +1,21 @@
 import React, { memo } from 'react';
 import { Handle, Position } from '@xyflow/react';
-import { FileCode, AlertOctagon, AlertTriangle, Flame, Folder } from 'lucide-react';
+import { FileCode, AlertOctagon, AlertTriangle, Flame, Folder, Trash2 } from 'lucide-react';
 
-function getSeverityConfig(severity, isChanged) {
+function getSeverityConfig(severity, isChanged, isDeleted) {
+  if (isDeleted || severity === 'DELETED') {
+    return {
+      bg: 'bg-gradient-to-br from-[#3b080d] via-[#1f1728] to-[#121626]',
+      border: 'border-rose-500 shadow-xl shadow-rose-950/70 ring-2 ring-rose-500/50',
+      badgeBg: 'bg-rose-500/30 text-rose-200 border-rose-500/80 shadow-sm shadow-rose-500/30',
+      dotColor: 'bg-rose-500 animate-ping',
+      accentBar: 'bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.9)]',
+      titleColor: 'text-rose-100',
+      icon: <Trash2 className="w-3.5 h-3.5 text-rose-400 shrink-0" />,
+      label: 'ROOT DELETED',
+    };
+  }
+
   if (isChanged) {
     return {
       bg: 'bg-gradient-to-br from-[#2f1f0a] via-[#1c2438] to-[#131b2e]',
@@ -80,6 +93,8 @@ export const FileNode = memo(({ data, selected }) => {
     label,
     fullPath = '',
     isChanged = false,
+    isDeleted = false,
+    changeType = null,
     isImpacted = false,
     severity = 'NONE',
     depth = 0,
@@ -87,7 +102,8 @@ export const FileNode = memo(({ data, selected }) => {
     isDimmed = false,
   } = data;
 
-  const config = getSeverityConfig(severity, isChanged);
+  const effectiveIsDeleted = isDeleted || changeType === 'deleted' || severity === 'DELETED';
+  const config = getSeverityConfig(severity, isChanged, effectiveIsDeleted);
   const dirName = fullPath.includes('/') ? fullPath.substring(0, fullPath.lastIndexOf('/')) : '';
 
   return (

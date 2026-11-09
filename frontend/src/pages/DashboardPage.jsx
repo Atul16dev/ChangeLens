@@ -20,7 +20,7 @@ import {
   analyzeGitHubPR,
   getAnalysisHistory,
 } from '../services/api.js';
-import { AlertCircle, RefreshCw } from 'lucide-react';
+import { AlertCircle, RefreshCw, ShieldAlert } from 'lucide-react';
 
 export function DashboardPage() {
   const [loading, setLoading] = useState(false);
@@ -32,6 +32,9 @@ export function DashboardPage() {
   const [impactData, setImpactData] = useState(null);
   const [explanationData, setExplanationData] = useState(null);
   const [selectedNodeId, setSelectedNodeId] = useState(null);
+
+  // Mobile / Tablet Responsive Impact Sidebar State
+  const [isSidebarOpenMobile, setIsSidebarOpenMobile] = useState(false);
 
   // History Drawer state
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
@@ -63,6 +66,12 @@ export function DashboardPage() {
   // What-If Simulator state
   const [simulationData, setSimulationData] = useState(null);
   const [isSimulating, setIsSimulating] = useState(false);
+
+  // Active analyzed workspace and target files for header breadcrumb
+  const [activeTargetContext, setActiveTargetContext] = useState({
+    repoPath: '',
+    changedFiles: [],
+  });
 
   // Fetch and refresh recent analyses list (scoped to max 6 latest items)
   const refreshRecentAnalyses = useCallback(async () => {
@@ -98,6 +107,13 @@ export function DashboardPage() {
       setSimulationData(null);
       setIsSimulating(false);
       setBackendStatus('online');
+
+      const targetDir = impactRes?.summary?.targetDir || '';
+      const targetChangedFiles = impactRes?.summary?.changedFiles || [];
+      setActiveTargetContext({
+        repoPath: targetDir,
+        changedFiles: Array.isArray(targetChangedFiles) ? targetChangedFiles : [],
+      });
     } catch (err) {
       console.error('Failed to load saved analysis:', err);
       setError(err.message || 'Failed to load saved analysis report');
@@ -134,6 +150,13 @@ export function DashboardPage() {
       setSimulationData(null);
       setIsSimulating(false);
       setBackendStatus('online');
+
+      const targetDir = impactRes?.summary?.targetDir || '';
+      const targetChangedFiles = impactRes?.summary?.changedFiles || [];
+      setActiveTargetContext({
+        repoPath: targetDir,
+        changedFiles: Array.isArray(targetChangedFiles) ? targetChangedFiles : [],
+      });
       refreshRecentAnalyses();
     } catch (err) {
       console.error('Analysis failed:', err);
@@ -335,6 +358,11 @@ export function DashboardPage() {
       setIsDemoMode(false);
       setIsProjectHubOpen(false);
 
+      setActiveTargetContext({
+        repoPath: repoPath || '',
+        changedFiles: Array.isArray(changedFiles) ? changedFiles : [],
+      });
+
       if (scanResult && scanResult.graph) {
         setCurrentAnalysisId(scanResult.analysisId || `analysis_${Date.now()}`);
         setGraphData(scanResult.graph);
@@ -362,6 +390,10 @@ export function DashboardPage() {
     setConnectedRepo(null);
     setIsDemoMode(true);
     setIsProjectHubOpen(false);
+    setActiveTargetContext({
+      repoPath: 'mern-sample',
+      changedFiles: ['server/models/user.js'],
+    });
     await executeAnalysis({ changedFiles: ['server/models/user.js'] });
   }, [executeAnalysis]);
 
@@ -423,7 +455,7 @@ export function DashboardPage() {
   }, [isProjectHubOpen, refreshRecentAnalyses]);
 
   return (
-    <div className="flex flex-col h-screen w-screen bg-slate-950 text-slate-100 overflow-hidden font-sans">
+    <div className="flex flex-col h-screen w-screen bg-[#0b0f19] text-slate-100 overflow-hidden font-sans">
       {/* Top Navigation Bar with Authentication Awareness */}
       <Header
         onAnalyze={executeAnalysis}
@@ -447,6 +479,7 @@ export function DashboardPage() {
         isDemoMode={isDemoMode}
         isProjectHubOpen={isProjectHubOpen}
         activeHubTab={activeHubTab}
+        activeTargetContext={activeTargetContext}
       />
 
       {/* Connected Repository Push Sync Bar */}
@@ -551,16 +584,32 @@ export function DashboardPage() {
               onSelectNode={setSelectedNodeId}
               isSimulating={isSimulating}
               simulatedFile={simulationData?.simulatedFile}
+              simulatedChangeType={simulationData?.changeType}
               onExitSimulation={handleExitSimulation}
-            />
+            >
+              {/* Context-Aware AI Chatbot docked inside Graph Workspace (persists in fullscreen mode) */}
+              <ChatAssistant
+                analysisId={currentAnalysisId}
+                selectedNodeId={selectedNodeId}
+                isSimulating={isSimulating}
+                simulatedFile={simulationData?.simulatedFile}
+              />
+            </GraphViewer>
 
-            {/* Context-Aware AI Chatbot docked inside Graph Workspace */}
-            <ChatAssistant
-              analysisId={currentAnalysisId}
-              selectedNodeId={selectedNodeId}
-              isSimulating={isSimulating}
-              simulatedFile={simulationData?.simulatedFile}
-            />
+            {/* Mobile / Tablet Impact Sidebar Toggle Button */}
+            <div className="lg:hidden absolute top-4 right-4 z-30 select-none">
+              <button
+                type="button"
+                onClick={() => setIsSidebarOpenMobile(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-900/90 hover:bg-slate-800 text-cyan-300 border border-cyan-500/50 shadow-xl backdrop-blur-md text-xs font-semibold active:scale-95 transition-all"
+                title="View Impact Findings & AI PR Review"
+              >
+                <ShieldAlert className="w-3.5 h-3.5 text-cyan-400" />
+                <span>
+                  Findings ({effectiveImpactData?.summary?.totalImpactedFiles ?? 0})
+                </span>
+              </button>
+            </div>
           </main>
 
           <ImpactSidebar
@@ -570,8 +619,11 @@ export function DashboardPage() {
             onSelectNode={setSelectedNodeId}
             isSimulating={isSimulating}
             simulatedFile={simulationData?.simulatedFile}
+            simulatedChangeType={simulationData?.changeType}
             onSimulateNode={handleSimulateNode}
             onExitSimulation={handleExitSimulation}
+            isMobileOpen={isSidebarOpenMobile}
+            onCloseMobile={() => setIsSidebarOpenMobile(false)}
           />
         </div>
       )}

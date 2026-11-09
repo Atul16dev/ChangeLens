@@ -282,6 +282,20 @@ export function ChatAssistant({ analysisId, selectedNodeId, isSimulating, simula
   const [position, setPosition] = useState(null); // { x, y }
   const [isMaximized, setIsMaximized] = useState(false);
   const [preMaximizeState, setPreMaximizeState] = useState(null);
+  const preMaximizeStateRef = useRef(null);
+
+  // Responsive mobile screen detection
+  const [isMobile, setIsMobile] = useState(() => {
+    return typeof window !== 'undefined' ? window.innerWidth < 640 : false;
+  });
+
+  useEffect(() => {
+    const handleResizeCheck = () => {
+      setIsMobile(window.innerWidth < 640);
+    };
+    window.addEventListener('resize', handleResizeCheck);
+    return () => window.removeEventListener('resize', handleResizeCheck);
+  }, []);
 
   const windowRef = useRef(null);
   const posRef = useRef({ x: 20, y: 20 });
@@ -317,6 +331,7 @@ export function ChatAssistant({ analysisId, selectedNodeId, isSimulating, simula
   // Handle window resize to keep floating window within bounds
   useEffect(() => {
     const handleWindowResize = () => {
+      if (isMaximized) return; // Keep maximized view intact without altering transform
       const maxX = Math.max(10, window.innerWidth - sizeRef.current.width - 10);
       const maxY = Math.max(10, window.innerHeight - sizeRef.current.height - 10);
       const clampedX = Math.min(Math.max(10, posRef.current.x), maxX);
@@ -329,7 +344,7 @@ export function ChatAssistant({ analysisId, selectedNodeId, isSimulating, simula
     };
     window.addEventListener('resize', handleWindowResize);
     return () => window.removeEventListener('resize', handleWindowResize);
-  }, []);
+  }, [isMaximized]);
 
   // Butter-smooth GPU-accelerated dragging via requestAnimationFrame
   const handleHeaderMouseDown = (e) => {
@@ -340,31 +355,62 @@ export function ChatAssistant({ analysisId, selectedNodeId, isSimulating, simula
 
     e.preventDefault();
     document.body.style.userSelect = 'none';
-    document.body.style.cursor = 'grabbing';
-
-    // If maximized, user can still freely drag!
-    if (isMaximized) {
-      setIsMaximized(false);
-    }
 
     const startMouseX = e.clientX;
     const startMouseY = e.clientY;
     const startX = posRef.current.x;
     const startY = posRef.current.y;
-    const currentWidth = sizeRef.current.width;
-    const currentHeight = sizeRef.current.height;
-
-    let pendingX = startX;
-    let pendingY = startY;
+    const wasMaximized = isMaximized;
+    let hasMoved = false;
 
     const onMouseMove = (moveEvent) => {
       const deltaX = moveEvent.clientX - startMouseX;
       const deltaY = moveEvent.clientY - startMouseY;
+
+      if (!hasMoved) {
+        if (Math.hypot(deltaX, deltaY) < 8) {
+          return; // Ignore tiny accidental movements or clicks
+        }
+        hasMoved = true;
+        document.body.style.cursor = 'grabbing';
+
+        if (wasMaximized) {
+          // User intentionally started dragging a maximized window -> unmaximize smoothly
+          setIsMaximized(false);
+          const restoredWidth = preMaximizeStateRef.current?.size?.width || DEFAULT_WIDTH;
+          const restoredHeight = preMaximizeStateRef.current?.size?.height || DEFAULT_HEIGHT;
+          const newX = Math.max(
+            10,
+            Math.min(window.innerWidth - restoredWidth - 10, moveEvent.clientX - restoredWidth / 2)
+          );
+          const newY = Math.max(
+            10,
+            Math.min(window.innerHeight - restoredHeight - 10, moveEvent.clientY - 20)
+          );
+
+          posRef.current = { x: newX, y: newY };
+          setPosition({ x: newX, y: newY });
+          sizeRef.current = { width: restoredWidth, height: restoredHeight };
+          setSize({ width: restoredWidth, height: restoredHeight });
+
+          if (windowRef.current) {
+            windowRef.current.style.width = `${restoredWidth}px`;
+            windowRef.current.style.height = `${restoredHeight}px`;
+            windowRef.current.style.transform = `translate3d(${newX}px, ${newY}px, 0)`;
+          }
+          return;
+        }
+      }
+
+      if (wasMaximized) return;
+
       const screenWidth = window.innerWidth;
       const screenHeight = window.innerHeight;
+      const currentWidth = sizeRef.current.width;
+      const currentHeight = sizeRef.current.height;
 
-      pendingX = Math.max(10, Math.min(screenWidth - currentWidth - 10, startX + deltaX));
-      pendingY = Math.max(10, Math.min(screenHeight - currentHeight - 10, startY + deltaY));
+      const pendingX = Math.max(10, Math.min(screenWidth - currentWidth - 10, startX + deltaX));
+      const pendingY = Math.max(10, Math.min(screenHeight - currentHeight - 10, startY + deltaY));
 
       if (!rafId.current) {
         rafId.current = requestAnimationFrame(() => {
@@ -387,9 +433,9 @@ export function ChatAssistant({ analysisId, selectedNodeId, isSimulating, simula
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('mouseup', onMouseUp);
 
-      // Commit final position to React state
-      setPosition({ x: pendingX, y: pendingY });
-      posRef.current = { x: pendingX, y: pendingY };
+      if (hasMoved && !wasMaximized) {
+        setPosition({ ...posRef.current });
+      }
     };
 
     window.addEventListener('mousemove', onMouseMove, { passive: true });
@@ -401,6 +447,8 @@ export function ChatAssistant({ analysisId, selectedNodeId, isSimulating, simula
     e.preventDefault();
     e.stopPropagation();
 
+    if (isMaximized) return; // Do not resize when maximized
+
     document.body.style.userSelect = 'none';
     const resizeCursor =
       direction === 'se' || direction === 'nw'
@@ -411,11 +459,6 @@ export function ChatAssistant({ analysisId, selectedNodeId, isSimulating, simula
         ? 'ew-resize'
         : 'ns-resize';
     document.body.style.cursor = resizeCursor;
-
-    // If maximized, user can still freely resize!
-    if (isMaximized) {
-      setIsMaximized(false);
-    }
 
     const startMouseX = e.clientX;
     const startMouseY = e.clientY;
@@ -498,37 +541,45 @@ export function ChatAssistant({ analysisId, selectedNodeId, isSimulating, simula
     window.addEventListener('mouseup', onMouseUp, { once: true });
   };
 
-  const handleToggleMaximize = () => {
+  const handleToggleMaximize = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
     if (isMaximized) {
-      if (preMaximizeState) {
-        setPosition(preMaximizeState.position);
-        setSize(preMaximizeState.size);
-        posRef.current = preMaximizeState.position;
-        sizeRef.current = preMaximizeState.size;
-        if (windowRef.current) {
-          windowRef.current.style.width = `${preMaximizeState.size.width}px`;
-          windowRef.current.style.height = `${preMaximizeState.size.height}px`;
-          windowRef.current.style.transform = `translate3d(${preMaximizeState.position.x}px, ${preMaximizeState.position.y}px, 0)`;
-        }
-      }
+      // Restore previous floating size and position
+      const targetPos = preMaximizeStateRef.current?.position || posRef.current || { x: 20, y: 70 };
+      const targetSize =
+        preMaximizeStateRef.current?.size || sizeRef.current || { width: DEFAULT_WIDTH, height: DEFAULT_HEIGHT };
+
+      setPosition(targetPos);
+      setSize(targetSize);
+      posRef.current = targetPos;
+      sizeRef.current = targetSize;
       setIsMaximized(false);
-    } else {
-      setPreMaximizeState({ position: { ...posRef.current }, size: { ...sizeRef.current } });
-      const newPos = { x: 20, y: 70 };
-      const newSize = {
-        width: Math.min(window.innerWidth - 40, 960),
-        height: window.innerHeight - 90,
-      };
-      setPosition(newPos);
-      setSize(newSize);
-      posRef.current = newPos;
-      sizeRef.current = newSize;
+
       if (windowRef.current) {
-        windowRef.current.style.width = `${newSize.width}px`;
-        windowRef.current.style.height = `${newSize.height}px`;
-        windowRef.current.style.transform = `translate3d(${newPos.x}px, ${newPos.y}px, 0)`;
+        windowRef.current.style.width = `${targetSize.width}px`;
+        windowRef.current.style.height = `${targetSize.height}px`;
+        windowRef.current.style.transform = `translate3d(${targetPos.x}px, ${targetPos.y}px, 0)`;
       }
+    } else {
+      // Save current geometry before maximizing
+      const currentState = {
+        position: { ...posRef.current },
+        size: { ...sizeRef.current },
+      };
+      setPreMaximizeState(currentState);
+      preMaximizeStateRef.current = currentState;
+
       setIsMaximized(true);
+
+      if (windowRef.current) {
+        windowRef.current.style.width = '';
+        windowRef.current.style.height = '';
+        windowRef.current.style.transform = '';
+      }
     }
   };
 
@@ -653,68 +704,113 @@ export function ChatAssistant({ analysisId, selectedNodeId, isSimulating, simula
         <aside
           ref={windowRef}
           aria-label="ChangeLens AI Assistant Window"
-          style={{
-            position: 'fixed',
-            left: 0,
-            top: 0,
-            transform: `translate3d(${position?.x ?? 20}px, ${position?.y ?? 20}px, 0)`,
-            width: `${size.width}px`,
-            height: `${size.height}px`,
-            zIndex: 50,
-            willChange: 'transform, width, height',
-          }}
-          className="bg-slate-900/95 border border-slate-700/80 rounded-2xl shadow-2xl backdrop-blur-xl flex flex-col overflow-hidden ring-1 ring-cyan-500/20"
+          onMouseDown={(e) => e.stopPropagation()}
+          onClick={(e) => e.stopPropagation()}
+          style={
+            isMobile
+              ? {
+                  position: 'fixed',
+                  left: '8px',
+                  right: '8px',
+                  top: '56px',
+                  bottom: '12px',
+                  zIndex: 50,
+                }
+              : isMaximized
+              ? {
+                  position: 'fixed',
+                  left: '16px',
+                  right: '16px',
+                  top: '64px',
+                  bottom: '20px',
+                  maxWidth: '1100px',
+                  margin: '0 auto',
+                  height: 'auto',
+                  transform: 'none',
+                  zIndex: 50,
+                }
+              : {
+                  position: 'fixed',
+                  left: 0,
+                  top: 0,
+                  transform: `translate3d(${position?.x ?? 20}px, ${position?.y ?? 20}px, 0)`,
+                  width: `${size.width}px`,
+                  height: `${size.height}px`,
+                  zIndex: 50,
+                  willChange: 'transform, width, height',
+                }
+          }
+          className="bg-[#101726]/98 border border-slate-700/90 rounded-2xl shadow-2xl backdrop-blur-xl flex flex-col overflow-hidden ring-1 ring-cyan-500/20"
         >
-          {/* Edge and Corner Resize Handles (Always Active) */}
-          {/* Corner Handles */}
-          <div
-            onMouseDown={(e) => handleResizeMouseDown('se', e)}
-            className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize flex items-center justify-center text-slate-500 hover:text-cyan-400 select-none z-20 group"
-            title="Resize window"
-          >
-            <svg className="w-2.5 h-2.5 rotate-90 opacity-60 group-hover:opacity-100" viewBox="0 0 6 6" fill="currentColor">
-              <path d="M6 6H5V5H6V6ZM6 4H5V3H6V4ZM4 6H3V5H4V6ZM6 2H5V1H6V2ZM2 6H1V5H2V6ZM4 4H3V3H4V4Z" />
-            </svg>
-          </div>
-          <div
-            onMouseDown={(e) => handleResizeMouseDown('sw', e)}
-            className="absolute bottom-0 left-0 w-3.5 h-3.5 cursor-sw-resize z-20"
-            title="Resize window"
-          />
-          <div
-            onMouseDown={(e) => handleResizeMouseDown('nw', e)}
-            className="absolute top-0 left-0 w-3.5 h-3.5 cursor-nw-resize z-20"
-            title="Resize window"
-          />
-          <div
-            onMouseDown={(e) => handleResizeMouseDown('ne', e)}
-            className="absolute top-0 right-0 w-3.5 h-3.5 cursor-ne-resize z-20"
-            title="Resize window"
-          />
+          {/* Edge and Corner Resize Handles (Desktop Only & Non-Maximized Only) */}
+          {!isMobile && !isMaximized && (
+            <>
+              {/* Corner Handles */}
+              <div
+                onMouseDown={(e) => handleResizeMouseDown('se', e)}
+                className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize flex items-center justify-center text-slate-500 hover:text-cyan-400 select-none z-20 group"
+                title="Resize window"
+              >
+                <svg className="w-2.5 h-2.5 rotate-90 opacity-60 group-hover:opacity-100" viewBox="0 0 6 6" fill="currentColor">
+                  <path d="M6 6H5V5H6V6ZM6 4H5V3H6V4ZM4 6H3V5H4V6ZM6 2H5V1H6V2ZM2 6H1V5H2V6ZM4 4H3V3H4V4Z" />
+                </svg>
+              </div>
+              <div
+                onMouseDown={(e) => handleResizeMouseDown('sw', e)}
+                className="absolute bottom-0 left-0 w-3.5 h-3.5 cursor-sw-resize z-20"
+                title="Resize window"
+              />
+              <div
+                onMouseDown={(e) => handleResizeMouseDown('nw', e)}
+                className="absolute top-0 left-0 w-3.5 h-3.5 cursor-nw-resize z-20"
+                title="Resize window"
+              />
+              <div
+                onMouseDown={(e) => handleResizeMouseDown('ne', e)}
+                className="absolute top-0 right-0 w-3.5 h-3.5 cursor-ne-resize z-20"
+                title="Resize window"
+              />
 
-          {/* Edge Handles */}
-          <div
-            onMouseDown={(e) => handleResizeMouseDown('e', e)}
-            className="absolute top-4 bottom-4 right-0 w-2 cursor-e-resize z-10 hover:bg-cyan-500/30 transition-colors"
-            title="Resize width"
-          />
-          <div
-            onMouseDown={(e) => handleResizeMouseDown('w', e)}
-            className="absolute top-4 bottom-4 left-0 w-2 cursor-w-resize z-10 hover:bg-cyan-500/30 transition-colors"
-            title="Resize width"
-          />
-          <div
-            onMouseDown={(e) => handleResizeMouseDown('s', e)}
-            className="absolute bottom-0 left-4 right-4 h-2 cursor-s-resize z-10 hover:bg-cyan-500/30 transition-colors"
-            title="Resize height"
-          />
+              {/* Edge Handles */}
+              <div
+                onMouseDown={(e) => handleResizeMouseDown('e', e)}
+                className="absolute top-4 bottom-4 right-0 w-2 cursor-e-resize z-10 hover:bg-cyan-500/30 transition-colors"
+                title="Resize width"
+              />
+              <div
+                onMouseDown={(e) => handleResizeMouseDown('w', e)}
+                className="absolute top-4 bottom-4 left-0 w-2 cursor-w-resize z-10 hover:bg-cyan-500/30 transition-colors"
+                title="Resize width"
+              />
+              <div
+                onMouseDown={(e) => handleResizeMouseDown('s', e)}
+                className="absolute bottom-0 left-4 right-4 h-2 cursor-s-resize z-10 hover:bg-cyan-500/30 transition-colors"
+                title="Resize height"
+              />
+            </>
+          )}
 
-          {/* Header (Acts as Drag Bar) */}
+          {/* Header (Acts as Drag Bar on Desktop) */}
           <div
-            onMouseDown={handleHeaderMouseDown}
-            onDoubleClick={handleToggleMaximize}
-            className="p-3 bg-slate-950/90 border-b border-slate-800 flex items-center justify-between cursor-grab active:cursor-grabbing select-none shrink-0"
-            title="Drag to move • Double-click to maximize"
+            onMouseDown={isMobile ? undefined : handleHeaderMouseDown}
+            onDoubleClick={
+              isMobile
+                ? undefined
+                : (e) => {
+                    if (e.target.closest('button') || e.target.closest('input')) return;
+                    handleToggleMaximize(e);
+                  }
+            }
+            className={`p-3 bg-[#0c1220]/95 border-b border-slate-700/80 flex items-center justify-between select-none shrink-0 ${
+              isMobile ? 'cursor-default' : isMaximized ? 'cursor-default' : 'cursor-grab active:cursor-grabbing'
+            }`}
+            title={
+              isMobile
+                ? 'ChangeLens Copilot'
+                : isMaximized
+                ? 'Double-click header to restore'
+                : 'Drag to move • Double-click to maximize'
+            }
           >
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-600 to-cyan-600 flex items-center justify-center shadow-md shrink-0">
@@ -732,12 +828,19 @@ export function ChatAssistant({ analysisId, selectedNodeId, isSimulating, simula
             {/* Draggable hint icon */}
             <div className="hidden sm:flex items-center gap-1.5 text-slate-500 hover:text-slate-300 px-2 py-0.5 rounded-md bg-slate-900/60 border border-slate-800 text-[10px] font-mono pointer-events-none">
               <Move className="w-2.5 h-2.5 text-cyan-400" />
-              <span>Drag to move</span>
+              <span>{isMaximized ? 'Maximized' : 'Drag to move'}</span>
             </div>
 
             <div className="flex items-center gap-1">
               <button
-                onClick={handleToggleMaximize}
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleToggleMaximize(e);
+                }}
+                onDoubleClick={(e) => {
+                  e.stopPropagation();
+                }}
                 title={isMaximized ? 'Restore Size' : 'Maximize Window'}
                 className="p-1.5 rounded-lg text-slate-400 hover:text-cyan-300 hover:bg-slate-800 transition-colors"
               >
@@ -745,7 +848,9 @@ export function ChatAssistant({ analysisId, selectedNodeId, isSimulating, simula
               </button>
 
               <button
-                onClick={() =>
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
                   setMessages([
                     {
                       role: 'assistant',
@@ -753,8 +858,9 @@ export function ChatAssistant({ analysisId, selectedNodeId, isSimulating, simula
                       provider: 'ChangeLens',
                       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                     },
-                  ])
-                }
+                  ]);
+                }}
+                onDoubleClick={(e) => e.stopPropagation()}
                 title="Clear Conversation"
                 className="p-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
               >
@@ -762,7 +868,12 @@ export function ChatAssistant({ analysisId, selectedNodeId, isSimulating, simula
               </button>
 
               <button
-                onClick={() => setIsOpen(false)}
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsOpen(false);
+                }}
+                onDoubleClick={(e) => e.stopPropagation()}
                 title="Close Assistant"
                 className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
               >
@@ -801,7 +912,7 @@ export function ChatAssistant({ analysisId, selectedNodeId, isSimulating, simula
                   className={`max-w-[88%] rounded-xl p-3 leading-relaxed shadow-sm ${
                     msg.role === 'user'
                       ? 'bg-cyan-600 text-white rounded-br-none'
-                      : 'bg-slate-950/90 text-slate-200 border border-slate-800 rounded-bl-none'
+                      : 'bg-[#131d2e] text-slate-100 border border-slate-700/80 rounded-bl-none'
                   }`}
                 >
                   <MarkdownMessageContent content={msg.content} isUser={msg.role === 'user'} />
@@ -833,7 +944,7 @@ export function ChatAssistant({ analysisId, selectedNodeId, isSimulating, simula
             ))}
 
             {loading && (
-              <div className="flex gap-2.5 justify-start items-center text-slate-400 text-xs pl-8">
+              <div className="flex gap-2.5 justify-start items-center text-slate-300 text-xs pl-8">
                 <RefreshCw className="w-3.5 h-3.5 text-purple-400 animate-spin" />
                 <span className="italic">Reasoning over AST dependency graph...</span>
               </div>
@@ -843,7 +954,7 @@ export function ChatAssistant({ analysisId, selectedNodeId, isSimulating, simula
           </div>
 
           {/* Quick Prompts Suggestions */}
-          <div className="px-3.5 py-2 bg-slate-950/50 border-t border-slate-800/80 flex items-center gap-1.5 overflow-x-auto no-scrollbar shrink-0">
+          <div className="px-3.5 py-2 bg-[#0e1627] border-t border-slate-700/80 flex items-center gap-1.5 overflow-x-auto no-scrollbar shrink-0">
             {quickPrompts.map((qp, idx) => {
               const Icon = qp.icon;
               return (
@@ -851,7 +962,7 @@ export function ChatAssistant({ analysisId, selectedNodeId, isSimulating, simula
                   key={idx}
                   onClick={() => handleSendMessage(qp.prompt)}
                   disabled={loading}
-                  className="shrink-0 px-2.5 py-1 rounded-full bg-slate-800/90 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 text-[10px] font-medium flex items-center gap-1 transition-all active:scale-95 disabled:opacity-40"
+                  className="shrink-0 px-2.5 py-1 rounded-full bg-[#182338] hover:bg-[#1f2d48] text-slate-200 hover:text-white border border-slate-600/80 text-[10px] font-medium flex items-center gap-1 transition-all active:scale-95 disabled:opacity-40 cursor-pointer shadow-sm"
                 >
                   <Icon className="w-3.5 h-3.5 text-cyan-400" />
                   <span>{qp.label}</span>
@@ -866,7 +977,7 @@ export function ChatAssistant({ analysisId, selectedNodeId, isSimulating, simula
               e.preventDefault();
               handleSendMessage();
             }}
-            className="p-3 bg-slate-950 border-t border-slate-800 flex items-center gap-2 shrink-0"
+            className="p-3 bg-[#0c1220] border-t border-slate-700/80 flex items-center gap-2 shrink-0"
           >
             <input
               ref={inputRef}
@@ -879,7 +990,7 @@ export function ChatAssistant({ analysisId, selectedNodeId, isSimulating, simula
                   : 'Ask about blast radius, tests, or risks...'
               }
               disabled={loading}
-              className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition-colors"
+              className="flex-1 bg-[#090e1a] border border-slate-600/80 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-cyan-400 transition-colors"
             />
 
             <button

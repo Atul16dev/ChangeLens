@@ -175,6 +175,52 @@ test("ChangeLens REST API Endpoints Suite", async (t) => {
     assert.ok(body.data.explanation.prCommentMarkdown.includes("ChangeLens Impact Analysis Report"));
   });
 
+  await t.test("POST /api/v1/analyses/:id/simulate computes deletion What-If scenario correctly", async () => {
+    assert.ok(createdAnalysisId);
+
+    const res = await fetch(`${baseUrl}/api/v1/analyses/${createdAnalysisId}/simulate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        simulatedFile: "server/models/user.js",
+        changeType: "deleted",
+      }),
+    });
+
+    assert.equal(res.status, 200);
+    const body = await res.json();
+    assert.equal(body.success, true);
+    assert.equal(body.data.simulatedFile, "server/models/user.js");
+    assert.equal(body.data.changeType, "deleted");
+    assert.equal(body.data.summary.brokenImportsCount, 1);
+    assert.equal(body.data.summary.criticalAlerts, true);
+    assert.equal(body.data.summary.impactedFilesCount, 3);
+    assert.equal(body.data.summary.directDependentsCount, 1);
+    assert.equal(body.data.summary.transitiveDependentsCount, 2);
+
+    // Verify recolored graph nodes for deleted scenario
+    const { nodes, edges } = body.data.graph;
+    const simulatedRoot = nodes.find((n) => n.id === "server/models/user.js");
+    assert.ok(simulatedRoot);
+    assert.equal(simulatedRoot.data.isDeleted, true);
+    assert.equal(simulatedRoot.data.severity, "DELETED");
+
+    const directConsumer = nodes.find((n) => n.id === "server/controllers/user-controller.js");
+    assert.ok(directConsumer);
+    assert.equal(directConsumer.data.isImpacted, true);
+    assert.equal(directConsumer.data.severity, "CRITICAL");
+
+    // Verify broken edge metadata
+    const brokenEdge = edges.find((e) => e.data.isBrokenEdge || e.data.imported === "server/models/user.js");
+    assert.ok(brokenEdge);
+    assert.equal(brokenEdge.data.isBrokenEdge, true);
+    assert.equal(brokenEdge.data.severity, "CRITICAL");
+
+    // Verify critical explanation generated
+    assert.equal(body.data.explanation.riskLevel, "CRITICAL");
+    assert.ok(body.data.explanation.prCommentMarkdown.includes("CRITICAL BROKEN IMPORTS DETECTED"));
+  });
+
   await t.test("POST /api/v1/analyses/:id/simulate validates simulatedFile input", async () => {
     assert.ok(createdAnalysisId);
 
@@ -200,5 +246,38 @@ test("ChangeLens REST API Endpoints Suite", async (t) => {
     assert.equal(body.success, false);
     assert.equal(body.error.code, "ROUTE_NOT_FOUND");
     assert.ok(body.error.requestId);
+  });
+
+  await t.test("GET /api/v1/analyses/:id returns 404 for non-existent analysis ID", async () => {
+    const res = await fetch(`${baseUrl}/api/v1/analyses/analysis_non_existent_id_9999`);
+    assert.equal(res.status, 404);
+
+    const body = await res.json();
+    assert.equal(body.success, false);
+    assert.equal(body.error.code, "ANALYSIS_NOT_FOUND");
+  });
+
+  await t.test("GET /api/v1/analyses/:id/graph returns 404 for non-existent analysis ID", async () => {
+    const res = await fetch(`${baseUrl}/api/v1/analyses/analysis_non_existent_id_9999/graph`);
+    assert.equal(res.status, 404);
+
+    const body = await res.json();
+    assert.equal(body.success, false);
+    assert.equal(body.error.code, "ANALYSIS_NOT_FOUND");
+  });
+
+  await t.test("POST /api/v1/analyze rejects non-existent target repository path", async () => {
+    const res = await fetch(`${baseUrl}/api/v1/analyze`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        repoPath: "some/invalid/path/that/does/not/exist_12345",
+      }),
+    });
+
+    assert.equal(res.status, 500);
+    const body = await res.json();
+    assert.equal(body.success, false);
+    assert.ok(body.error.message.includes("does not exist"));
   });
 });

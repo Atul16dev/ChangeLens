@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import crypto from "node:crypto";
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
@@ -14,6 +15,14 @@ import { bridgeRoutes } from "./routes/bridge.routes.js";
 
 export function createApp({ sessionSecret, sessionStore } = {}) {
   const app = express();
+
+  // Trust first proxy hop (Render, Cloudflare, AWS ALB) for secure cookies and accurate req.ip
+  app.set("trust proxy", 1);
+
+  const isProd = process.env.NODE_ENV === "production";
+  if (isProd && !sessionSecret && (!process.env.SESSION_SECRET || process.env.SESSION_SECRET.includes("change-me"))) {
+    throw new Error("[SECURITY CRITICAL] SESSION_SECRET must be configured with a strong secret in production.");
+  }
 
   const secret = sessionSecret || process.env.SESSION_SECRET || "changelens-secure-session-key-entropy-32-chars";
 
@@ -41,6 +50,9 @@ export function createApp({ sessionSecret, sessionStore } = {}) {
   if (process.env.FRONTEND_ORIGIN) {
     allowedOrigins.push(process.env.FRONTEND_ORIGIN);
   }
+  if (process.env.FRONTEND_URL && !allowedOrigins.includes(process.env.FRONTEND_URL)) {
+    allowedOrigins.push(process.env.FRONTEND_URL);
+  }
 
   app.use(
     cors({
@@ -53,7 +65,7 @@ export function createApp({ sessionSecret, sessionStore } = {}) {
         ) {
           return callback(null, true);
         }
-        callback(new Error("CORS policy violation"));
+        callback(null, false);
       },
       credentials: true,
     })
@@ -81,7 +93,7 @@ export function createApp({ sessionSecret, sessionStore } = {}) {
 
   // Request ID middleware
   app.use((req, res, next) => {
-    req.id = req.headers["x-request-id"] || `req_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
+    req.id = req.headers["x-request-id"] || `req_${Date.now()}_${crypto.randomUUID().slice(0, 8)}`;
     res.setHeader("X-Request-Id", req.id);
     next();
   });

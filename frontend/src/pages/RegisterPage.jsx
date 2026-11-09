@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import {
@@ -8,8 +8,14 @@ import {
 import { BrandLogo } from '../components/BrandLogo.jsx';
 
 export function RegisterPage() {
-  const { register } = useAuth();
+  const { register, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/app', { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -55,23 +61,8 @@ export function RegisterPage() {
     </span>
   );
 
-  const InputField = ({ id, label, type, value, onChange, placeholder, icon: Icon, rightSlot, extra }) => (
-    <div>
-      <label className="block text-xs font-semibold text-slate-300 mb-1.5" htmlFor={id}>{label}</label>
-      <div className="relative">
-        <Icon className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-        <input
-          id={id} type={type} value={value} onChange={onChange}
-          placeholder={placeholder} required
-          className={`w-full bg-slate-950/80 border rounded-xl pl-10 pr-${rightSlot ? '10' : '4'} py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 font-mono transition-all ${extra || 'border-slate-700/80 focus:border-cyan-500 focus:ring-cyan-500/20'}`}
-        />
-        {rightSlot}
-      </div>
-    </div>
-  );
-
   return (
-    <div className="h-screen bg-[#070b14] text-slate-100 font-sans flex flex-col items-center justify-center overflow-hidden relative px-4">
+    <div className="min-h-screen bg-[#070b14] text-slate-100 font-sans flex flex-col items-center justify-center py-10 px-4 relative overflow-x-hidden">
 
       {/* Ambient glow */}
       <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-indigo-600/10 blur-[140px] rounded-full pointer-events-none" />
@@ -102,7 +93,7 @@ export function RegisterPage() {
         <form onSubmit={handleSubmit} className="space-y-3">
 
           {/* Row 1: Name + Email */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {/* Name */}
             <div>
               <label className="block text-xs font-semibold text-slate-300 mb-1.5" htmlFor="name">Full Name</label>
@@ -131,7 +122,7 @@ export function RegisterPage() {
           </div>
 
           {/* Row 2: Password + Confirm */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {/* Password */}
             <div>
               <label className="block text-xs font-semibold text-slate-300 mb-1.5" htmlFor="password">Password</label>

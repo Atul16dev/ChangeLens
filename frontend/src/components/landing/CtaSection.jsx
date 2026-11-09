@@ -8,11 +8,11 @@ export function CtaSection() {
   const { isAuthenticated } = useAuth();
 
   return (
-    <section className="py-14 sm:py-20 md:py-28 relative overflow-hidden bg-slate-950">
+    <section className="py-14 sm:py-20 md:py-28 relative overflow-hidden bg-[#0b0f19]">
       {/* Background glow banner */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <ScrollReveal animation="scale-up" duration={850}>
-          <div className="relative rounded-3xl bg-gradient-to-tr from-cyan-950/60 via-slate-900/90 to-indigo-950/60 border border-cyan-500/30 p-6 sm:p-12 lg:p-16 overflow-hidden shadow-2xl shadow-cyan-950/30 text-center space-y-4 sm:space-y-6 group">
+          <div className="relative rounded-3xl bg-gradient-to-tr from-[#101726] via-[#131d2e] to-[#0f172a] border border-cyan-500/40 p-6 sm:p-12 lg:p-16 overflow-hidden shadow-2xl shadow-cyan-950/30 text-center space-y-4 sm:space-y-6 group">
             {/* Ambient Radial Light with continuous breathing */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[650px] h-[350px] bg-cyan-500/15 blur-[140px] rounded-full pointer-events-none animate-pulse-glow" />
 

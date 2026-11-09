@@ -1,4 +1,6 @@
 import React, { useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext.jsx';
 import { Navbar } from '../components/landing/Navbar.jsx';
 import { HeroSection } from '../components/landing/HeroSection.jsx';
 import { ProblemSection } from '../components/landing/ProblemSection.jsx';
@@ -10,12 +12,24 @@ import { CtaSection } from '../components/landing/CtaSection.jsx';
 import { Footer } from '../components/landing/Footer.jsx';
 
 export function LandingPage() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { refreshUser } = useAuth();
+
   useEffect(() => {
     document.title = 'ChangeLens — Know What Your Code Changes Will Break';
   }, []);
 
+  useEffect(() => {
+    if (location.search.includes('auth=success')) {
+      refreshUser().then(() => {
+        navigate('/app', { replace: true });
+      });
+    }
+  }, [location.search, navigate, refreshUser]);
+
   return (
-    <div className="min-h-screen bg-[#070b14] text-slate-100 font-sans selection:bg-cyan-500/30 selection:text-cyan-200 relative overflow-x-hidden">
+    <div className="min-h-screen bg-[#0b0f19] text-slate-100 font-sans selection:bg-cyan-500/30 selection:text-cyan-200 relative overflow-x-hidden">
       {/* Permanent Ambient Background Grid & Floating Glow Orbs */}
       <div className="fixed inset-0 pointer-events-none z-0 bg-grid-pattern opacity-60" />
       <div className="fixed top-[-10%] left-[-10%] w-[600px] h-[600px] bg-cyan-600/10 rounded-full blur-[160px] pointer-events-none animate-pulse-glow z-0" />

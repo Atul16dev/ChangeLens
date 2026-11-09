@@ -457,5 +457,39 @@ test("ChangeLens Authentication System Test Suite", async (t) => {
     assert.equal(removeAvatarRes.status, 200);
     const removeBody = await removeAvatarRes.json();
     assert.equal(removeBody.data.user.avatar, null);
+
+    // Test Cloudinary upload and purge flow when Cloudinary is configured
+    process.env.CLOUDINARY_CLOUD_NAME = "mock-cloud";
+    process.env.CLOUDINARY_API_KEY = "111222333";
+    process.env.CLOUDINARY_API_SECRET = "secret444";
+
+    const { v2: cloudinary } = await import("cloudinary");
+    const originalUpload = cloudinary.uploader.upload;
+    const originalDestroy = cloudinary.uploader.destroy;
+
+    cloudinary.uploader.upload = async () => ({
+      secure_url: "https://res.cloudinary.com/mock-cloud/image/upload/v17000/changelens/avatars/user_test.webp",
+      public_id: "changelens/avatars/user_test",
+    });
+
+    try {
+      const cloudUpdateRes = await fetch(`${baseUrl}/api/v1/auth/profile`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", Cookie: sessionCookie },
+        body: JSON.stringify({ avatar: fakeAvatar }),
+      });
+      assert.equal(cloudUpdateRes.status, 200);
+      const cloudUpdateBody = await cloudUpdateRes.json();
+      assert.equal(
+        cloudUpdateBody.data.user.avatar,
+        "https://res.cloudinary.com/mock-cloud/image/upload/v17000/changelens/avatars/user_test.webp"
+      );
+    } finally {
+      cloudinary.uploader.upload = originalUpload;
+      cloudinary.uploader.destroy = originalDestroy;
+      delete process.env.CLOUDINARY_CLOUD_NAME;
+      delete process.env.CLOUDINARY_API_KEY;
+      delete process.env.CLOUDINARY_API_SECRET;
+    }
   });
 });

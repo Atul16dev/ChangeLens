@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { forgotPassword } from '../services/authApi.js';
+import { BrandLogo } from '../components/BrandLogo.jsx';
 import { Lock, Mail, AlertCircle, ArrowLeft, RefreshCw } from 'lucide-react';
 
 export function ForgotPasswordPage() {
@@ -34,14 +35,12 @@ export function ForgotPasswordPage() {
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[350px] bg-rose-600/10 blur-[120px] rounded-full pointer-events-none" />
 
       {/* Brand Header */}
-      <div className="flex flex-col items-center mb-6 relative z-10 text-center">
-        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 via-indigo-600 to-violet-700 p-0.5 shadow-xl shadow-indigo-500/25 border border-indigo-400/30 flex items-center justify-center mb-3">
-          <Lock className="w-6 h-6 text-white" />
-        </div>
+      <div className="flex flex-col items-center mb-6 relative z-10 text-center gap-2">
+        <BrandLogo size="lg" />
         <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">
           Reset Account Password
         </h1>
-        <p className="text-xs text-slate-400 mt-1 max-w-sm">
+        <p className="text-xs text-slate-400 max-w-sm">
           Enter your registered email address and we will send a 6-digit confirmation code to reset your password.
         </p>
       </div>
@@ -70,7 +69,7 @@ export function ForgotPasswordPage() {
                 placeholder="dev@company.com"
                 required
                 autoFocus
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-rose-500 font-mono text-xs"
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500 font-mono"
               />
             </div>
           </div>

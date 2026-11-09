@@ -18,6 +18,11 @@ import {
   getGoogleAuthUrl,
   verifyGoogleCode,
 } from "../services/google-auth.js";
+import {
+  isCloudinaryConfigured,
+  uploadAvatar,
+  deleteAvatar,
+} from "../services/cloudinary.js";
 
 // Validation helper for password complexity
 function validatePasswordStrength(password) {
@@ -458,13 +463,34 @@ export const authController = {
             error: { code: "VALIDATION_ERROR", message: "Avatar must be a valid image string or null." },
           });
         }
-        if (avatar && avatar.length > 3 * 1024 * 1024) {
+        if (avatar && avatar.length > 5 * 1024 * 1024) {
           return res.status(400).json({
             success: false,
-            error: { code: "VALIDATION_ERROR", message: "Avatar image is too large. Max size 2MB." },
+            error: { code: "VALIDATION_ERROR", message: "Avatar image is too large. Max size 5MB." },
           });
         }
-        updates.avatar = avatar;
+
+        if (avatar === null) {
+          if (req.user?.avatar && isCloudinaryConfigured() && req.user.avatar.includes("cloudinary.com")) {
+            deleteAvatar(req.user.avatar).catch(() => {});
+          }
+          updates.avatar = null;
+        } else if (isCloudinaryConfigured() && (avatar.startsWith("data:image/") || avatar.startsWith("http"))) {
+          try {
+            const uploadedUrl = await uploadAvatar(avatar, req.user.id);
+            updates.avatar = uploadedUrl;
+          } catch (uploadErr) {
+            return res.status(502).json({
+              success: false,
+              error: {
+                code: "MEDIA_UPLOAD_FAILED",
+                message: `Failed to upload avatar to cloud storage: ${uploadErr.message}`,
+              },
+            });
+          }
+        } else {
+          updates.avatar = avatar;
+        }
       }
 
       if (Object.keys(updates).length === 0) {
@@ -764,14 +790,15 @@ export const authController = {
           authProvider: "google",
           googleId: googleProfile.googleId,
           isEmailVerified: 1,
+          avatar: googleProfile.picture || null,
         });
       }
 
       req.session.regenerate((err) => {
         if (err) return next(err);
         req.session.userId = user.id;
-        const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
-        return res.redirect(`${frontendUrl}/?auth=success`);
+        const frontendUrl = process.env.FRONTEND_URL || process.env.FRONTEND_ORIGIN || "http://localhost:5173";
+        return res.redirect(`${frontendUrl}/app`);
       });
     } catch (err) {
       next(err);

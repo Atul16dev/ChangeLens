@@ -16,6 +16,13 @@ let maxUserHistoryLimit = parseInt(process.env.MAX_USER_HISTORY_LIMIT, 10) || DE
 const analyses = new Map();
 
 /**
+ * Escapes special characters for safe regular expression queries.
+ */
+function escapeRegex(string) {
+  return typeof string === "string" ? string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") : "";
+}
+
+/**
  * Puts an entry into the in-memory LRU cache, evicting the least recently used
  * item if the cache has reached maxRamCacheSize.
  */
@@ -221,7 +228,7 @@ export const analysesStore = {
         }
 
         if (search && typeof search === "string" && search.trim()) {
-          const s = search.trim();
+          const s = escapeRegex(search.trim());
           filter.$or = [
             { title: { $regex: s, $options: "i" } },
             { targetDir: { $regex: s, $options: "i" } },
@@ -232,6 +239,7 @@ export const analysesStore = {
         const [total, docs] = await Promise.all([
           Analysis.countDocuments(filter),
           Analysis.find(filter)
+            .select("analysisId title targetDir changedFiles status summary isPinned expireAt createdAt")
             .sort({ isPinned: -1, createdAt: -1 })
             .skip(skip)
             .limit(cleanLimit)
@@ -382,13 +390,12 @@ export const analysesStore = {
       try {
         const query = { analysisId };
         if (userId) {
-          // If userId provided, only allow deleting if owned by this user or unowned
-          const doc = await Analysis.findOne(query);
-          if (doc && doc.user && doc.user.toString() !== userId.toString()) {
-            return false; // Forbidden: not owner
-          }
+          query.$or = [{ user: userId }, { user: null }];
         }
-        await Analysis.deleteOne(query);
+        const res = await Analysis.deleteOne(query);
+        if (res.deletedCount === 0 && !memRecord) {
+          return false;
+        }
       } catch (err) {
         console.warn("[MongoDB] Failed to delete analysis record:", err.message);
       }

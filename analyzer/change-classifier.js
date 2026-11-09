@@ -54,6 +54,7 @@ export function classifyImpactPolicies({
   const staleRenameFindings = [];
   const addedFileFindings = [];
   const modifiedFileChanges = [];
+  const deletedFileChanges = [];
 
   // Policy 0A: BROKEN SYMBOL REFERENCES (🚨 CRITICAL MISSING EXPORT CHECK)
   const brokenSymbolFindings = symbolTable && resolvedDependencies.length > 0
@@ -72,7 +73,9 @@ export function classifyImpactPolicies({
             type: "broken_import",
             severity: IMPACT_SEVERITY.CRITICAL,
             deletedFile: dep.targetPath || dep.specifier,
+            changedFile: dep.targetPath || dep.specifier,
             affectedFile: dep.sourcePath,
+            depth: 1,
             evidence: {
               specifier: dep.specifier,
               location: dep.location,
@@ -91,6 +94,7 @@ export function classifyImpactPolicies({
 
     // Policy 1: DELETED Files (🚨 CRITICAL BROKEN IMPORT CHECK)
     if (status === "deleted") {
+      deletedFileChanges.push(filePath);
       const dependents = graph.getDependents(filePath);
 
       for (const dep of dependents) {
@@ -101,7 +105,9 @@ export function classifyImpactPolicies({
             type: "broken_import",
             severity: IMPACT_SEVERITY.CRITICAL,
             deletedFile: filePath,
+            changedFile: filePath,
             affectedFile: dep.consumerPath,
+            depth: 1,
             evidence: {
               specifier: dep.specifier,
               location: dep.location,
@@ -124,7 +130,9 @@ export function classifyImpactPolicies({
           severity: IMPACT_SEVERITY.HIGH,
           oldPath,
           newPath: filePath,
+          changedFile: filePath,
           affectedFile: dep.consumerPath,
+          depth: 1,
           evidence: {
             specifier: dep.specifier,
             location: dep.location,
@@ -147,6 +155,7 @@ export function classifyImpactPolicies({
         type: "new_file_dependencies",
         severity: IMPACT_SEVERITY.INFO,
         addedFile: filePath,
+        changedFile: filePath,
         internalDependenciesCount: outgoing.length,
         dependencies: outgoing.map((d) => ({
           target: d.target,
@@ -166,10 +175,11 @@ export function classifyImpactPolicies({
     }
   }
 
-  // Run BFS blast radius on all modified/untracked/renamed files
+  // Run BFS blast radius on all modified/untracked/renamed/deleted files
+  const allChangedFilesForBfs = [...modifiedFileChanges, ...deletedFileChanges];
   const blastRadiusResult = calculateBlastRadius({
     graph,
-    changedFiles: modifiedFileChanges,
+    changedFiles: allChangedFilesForBfs,
     maxDepth,
   });
 
@@ -195,11 +205,20 @@ export function classifyImpactPolicies({
     (m) => typeof m === "object" && Array.isArray(m.symbols) && m.symbols.length > 0
   );
 
-  const rawFindings = hasSymbolFilter && symbolBlastResult
+  const brokenAffectedSet = new Set(brokenImportFindings.map((b) => b.affectedFile));
+  const rawFindings = (hasSymbolFilter && symbolBlastResult
     ? symbolBlastResult.allFindings
-    : blastRadiusResult.findings;
+    : blastRadiusResult.findings
+  ).filter((f) => {
+    // Avoid duplicating depth-1 findings that are already captured as critical broken imports
+    if (f.depth === 1 && brokenAffectedSet.has(f.affectedFile)) {
+      return false;
+    }
+    return true;
+  });
 
   // Assign severities and actionable recommendations to blast radius findings
+  const deletedFilesSet = new Set(deletedFileChanges);
   const prioritizedBlastRadiusFindings = rawFindings.map((f) => {
     let severity = IMPACT_SEVERITY.LOW;
     if (f.depth === 1) {
@@ -212,7 +231,9 @@ export function classifyImpactPolicies({
     const symbolImpact = f.symbolImpact || symbolImpactMap.get(key) || null;
 
     let explanation = f.explanation;
-    if (symbolImpact?.impactedSymbols?.length > 0 && !explanation.includes("Consumed symbol")) {
+    if (deletedFilesSet.has(f.changedFile)) {
+      explanation = `${f.affectedFile} is transitively affected because it depends on downstream consumers broken by deleted "${f.changedFile}" (Depth ${f.depth}).`;
+    } else if (symbolImpact?.impactedSymbols?.length > 0 && !explanation.includes("Consumed symbol")) {
       explanation += ` Consumed symbol(s): [${symbolImpact.impactedSymbols.join(", ")}].`;
     }
 
@@ -245,17 +266,45 @@ export function classifyImpactPolicies({
     ...addedFileFindings,
   ].sort((a, b) => (severityRank[a.severity] || 99) - (severityRank[b.severity] || 99));
 
-  const impactedCount = hasSymbolFilter && symbolBlastResult
-    ? symbolBlastResult.summary.totalImpactedFiles
-    : blastRadiusResult.summary.totalImpactedFiles;
+  // Accurately compute impact metrics across all findings (broken imports, broken symbols, blast radius)
+  const allImpactedFilesSet = new Set(allPrioritizedFindings.map((f) => f.affectedFile).filter(Boolean));
+  const directDependentsSet = new Set(
+    allPrioritizedFindings
+      .filter((f) => f.depth === 1 || f.type === "broken_import")
+      .map((f) => f.affectedFile)
+      .filter(Boolean)
+  );
+  const transitiveDependentsSet = new Set(
+    allPrioritizedFindings
+      .filter((f) => f.depth > 1 && !directDependentsSet.has(f.affectedFile))
+      .map((f) => f.affectedFile)
+      .filter(Boolean)
+  );
 
-  const directCount = hasSymbolFilter && symbolBlastResult
-    ? symbolBlastResult.summary.directDependentsCount
-    : blastRadiusResult.summary.directDependentsCount;
+  const impactedCount = allImpactedFilesSet.size;
+  const directCount = directDependentsSet.size;
+  const transitiveCount = transitiveDependentsSet.size;
 
-  const transitiveCount = hasSymbolFilter && symbolBlastResult
-    ? symbolBlastResult.summary.transitiveDependentsCount
-    : blastRadiusResult.summary.transitiveDependentsCount;
+  return {
+    summary: {
+      totalChanges: changes.length,
+      brokenImportsCount: brokenImportFindings.length,
+      brokenSymbolsCount: brokenSymbolFindings.length,
+      staleRenamesCount: staleRenameFindings.length,
+      impactedFilesCount: impactedCount,
+      directDependentsCount: directCount,
+      transitiveDependentsCount: transitiveCount,
+      isolatedConsumersCount: symbolBlastResult?.summary?.isolatedConsumersCount || 0,
+      criticalAlerts: brokenImportFindings.length > 0 || brokenSymbolFindings.length > 0,
+    },
+    brokenImports: brokenImportFindings,
+    brokenSymbols: brokenSymbolFindings,
+    staleRenames: staleRenameFindings,
+    blastRadius: prioritizedBlastRadiusFindings,
+    isolatedFindings: symbolBlastResult?.isolatedFindings || [],
+    addedFiles: addedFileFindings,
+    allFindings: allPrioritizedFindings,
+  };
 
   return {
     summary: {

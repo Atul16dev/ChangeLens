@@ -10,6 +10,17 @@ import {
 const execFileAsync = promisify(execFile);
 
 /**
+ * Scrubs access tokens and embedded credentials from git commands and error strings.
+ */
+export function maskGitCredentials(text) {
+  if (typeof text !== "string") return String(text || "");
+  return text
+    .replace(/(https?:\/\/)([^@\s/:]+):([^@\s/]+)@/gi, "$1***:***@")
+    .replace(/x-access-token:[^@\s/]+@/gi, "x-access-token:***@")
+    .replace(/ghp_[a-zA-Z0-9]{20,}/g, "ghp_***");
+}
+
+/**
  * Executes a Git command safely using execFile (without shell injection).
  * 
  * @param {Array<string>} args - Git arguments
@@ -28,8 +39,10 @@ export async function executeGit(args, cwd, options = {}) {
     });
     return { stdout: stdout.trim(), stderr: stderr.trim() };
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    throw new Error(`Git command failed [git ${args.join(" ")}]: ${message}`);
+    const rawMessage = error instanceof Error ? error.message : String(error);
+    const safeArgs = args.map((arg) => maskGitCredentials(arg)).join(" ");
+    const safeMessage = maskGitCredentials(rawMessage);
+    throw new Error(`Git command failed [git ${safeArgs}]: ${safeMessage}`);
   }
 }
 

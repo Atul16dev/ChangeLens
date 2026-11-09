@@ -148,14 +148,13 @@ export function ProfileModal({ isOpen, onClose }) {
         payload.avatar = avatar; // null or base64 data url
       }
       await updateProfile(payload);
-      setSuccessMsg('Profile and photo updated successfully!');
       setAvatarChanged(false);
-      setTimeout(() => {
-        setSuccessMsg('');
-      }, 3000);
+      setLoading(false);
+      if (onClose) {
+        onClose();
+      }
     } catch (err) {
       setErrorMsg(err.message || 'Failed to update profile. Please try again.');
-    } finally {
       setLoading(false);
     }
   };
@@ -166,7 +165,7 @@ export function ProfileModal({ isOpen, onClose }) {
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md bg-slate-900 border border-slate-700/90 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] my-auto animate-in zoom-in-95 duration-200"
+        className="w-full max-w-md bg-[#101726] border border-slate-700/90 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] my-auto animate-in zoom-in-95 duration-200"
         role="dialog"
         aria-modal="true"
         aria-labelledby="profile-modal-title"
@@ -176,7 +175,7 @@ export function ProfileModal({ isOpen, onClose }) {
         }}
       >
         {/* Modal Header */}
-        <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/70 shrink-0">
+        <div className="px-6 py-4 border-b border-slate-700/80 flex items-center justify-between bg-[#0c1220] shrink-0">
           <div className="flex items-center gap-2">
             <User className="w-4 h-4 text-indigo-400" />
             <h3 id="profile-modal-title" className="text-base font-bold text-white tracking-tight">
@@ -196,7 +195,7 @@ export function ProfileModal({ isOpen, onClose }) {
         {/* Modal Body */}
         <form onSubmit={handleSubmit} className="p-6 space-y-5 overflow-y-auto">
           {/* Circular Profile Avatar Header with Photo Upload Option */}
-          <div className="flex items-center gap-4 p-4 rounded-xl bg-slate-950/70 border border-slate-800/90">
+          <div className="flex items-center gap-4 p-4 rounded-xl bg-[#0e1626] border border-slate-700/80 shadow-sm">
             <div className="relative group shrink-0">
               {/* Circular Avatar Container */}
               <div className="w-20 h-20 rounded-full border-2 border-indigo-500/40 shadow-md shadow-indigo-950/50 overflow-hidden bg-slate-900 flex items-center justify-center relative">
@@ -269,8 +268,8 @@ export function ProfileModal({ isOpen, onClose }) {
                 )}
               </div>
 
-              <p className="text-[11px] text-slate-500 flex items-center gap-1 pt-0.5">
-                <Calendar className="w-3 h-3 text-slate-500" />
+              <p className="text-[11px] text-slate-400 flex items-center gap-1 pt-0.5">
+                <Calendar className="w-3 h-3 text-slate-400" />
                 <span>Joined {memberSince}</span>
               </p>
             </div>
@@ -295,7 +294,7 @@ export function ProfileModal({ isOpen, onClose }) {
           <div className="space-y-4">
             {/* Display Name Input */}
             <div className="space-y-1.5">
-              <label htmlFor="profile-name" className="block text-xs font-semibold text-slate-300">
+              <label htmlFor="profile-name" className="block text-xs font-semibold text-slate-200">
                 Display Name
               </label>
               <div className="relative">
@@ -309,7 +308,7 @@ export function ProfileModal({ isOpen, onClose }) {
                   required
                   minLength={2}
                   maxLength={100}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg pl-9 pr-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
+                  className="w-full bg-[#090e1a] border border-slate-600/80 rounded-lg pl-9 pr-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 transition-colors"
                 />
               </div>
             </div>
@@ -317,35 +316,35 @@ export function ProfileModal({ isOpen, onClose }) {
             {/* Email Address (Read-only) */}
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <label htmlFor="profile-email" className="block text-xs font-semibold text-slate-300">
+                <label htmlFor="profile-email" className="block text-xs font-semibold text-slate-200">
                   Email Address
                 </label>
-                <span className="text-[11px] text-slate-500">Verified identity</span>
+                <span className="text-[11px] text-slate-400">Verified identity</span>
               </div>
               <div className="relative">
-                <Mail className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <input
                   id="profile-email"
                   type="email"
                   value={user.email}
                   disabled
-                  className="w-full bg-slate-950/50 border border-slate-800/60 rounded-lg pl-9 pr-3 py-2 text-sm text-slate-400 cursor-not-allowed select-none font-mono text-xs"
+                  className="w-full bg-[#090e1a]/80 border border-slate-700/70 rounded-lg pl-9 pr-3 py-2 text-sm text-slate-300 cursor-not-allowed select-none font-mono text-xs"
                 />
               </div>
             </div>
 
             {/* Account Metadata Grid */}
             <div className="grid grid-cols-2 gap-3 pt-1">
-              <div className="p-2.5 rounded-lg bg-slate-950 border border-slate-800/80">
-                <span className="text-[10px] uppercase font-semibold text-slate-500 block">Auth Provider</span>
-                <span className="text-xs font-medium text-slate-300 capitalize flex items-center gap-1.5 mt-0.5">
+              <div className="p-2.5 rounded-lg bg-[#0e1626] border border-slate-700/80 shadow-sm">
+                <span className="text-[10px] uppercase font-semibold text-slate-400 block">Auth Provider</span>
+                <span className="text-xs font-medium text-slate-200 capitalize flex items-center gap-1.5 mt-0.5">
                   <KeyRound className="w-3.5 h-3.5 text-indigo-400" />
                   {user.auth_provider || 'Local Account'}
                 </span>
               </div>
 
-              <div className="p-2.5 rounded-lg bg-slate-950 border border-slate-800/80">
-                <span className="text-[10px] uppercase font-semibold text-slate-500 block">Status</span>
+              <div className="p-2.5 rounded-lg bg-[#0e1626] border border-slate-700/80 shadow-sm">
+                <span className="text-[10px] uppercase font-semibold text-slate-400 block">Status</span>
                 <span className="text-xs font-medium text-emerald-400 flex items-center gap-1.5 mt-0.5">
                   <CheckCircle2 className="w-3.5 h-3.5" />
                   Active Developer
@@ -355,7 +354,7 @@ export function ProfileModal({ isOpen, onClose }) {
           </div>
 
           {/* Modal Footer Actions */}
-          <div className="pt-2 flex items-center justify-end gap-3 border-t border-slate-800/80">
+          <div className="pt-2 flex items-center justify-end gap-3 border-t border-slate-700/80">
             <button
               type="button"
               onClick={onClose}
@@ -367,7 +366,7 @@ export function ProfileModal({ isOpen, onClose }) {
             <button
               type="submit"
               disabled={loading}
-              className="inline-flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-400 hover:to-indigo-500 text-white font-semibold text-xs px-4 py-2 rounded-lg shadow-md shadow-indigo-500/20 active:scale-95 disabled:opacity-50 transition-all"
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-400 hover:to-indigo-500 text-white font-semibold text-xs px-4 py-2 rounded-lg shadow-md shadow-indigo-500/20 active:scale-95 disabled:opacity-50 transition-all cursor-pointer"
             >
               {loading ? (
                 <>

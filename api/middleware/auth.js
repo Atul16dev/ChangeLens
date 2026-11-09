@@ -81,13 +81,27 @@ export function requireVerified(req, res, next) {
  */
 const rateLimitMap = new Map();
 
+// Periodic cleanup to prune expired IP tracking records
+const rateLimitCleanupTimer = setInterval(() => {
+  const now = Date.now();
+  for (const [ip, entry] of rateLimitMap.entries()) {
+    if (now > entry.resetTime) {
+      rateLimitMap.delete(ip);
+    }
+  }
+}, 5 * 60 * 1000);
+
+if (typeof rateLimitCleanupTimer.unref === "function") {
+  rateLimitCleanupTimer.unref();
+}
+
 export function createRateLimiter({ windowMs = 60 * 1000, max = 15, message = "Too many requests, please try again later." } = {}) {
   return function rateLimiter(req, res, next) {
     if (process.env.NODE_ENV === "test" && !process.env.TEST_RATE_LIMIT) {
       return next(); // bypass in tests unless specifically testing rate limiter
     }
 
-    const ip = req.ip || req.connection.remoteAddress || "global";
+    const ip = req.ip || req.socket?.remoteAddress || "global";
     const now = Date.now();
 
     let entry = rateLimitMap.get(ip);
