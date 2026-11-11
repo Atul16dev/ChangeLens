@@ -6,6 +6,7 @@ import {
   MarkerType,
 } from '@xyflow/react';
 import { ArrowRight, Info, ShieldAlert, Sparkles } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext.jsx';
 
 export const ImpactEdge = memo(({
   id,
@@ -46,32 +47,42 @@ export const ImpactEdge = memo(({
     isDimmed = false,
   } = data;
 
+  const { isDark } = useTheme();
+
   // Determine edge color and stroke width based on visual priority
-  let strokeColor = '#475569'; // Clean / background dependency
+  let strokeColor = isDark ? '#475569' : '#64748b'; // Clean / background dependency
   let strokeWidth = 1.5;
-  let labelBadgeBg = 'bg-[#0f172a]/95 text-slate-300 border-slate-700/80';
+  let labelBadgeBg = isDark
+    ? 'bg-[#0f172a]/95 text-slate-300 border-slate-700/80'
+    : 'bg-white/95 text-slate-800 border-slate-300 shadow-sm';
   let labelText = specifier ? `${specifier}` : 'import';
 
   if (severity === 'CRITICAL') {
     strokeColor = '#f43f5e';
     strokeWidth = 2.5;
-    labelBadgeBg = 'bg-rose-950/95 text-rose-200 border-rose-500/80 shadow-rose-500/20';
+    labelBadgeBg = isDark
+      ? 'bg-rose-950/95 text-rose-200 border-rose-500/80 shadow-rose-500/20'
+      : 'bg-rose-50 text-rose-800 border-rose-300 shadow-sm';
     labelText = '⚡ breaking';
   } else if (isDirectImpact || severity === 'HIGH') {
     strokeColor = '#fb923c';
     strokeWidth = 2.5;
-    labelBadgeBg = 'bg-orange-950/95 text-orange-200 border-orange-500/80 shadow-orange-500/20';
+    labelBadgeBg = isDark
+      ? 'bg-orange-950/95 text-orange-200 border-orange-500/80 shadow-orange-500/20'
+      : 'bg-orange-50 text-orange-800 border-orange-300 shadow-sm';
     labelText = mode === 'impact' ? '⚡ direct impact' : 'imports';
   } else if (isImpacted) {
     strokeColor = '#facc15';
     strokeWidth = 2;
-    labelBadgeBg = 'bg-yellow-950/95 text-yellow-200 border-yellow-500/70';
+    labelBadgeBg = isDark
+      ? 'bg-yellow-950/95 text-yellow-200 border-yellow-500/70'
+      : 'bg-yellow-50 text-yellow-800 border-yellow-300 shadow-sm';
     labelText = mode === 'impact' ? '↳ transitive' : 'imports';
   }
 
   if (isHighlighted || isHovered) {
     strokeWidth += 1.5;
-    strokeColor = isImpacted ? '#38bdf8' : '#cbd5e1';
+    strokeColor = isImpacted ? '#38bdf8' : isDark ? '#cbd5e1' : '#0284c7';
   }
 
   const opacity = isDimmed && !isHovered && !isHighlighted ? 0.15 : 1;

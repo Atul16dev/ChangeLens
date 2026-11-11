@@ -455,7 +455,7 @@ export function DashboardPage() {
   }, [isProjectHubOpen, refreshRecentAnalyses]);
 
   return (
-    <div className="flex flex-col h-screen w-screen bg-[#0b0f19] text-slate-100 overflow-hidden font-sans">
+    <div className="flex flex-col h-screen w-screen bg-white dark:bg-[#0b0f19] text-slate-900 dark:text-slate-100 overflow-hidden font-sans">
       {/* Top Navigation Bar with Authentication Awareness */}
       <Header
         onAnalyze={executeAnalysis}

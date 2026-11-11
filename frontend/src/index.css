@@ -85,3 +85,773 @@ body {
   animation: scanline 4s linear infinite;
 }
 
+/* ==========================================================================
+   CHANGELENS MODERN PREMIUM LIGHT MODE THEME LAYER
+   Standard platform design (Linear / GitHub / Vercel style)
+   Clean off-whites (#f8fafc / #ffffff), high-contrast slate typography,
+   crisp borders (#e2e8f0), while fully preserving vibrant semantic accents!
+   ========================================================================== */
+
+html.light body {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}
+
+html.light ::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+html.light ::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+}
+html.light ::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Light mode SaaS grid & dot patterns */
+html.light .bg-grid-pattern {
+  background-image:
+    linear-gradient(to right, rgba(15, 23, 42, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(15, 23, 42, 0.05) 1px, transparent 1px);
+}
+
+html.light .bg-dot-pattern {
+  background-image: radial-gradient(rgba(15, 23, 42, 0.09) 1.2px, transparent 1.2px);
+}
+
+/* Light mode iridescent radiant text */
+html.light .text-shimmer {
+  background: linear-gradient(
+    90deg,
+    #0f172a 0%,
+    #0284c7 25%,
+    #7c3aed 50%,
+    #0284c7 75%,
+    #0f172a 100%
+  );
+  background-size: 200% auto;
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+/* 1. Global background surfaces mapping for light mode - Replaces ALL dark surfaces with white */
+html.light,
+html.light body,
+html.light #root,
+html.light [class*="bg-[#0b0f19]"],
+html.light [class*="bg-[#0d1322]"],
+html.light [class*="bg-[#0a0f1d]"],
+html.light [class*="bg-[#0d1527]"],
+html.light [class*="bg-[#0d1424]"],
+html.light [class*="bg-[#080d1a]"],
+html.light [class*="bg-[#0c1220]"],
+html.light [class*="bg-[#0e1422]"],
+html.light [class*="bg-[#101726]"],
+html.light [class*="bg-[#0f172a]"],
+html.light [class*="bg-[#101a30]"],
+html.light [class*="bg-slate-950"],
+html.light [class*="bg-slate-900"],
+html.light [class*="bg-slate-850"] {
+  background-color: #ffffff !important;
+}
+
+/* Secondary elevated cards and containers in light mode (soft crisp light surface) */
+html.light [class*="bg-[#070b14]"],
+html.light [class*="bg-[#090d18]"],
+html.light [class*="bg-[#090e1a]"],
+html.light [class*="bg-[#0e1626]"],
+html.light [class*="bg-[#0e1627]"],
+html.light [class*="bg-[#131d2e]"],
+html.light [class*="bg-[#131d31]"],
+html.light [class*="bg-[#151f32]"],
+html.light [class*="bg-[#152136]"],
+html.light [class*="bg-[#162035]"],
+html.light [class*="bg-[#16253d]"],
+html.light [class*="bg-[#131b2a]"],
+html.light [class*="bg-[#131b2c]"],
+html.light [class*="bg-[#141d2f]"],
+html.light [class*="bg-[#182338]"],
+html.light [class*="bg-[#1a253c]"],
+html.light [class*="bg-[#1f2d4a]"],
+html.light [class*="bg-[#22304d]"],
+html.light [class*="bg-slate-800"] {
+  background-color: #f8fafc !important;
+}
+
+/* Light mode hover states */
+html.light .hover\:bg-slate-800:hover,
+html.light .hover\:bg-slate-800\/50:hover,
+html.light .hover\:bg-slate-800\/60:hover,
+html.light .hover\:bg-slate-800\/80:hover,
+html.light .hover\:bg-slate-700:hover,
+html.light .hover\:bg-slate-750:hover,
+html.light .hover\:bg-\[\#131d2e\]\/80:hover,
+html.light .hover\:bg-\[\#182337\]:hover,
+html.light .hover\:bg-\[\#1f2d48\]:hover,
+html.light .hover\:bg-\[\#1a253c\]:hover,
+html.light .hover\:bg-\[\#1f2d4a\]:hover,
+html.light .hover\:bg-\[\#22304d\]:hover,
+html.light .hover\:bg-\[\#223250\]:hover {
+  background-color: #e2e8f0 !important;
+}
+
+/* 2. Borders mapping for clean light mode */
+html.light .border-slate-800,
+html.light .border-slate-800\/40,
+html.light .border-slate-800\/60,
+html.light .border-slate-800\/80,
+html.light .border-slate-700,
+html.light .border-slate-700\/50,
+html.light .border-slate-700\/60,
+html.light .border-slate-700\/70,
+html.light .border-slate-700\/80,
+html.light .border-slate-700\/90,
+html.light .border-slate-600\/60,
+html.light .border-slate-600\/70,
+html.light .border-slate-600\/80 {
+  border-color: #e2e8f0 !important;
+}
+
+html.light .border-slate-600 {
+  border-color: #cbd5e1 !important;
+}
+
+html.light .divide-slate-800 > :not([hidden]) ~ :not([hidden]),
+html.light .divide-slate-700 > :not([hidden]) ~ :not([hidden]) {
+  border-color: #e2e8f0 !important;
+}
+
+html.light .ring-white\/5 {
+  --tw-ring-color: rgba(15, 23, 42, 0.06) !important;
+}
+
+/* 3. Text typography for light mode */
+html.light .text-slate-100,
+html.light .text-slate-200 {
+  color: #0f172a !important;
+}
+
+html.light .text-slate-300 {
+  color: #334155 !important;
+}
+
+html.light .text-slate-400,
+html.light .text-slate-500 {
+  color: #64748b !important;
+}
+
+/* 4. Disappearing text-white fix: Headings, labels, strong tags on light surfaces */
+html.light h1.text-white,
+html.light h2.text-white,
+html.light h3.text-white,
+html.light h4.text-white,
+html.light h5.text-white,
+html.light h6.text-white,
+html.light strong.text-white,
+html.light b.text-white,
+html.light p.text-white,
+html.light label.text-white,
+html.light h1:not(button *):not([class*="text-"]):not([class*="bg-gradient-"]),
+html.light h2:not(button *):not([class*="text-"]):not([class*="bg-gradient-"]),
+html.light h3:not(button *):not([class*="text-"]),
+html.light h4:not(button *):not([class*="text-"]),
+html.light h1.text-slate-900,
+html.light h2.text-slate-900,
+html.light h3.text-slate-900,
+html.light h4.text-slate-900 {
+  color: #0f172a !important;
+}
+
+html.light p.text-slate-900,
+html.light p.text-slate-800 {
+  color: #0f172a !important;
+}
+html.light p.text-slate-700,
+html.light p.text-slate-600 {
+  color: #334155 !important;
+}
+
+/* Text spans and divs that are NOT part of colored buttons/badges */
+html.light span.text-white:not(button *):not(a[class*="bg-"] *):not([class*="bg-cyan-"] *):not([class*="bg-indigo-"] *):not([class*="bg-blue-"] *):not([class*="bg-purple-"] *):not([class*="bg-rose-"] *):not([class*="bg-amber-"] *):not([class*="bg-emerald-"] *):not([class*="bg-gradient-"] *),
+html.light div.text-white:not(button *):not(a[class*="bg-"] *):not([class*="bg-cyan-"] *):not([class*="bg-indigo-"] *):not([class*="bg-blue-"] *):not([class*="bg-purple-"] *):not([class*="bg-rose-"] *):not([class*="bg-amber-"] *):not([class*="bg-emerald-"] *):not([class*="bg-gradient-"] *) {
+  color: #0f172a !important;
+}
+
+/* Brand text gradient in light mode */
+html.light .from-white.via-slate-100.to-slate-400,
+html.light .from-white.via-slate-200.to-slate-400 {
+  background-image: linear-gradient(to right, #0f172a, #1e293b, #475569) !important;
+}
+
+/* 5. Inputs, textareas & select elements in light mode */
+html.light input,
+html.light input[type="text"],
+html.light input[type="email"],
+html.light input[type="password"],
+html.light textarea,
+html.light select {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+html.light input.text-white,
+html.light textarea.text-white {
+  color: #0f172a !important;
+}
+html.light input::placeholder,
+html.light textarea::placeholder {
+  color: #94a3b8 !important;
+}
+
+/* 6. Code blocks and syntax in light mode */
+html.light pre,
+html.light code:not([class*="bg-"]):not([class*="text-cyan-"]):not([class*="text-emerald-"]) {
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+
+/* 7. Soft, modern elevation shadows in light mode */
+html.light .shadow-2xl {
+  box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04) !important;
+}
+html.light .shadow-xl {
+  box-shadow: 0 10px 15px -3px rgba(15, 23, 42, 0.06), 0 4px 6px -4px rgba(15, 23, 42, 0.03) !important;
+}
+html.light .shadow-lg {
+  box-shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.05), 0 2px 4px -2px rgba(15, 23, 42, 0.03) !important;
+}
+
+/* Translucent dark chips in light mode */
+html.light .bg-black\/40,
+html.light .bg-black\/50,
+html.light .bg-black\/60 {
+  background-color: rgba(15, 23, 42, 0.08) !important;
+  color: #0f172a !important;
+  border-color: rgba(15, 23, 42, 0.12) !important;
+}
+
+/* ==========================================================================
+   8. DARK GRADIENT BOX NEUTRALIZATION / LIGHT GRADIENT TRANSFORMATION
+   Replaces dark-box background-images with crisp SaaS gradients
+   ========================================================================== */
+
+/* CTA Section Card */
+html.light .bg-gradient-to-tr.from-\[\#101726\] {
+  background-image: linear-gradient(135deg, #ffffff 0%, #f0f9ff 60%, #e0f2fe 100%) !important;
+  border-color: #38bdf8 !important;
+  box-shadow: 0 20px 25px -5px rgba(2, 132, 199, 0.08), 0 8px 10px -6px rgba(2, 132, 199, 0.04) !important;
+}
+
+/* FeaturesGrid Cards */
+html.light .from-\[\#101726\].via-\[\#101726\].to-\[\#151f33\] {
+  background-image: linear-gradient(135deg, #ffffff 0%, #f8fafc 60%, #eef2ff 100%) !important;
+  border-color: #cbd5e1 !important;
+}
+html.light .from-\[\#101726\].via-\[\#101726\].to-\[\#1e1424\] {
+  background-image: linear-gradient(135deg, #ffffff 0%, #f8fafc 60%, #fff1f2 100%) !important;
+  border-color: #cbd5e1 !important;
+}
+
+/* ProblemSection Anchor Cards */
+html.light .from-slate-900\/90.via-slate-900\/60.to-rose-950\/20,
+html.light .from-slate-900.via-slate-900\/95.to-rose-950\/20 {
+  background-image: linear-gradient(135deg, #ffffff 0%, #fff5f5 70%, #ffe4e6 100%) !important;
+  border-color: #fecdd3 !important;
+}
+
+/* WhyChangeLens Cards */
+html.light .from-\[\#18111e\].to-\[\#120d18\] {
+  background-image: linear-gradient(135deg, #fff5f5 0%, #fff1f2 100%) !important;
+  border-color: #fecdd3 !important;
+}
+html.light .from-\[\#101726\].to-\[\#131d2e\] {
+  background-image: linear-gradient(135deg, #ffffff 0%, #f0f9ff 60%, #e0f2fe 100%) !important;
+  border-color: #38bdf8 !important;
+}
+
+/* ProjectHub Hero Banner */
+html.light .from-\[\#131d2e\].via-\[\#101726\].to-\[\#0c1322\] {
+  background-image: linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #f1f5f9 100%) !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05) !important;
+}
+html.light .from-\[\#131d2e\] .blur-3xl {
+  display: none !important;
+}
+
+/* ProjectHub Mode Navigation Tabs */
+html.light .from-cyan-950.via-\[\#10243e\].to-\[\#0d1c31\] {
+  background-image: linear-gradient(to right, #e0f2fe, #bae6fd) !important;
+  border-color: #0284c7 !important;
+  color: #0369a1 !important;
+}
+html.light .from-indigo-950.via-\[\#171a40\].to-\[\#111634\] {
+  background-image: linear-gradient(to right, #e0e7ff, #c7d2fe) !important;
+  border-color: #4f46e5 !important;
+  color: #4338ca !important;
+}
+html.light .from-amber-950.via-\[\#261f10\].to-\[\#1c180e\] {
+  background-image: linear-gradient(to right, #fef3c7, #fde68a) !important;
+  border-color: #d97706 !important;
+  color: #92400e !important;
+}
+html.light .from-emerald-950.via-\[\#102a20\].to-\[\#0c1f17\] {
+  background-image: linear-gradient(to right, #d1fae5, #a7f3d0) !important;
+  border-color: #059669 !important;
+  color: #065f46 !important;
+}
+
+/* Simulation status banners & floating pills in ImpactSidebar and GraphViewer */
+html.light .from-rose-950.via-\[\#2f1322\],
+html.light .from-rose-950.via-\[\#2f1322\].to-slate-950,
+html.light .from-rose-950.via-\[\#2f1322\].to-\[\#12162a\] {
+  background-image: linear-gradient(to right, #ffe4e6, #fff1f2, #ffffff) !important;
+  border-color: #f43f5e !important;
+  color: #9f1239 !important;
+}
+html.light .from-purple-950.via-\[\#1e1538\],
+html.light .from-purple-950.via-indigo-950,
+html.light .from-purple-950.via-indigo-950.to-slate-950,
+html.light .from-purple-950.via-\[\#1e1538\].to-\[\#12162a\] {
+  background-image: linear-gradient(to right, #f3e8ff, #faf5ff, #ffffff) !important;
+  border-color: #a855f7 !important;
+  color: #6b21a8 !important;
+}
+html.light .from-indigo-950.to-purple-950 {
+  background-image: linear-gradient(to right, #e0e7ff, #f3e8ff) !important;
+  border-color: #818cf8 !important;
+  color: #4338ca !important;
+}
+html.light .from-purple-950\/70.via-indigo-950\/60 {
+  background-image: linear-gradient(to right, #faf5ff, #f5f3ff, #ffffff) !important;
+  border-color: #c084fc !important;
+  color: #581c87 !important;
+}
+
+/* HistoryDrawer active card and banner */
+html.light .from-indigo-950\/80.via-\[\#131d2e\].to-indigo-950\/50 {
+  background-image: linear-gradient(to right, #e0e7ff, #f8fafc, #e0e7ff) !important;
+  border-color: #c7d2fe !important;
+}
+html.light .from-\[\#141a2e\].to-violet-950\/20 {
+  background-image: linear-gradient(to bottom, #ffffff, #f5f3ff) !important;
+  border-color: #8b5cf6 !important;
+}
+
+/* ProfileModal */
+html.light .from-indigo-950.via-slate-900.to-slate-950 {
+  background-image: linear-gradient(135deg, #e0e7ff, #f1f5f9, #ffffff) !important;
+  color: #4338ca !important;
+}
+
+/* ==========================================================================
+   9. SEMANTIC BADGES & ACCENT COLORS (HIGH CONTRAST & SATURATED)
+   ========================================================================== */
+
+/* Rose / Critical / Error */
+html.light .bg-rose-950,
+html.light .bg-rose-950\/30,
+html.light .bg-rose-950\/40,
+html.light .bg-rose-950\/60,
+html.light .bg-rose-950\/70,
+html.light .bg-rose-950\/80,
+html.light .bg-rose-950\/90,
+html.light .bg-rose-900\/80,
+html.light .bg-rose-500\/10,
+html.light .bg-rose-500\/20 {
+  background-color: #ffe4e6 !important;
+  border-color: #fecdd3 !important;
+  color: #9f1239 !important;
+}
+html.light .text-rose-200,
+html.light .text-rose-300,
+html.light .text-rose-400 {
+  color: #be123c !important;
+}
+
+/* Amber / Warning / Modified */
+html.light .bg-amber-950,
+html.light .bg-amber-950\/30,
+html.light .bg-amber-950\/40,
+html.light .bg-amber-950\/60,
+html.light .bg-amber-950\/70,
+html.light .bg-amber-950\/80,
+html.light .bg-amber-950\/90,
+html.light .bg-amber-900,
+html.light .bg-amber-500\/10,
+html.light .bg-amber-500\/20 {
+  background-color: #fef3c7 !important;
+  border-color: #fde68a !important;
+  color: #92400e !important;
+}
+html.light .text-amber-200,
+html.light .text-amber-300,
+html.light .text-amber-400 {
+  color: #b45309 !important;
+}
+
+/* Orange / High Risk / Direct Dependent */
+html.light .bg-orange-950,
+html.light .bg-orange-950\/30,
+html.light .bg-orange-950\/40,
+html.light .bg-orange-950\/60,
+html.light .bg-orange-950\/70,
+html.light .bg-orange-950\/80,
+html.light .bg-orange-950\/90,
+html.light .bg-orange-500\/10,
+html.light .bg-orange-500\/20 {
+  background-color: #ffedd5 !important;
+  border-color: #fed7aa !important;
+  color: #c2410c !important;
+}
+html.light .text-orange-200,
+html.light .text-orange-300,
+html.light .text-orange-400 {
+  color: #c2410c !important;
+}
+
+/* Yellow / Medium Risk */
+html.light .bg-yellow-950,
+html.light .bg-yellow-950\/30,
+html.light .bg-yellow-950\/40,
+html.light .bg-yellow-950\/60,
+html.light .bg-yellow-950\/70,
+html.light .bg-yellow-950\/80,
+html.light .bg-yellow-950\/90,
+html.light .bg-yellow-500\/10,
+html.light .bg-yellow-500\/20 {
+  background-color: #fef9c3 !important;
+  border-color: #fef08a !important;
+  color: #854d0e !important;
+}
+html.light .text-yellow-200,
+html.light .text-yellow-300,
+html.light .text-yellow-400 {
+  color: #854d0e !important;
+}
+
+/* Emerald / Low / Safe / Untouched */
+html.light .bg-emerald-950,
+html.light .bg-emerald-950\/30,
+html.light .bg-emerald-950\/40,
+html.light .bg-emerald-950\/60,
+html.light .bg-emerald-950\/70,
+html.light .bg-emerald-950\/80,
+html.light .bg-emerald-950\/90,
+html.light .bg-emerald-900\/80,
+html.light .bg-emerald-500\/10,
+html.light .bg-emerald-500\/20 {
+  background-color: #d1fae5 !important;
+  border-color: #a7f3d0 !important;
+  color: #065f46 !important;
+}
+html.light .text-emerald-200,
+html.light .text-emerald-300,
+html.light .text-emerald-400 {
+  color: #047857 !important;
+}
+
+/* Cyan / Info / Sky */
+html.light .bg-cyan-950,
+html.light .bg-cyan-950\/30,
+html.light .bg-cyan-950\/40,
+html.light .bg-cyan-950\/60,
+html.light .bg-cyan-950\/70,
+html.light .bg-cyan-950\/80,
+html.light .bg-cyan-950\/90,
+html.light .bg-cyan-900,
+html.light .bg-cyan-900\/60,
+html.light .bg-cyan-500\/10,
+html.light .bg-cyan-500\/15,
+html.light .bg-cyan-500\/20 {
+  background-color: #e0f2fe !important;
+  border-color: #bae6fd !important;
+  color: #0369a1 !important;
+}
+html.light .text-cyan-200,
+html.light .text-cyan-300,
+html.light .text-cyan-400 {
+  color: #0284c7 !important;
+}
+
+/* Indigo */
+html.light .bg-indigo-950,
+html.light .bg-indigo-950\/30,
+html.light .bg-indigo-950\/40,
+html.light .bg-indigo-950\/60,
+html.light .bg-indigo-950\/70,
+html.light .bg-indigo-950\/80,
+html.light .bg-indigo-950\/90,
+html.light .bg-indigo-500\/10,
+html.light .bg-indigo-500\/15,
+html.light .bg-indigo-500\/20 {
+  background-color: #e0e7ff !important;
+  border-color: #c7d2fe !important;
+  color: #4338ca !important;
+}
+html.light .text-indigo-200,
+html.light .text-indigo-300,
+html.light .text-indigo-400 {
+  color: #4338ca !important;
+}
+
+/* Purple / Violet */
+html.light .bg-purple-950,
+html.light .bg-purple-950\/30,
+html.light .bg-purple-950\/40,
+html.light .bg-purple-950\/60,
+html.light .bg-purple-950\/70,
+html.light .bg-purple-950\/80,
+html.light .bg-purple-950\/90,
+html.light .bg-purple-900\/50,
+html.light .bg-purple-500\/10,
+html.light .bg-purple-500\/20,
+html.light .bg-violet-950,
+html.light .bg-violet-950\/30,
+html.light .bg-violet-950\/40,
+html.light .bg-violet-950\/60,
+html.light .bg-violet-950\/70,
+html.light .bg-violet-950\/80,
+html.light .bg-violet-950\/90,
+html.light .bg-violet-900,
+html.light .bg-violet-500\/10,
+html.light .bg-violet-500\/20 {
+  background-color: #f3e8ff !important;
+  border-color: #e9d5ff !important;
+  color: #6b21a8 !important;
+}
+html.light .text-purple-200,
+html.light .text-purple-300,
+html.light .text-purple-400,
+html.light .text-violet-200,
+html.light .text-violet-300,
+html.light .text-violet-400 {
+  color: #6b21a8 !important;
+}
+
+/* ==========================================================================
+   10. BUTTON TEXT AND GRADIENT PRESERVATION (CRITICAL)
+   Action buttons, gradient pills and colored CTA buttons must keep white text
+   ========================================================================== */
+
+/* Pastel/tinted buttons inherit their high-contrast accent text */
+html.light button[class*="bg-cyan-950"],
+html.light button[class*="bg-indigo-950"],
+html.light button[class*="bg-amber-950"],
+html.light button[class*="bg-purple-950"],
+html.light button[class*="bg-rose-950"],
+html.light a[class*="bg-cyan-950"],
+html.light a[class*="bg-indigo-950"],
+html.light a[class*="bg-amber-950"],
+html.light a[class*="bg-purple-950"],
+html.light a[class*="bg-rose-950"] {
+  color: inherit !important;
+}
+
+html.light button[class*="bg-cyan-950"] *,
+html.light button[class*="bg-indigo-950"] *,
+html.light button[class*="bg-amber-950"] *,
+html.light button[class*="bg-purple-950"] *,
+html.light button[class*="bg-rose-950"] *,
+html.light a[class*="bg-cyan-950"] *,
+html.light a[class*="bg-indigo-950"] *,
+html.light a[class*="bg-amber-950"] *,
+html.light a[class*="bg-purple-950"] *,
+html.light a[class*="bg-rose-950"] * {
+  color: inherit !important;
+}
+
+html.light button.bg-cyan-600,
+html.light button.bg-cyan-500,
+html.light button.bg-indigo-600,
+html.light button.bg-indigo-500,
+html.light button.bg-blue-600,
+html.light button.bg-purple-600,
+html.light button.bg-rose-600,
+html.light button.bg-amber-600,
+html.light button.bg-emerald-600,
+html.light a.bg-cyan-600,
+html.light a.bg-cyan-500,
+html.light a.bg-indigo-600,
+html.light a.bg-indigo-500,
+html.light a.bg-blue-600,
+html.light a.bg-purple-600,
+html.light a.bg-rose-600,
+html.light a.bg-amber-600,
+html.light a.bg-emerald-600,
+html.light button[class*="bg-gradient-to-"]:not([class*="from-cyan-950"]):not([class*="from-indigo-950"]):not([class*="from-amber-950"]):not([class*="from-emerald-950"]):not(.hub-mode-tab):not([class*="dark:"]),
+html.light a[class*="bg-gradient-to-"]:not([class*="from-cyan-950"]):not([class*="from-indigo-950"]):not([class*="from-amber-950"]):not([class*="from-emerald-950"]):not(.hub-mode-tab):not([class*="dark:"]) {
+  color: #ffffff !important;
+}
+
+html.light button.bg-cyan-600 *,
+html.light button.bg-cyan-500 *,
+html.light button.bg-indigo-600 *,
+html.light button.bg-indigo-500 *,
+html.light button.bg-blue-600 *,
+html.light button.bg-purple-600 *,
+html.light button.bg-rose-600 *,
+html.light button.bg-amber-600 *,
+html.light button.bg-emerald-600 *,
+html.light a.bg-cyan-600 *,
+html.light a.bg-cyan-500 *,
+html.light a.bg-indigo-600 *,
+html.light a.bg-indigo-500 *,
+html.light a.bg-blue-600 *,
+html.light a.bg-purple-600 *,
+html.light a.bg-rose-600 *,
+html.light a.bg-amber-600 *,
+html.light a.bg-emerald-600 *,
+html.light button[class*="bg-gradient-to-"]:not([class*="from-cyan-950"]):not([class*="from-indigo-950"]):not([class*="from-amber-950"]):not([class*="from-emerald-950"]):not(.hub-mode-tab):not([class*="dark:"]) *,
+html.light a[class*="bg-gradient-to-"]:not([class*="from-cyan-950"]):not([class*="from-indigo-950"]):not([class*="from-amber-950"]):not([class*="from-emerald-950"]):not(.hub-mode-tab):not([class*="dark:"]) * {
+  color: #ffffff !important;
+}
+
+/* ==========================================================================
+   PROJECT HUB SPECIFIC HIGH-CONTRAST LIGHT MODE RULES
+   Guarantees 100% visibility for workspace container, tabs, cards & labels
+   ========================================================================== */
+
+html.light .hub-workspace-box {
+  background-color: #ffffff !important;
+  background-image: none !important;
+  border-color: #e2e8f0 !important;
+  color: #0f172a !important;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05) !important;
+}
+
+html.light .hub-workspace-box h2 {
+  color: #0f172a !important;
+  font-weight: 800 !important;
+}
+
+html.light .hub-workspace-box label {
+  color: #0f172a !important;
+  font-weight: 700 !important;
+}
+
+html.light .hub-summary-card {
+  background-color: #ffffff !important;
+  background-image: none !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.05) !important;
+}
+
+html.light .hub-summary-card h4 {
+  color: #0f172a !important;
+  font-weight: 700 !important;
+}
+
+html.light .hub-summary-card p {
+  color: #334155 !important;
+}
+
+html.light .hub-hero-banner {
+  background-color: #ffffff !important;
+  background-image: linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #f1f5f9 100%) !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05) !important;
+}
+
+html.light .hub-hero-banner h1,
+html.light .hub-hero-banner p.font-bold {
+  color: #0f172a !important;
+}
+
+html.light .hub-dag-preview {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+}
+
+html.light .hub-dag-node {
+  background-color: #ffffff !important;
+}
+
+html.light .hub-tab-ribbon {
+  background-color: #f1f5f9 !important;
+  border-color: #e2e8f0 !important;
+}
+
+html.light .hub-mode-tab {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+}
+
+html.light .hub-mode-tab * {
+  color: #0f172a !important;
+}
+
+html.light .hub-mode-tab .hub-tab-subtitle {
+  color: #64748b !important;
+}
+
+html.light .hub-mode-tab.hub-tab-active-repo {
+  background-color: #e0f2fe !important;
+  background-image: none !important;
+  border-color: #0284c7 !important;
+}
+
+html.light .hub-mode-tab.hub-tab-active-repo * {
+  color: #0369a1 !important;
+}
+
+html.light .hub-mode-tab.hub-tab-active-pr {
+  background-color: #e0e7ff !important;
+  background-image: none !important;
+  border-color: #4f46e5 !important;
+}
+
+html.light .hub-mode-tab.hub-tab-active-pr * {
+  color: #4338ca !important;
+}
+
+html.light .hub-mode-tab.hub-tab-active-local {
+  background-color: #fef3c7 !important;
+  background-image: none !important;
+  border-color: #d97706 !important;
+}
+
+html.light .hub-mode-tab.hub-tab-active-local * {
+  color: #92400e !important;
+}
+
+html.light .hub-mode-tab.hub-tab-active-demo {
+  background-color: #d1fae5 !important;
+  background-image: none !important;
+  border-color: #059669 !important;
+}
+
+html.light .hub-mode-tab.hub-tab-active-demo * {
+  color: #065f46 !important;
+}
+
+html.light .hub-guide-btn {
+  background-color: #ecfeff !important;
+  color: #0e7490 !important;
+  border-color: #a5f3fc !important;
+}
+
+html.light .hub-guide-btn * {
+  color: #0e7490 !important;
+}
+
+html.light .hub-preset-btn {
+  background-color: #f1f5f9 !important;
+  color: #1e293b !important;
+  border-color: #cbd5e1 !important;
+}
+
+html.light .hub-preset-btn:hover {
+  background-color: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+/* Chat bubble for user message */
+html.light .bg-cyan-600.text-white {
+  background-color: #0284c7 !important;
+  color: #ffffff !important;
+}
+html.light .bg-cyan-600.text-white * {
+  color: #ffffff !important;
+}

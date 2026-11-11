@@ -10,6 +10,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { ScrollReveal } from './ScrollReveal.jsx';
+import { ChangeLensPrism3D } from './ChangeLensPrism3D.jsx';
 
 const DEMO_PRESETS = [
   {
@@ -180,6 +181,11 @@ export function HeroSection() {
             </div>
           </ScrollReveal>
         </div>
+
+        {/* ─── 3D INTERACTIVE CHANGELENS CRYSTAL PRISM ────────────────── */}
+        <ScrollReveal animation="fade-up" delay={200} duration={850} className="mt-8 sm:mt-12 max-w-5xl mx-auto">
+          <ChangeLensPrism3D />
+        </ScrollReveal>
 
         {/* Interactive Product Preview Mockup */}
         <ScrollReveal animation="scale-up" delay={250} duration={900} className="mt-10 sm:mt-14 max-w-5xl mx-auto" id="hero-preview">

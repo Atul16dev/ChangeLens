@@ -165,7 +165,7 @@ export function ImpactSidebar({
       )}
 
       <aside
-        className={`fixed top-0 right-0 bottom-0 z-50 w-full sm:w-[420px] lg:static lg:z-auto lg:w-96 xl:w-[430px] h-full bg-[#0e1422] border-l border-slate-700/80 flex flex-col backdrop-blur-xl shrink-0 select-none shadow-2xl transition-transform duration-300 ease-in-out ${
+        className={`fixed top-0 right-0 bottom-0 z-50 w-full sm:w-[420px] lg:static lg:z-auto lg:w-96 xl:w-[430px] h-full bg-white dark:bg-[#0e1422] border-l border-slate-200 dark:border-slate-700/80 flex flex-col backdrop-blur-xl shrink-0 select-none shadow-2xl transition-transform duration-300 ease-in-out ${
           isMobileOpen ? 'translate-x-0 shadow-2xl' : 'translate-x-full lg:translate-x-0'
         }`}
       >
@@ -174,28 +174,28 @@ export function ImpactSidebar({
           <div
             className={`border-b p-3 flex items-center justify-between shadow-xl transition-all ${
               simulatedChangeType === 'deleted'
-                ? 'bg-gradient-to-r from-rose-950 via-[#2f1322] to-[#12162a] border-rose-500/60'
-                : 'bg-gradient-to-r from-purple-950 via-[#1e1538] to-[#12162a] border-purple-500/50'
+                ? 'bg-rose-100 dark:bg-gradient-to-r dark:from-rose-950 dark:via-[#2f1322] dark:to-[#12162a] border-rose-300 dark:border-rose-500/60'
+                : 'bg-purple-100 dark:bg-gradient-to-r dark:from-purple-950 dark:via-[#1e1538] dark:to-[#12162a] border-purple-300 dark:border-purple-500/50'
             }`}
           >
             <div className="flex items-center gap-2.5 overflow-hidden">
               <div
                 className={`p-1.5 rounded-lg border shrink-0 ${
                   simulatedChangeType === 'deleted'
-                    ? 'bg-rose-500/20 text-rose-300 border-rose-500/40'
-                    : 'bg-purple-500/20 text-purple-300 border-purple-500/40'
+                    ? 'bg-rose-500/20 text-rose-700 dark:text-rose-300 border-rose-400 dark:border-rose-500/40'
+                    : 'bg-purple-500/20 text-purple-700 dark:text-purple-300 border-purple-400 dark:border-purple-500/40'
                 }`}
               >
                 {simulatedChangeType === 'deleted' ? (
-                  <Trash2 className="w-4 h-4 text-rose-400 animate-pulse" />
+                  <Trash2 className="w-4 h-4 text-rose-600 dark:text-rose-400 animate-pulse" />
                 ) : (
-                  <Zap className="w-4 h-4 text-amber-400 animate-pulse" />
+                  <Zap className="w-4 h-4 text-amber-500 dark:text-amber-400 animate-pulse" />
                 )}
               </div>
               <div className="truncate">
                 <div
                   className={`text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 ${
-                    simulatedChangeType === 'deleted' ? 'text-rose-400' : 'text-amber-400'
+                    simulatedChangeType === 'deleted' ? 'text-rose-700 dark:text-rose-400' : 'text-amber-700 dark:text-amber-400'
                   }`}
                 >
                   <span>
@@ -205,13 +205,13 @@ export function ImpactSidebar({
                   </span>
                   <span
                     className={`w-1.5 h-1.5 rounded-full animate-ping ${
-                      simulatedChangeType === 'deleted' ? 'bg-rose-400' : 'bg-amber-400'
+                      simulatedChangeType === 'deleted' ? 'bg-rose-500' : 'bg-amber-500'
                     }`}
                   />
                 </div>
                 <div
                   className={`font-mono text-xs truncate font-semibold ${
-                    simulatedChangeType === 'deleted' ? 'text-rose-200' : 'text-purple-200'
+                    simulatedChangeType === 'deleted' ? 'text-rose-900 dark:text-rose-200' : 'text-purple-900 dark:text-purple-200'
                   }`}
                   title={simulatedFile}
                 >
@@ -223,8 +223,8 @@ export function ImpactSidebar({
               onClick={onExitSimulation}
               className={`px-2.5 py-1 text-xs font-semibold rounded-lg border transition-all shrink-0 flex items-center gap-1 shadow-sm active:scale-95 ${
                 simulatedChangeType === 'deleted'
-                  ? 'bg-rose-900/80 hover:bg-rose-800 text-rose-100 border-rose-500/50'
-                  : 'bg-purple-800/80 hover:bg-purple-700 text-purple-100 border-purple-500/40'
+                  ? 'bg-rose-100 hover:bg-rose-200 text-rose-900 dark:bg-rose-900/80 dark:hover:bg-rose-800 dark:text-rose-100 border-rose-300 dark:border-rose-500/50'
+                  : 'bg-purple-100 hover:bg-purple-200 text-purple-900 dark:bg-purple-800/80 dark:hover:bg-purple-700 dark:text-purple-100 border-purple-300 dark:border-purple-500/40'
               }`}
               title="Exit simulation and return to real Git changes"
             >
@@ -235,18 +235,18 @@ export function ImpactSidebar({
         )}
 
         {/* Top Main Navigation Tabs */}
-        <div className="flex items-center border-b border-slate-700/80 bg-[#090d18] p-2 gap-2">
+        <div className="flex items-center border-b border-slate-200 dark:border-slate-700/80 bg-slate-100 dark:bg-[#090d18] p-2 gap-2">
           <button
             onClick={() => setActiveMainTab('findings')}
             className={`flex-1 py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
               activeMainTab === 'findings'
-                ? 'bg-[#182338] text-white shadow-sm border border-slate-600'
-                : 'text-slate-300 hover:text-white hover:bg-[#131b2a]'
+                ? 'bg-white text-slate-900 border border-slate-300 dark:bg-[#182338] dark:text-white dark:border-slate-600 shadow-sm'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60 dark:text-slate-300 dark:hover:text-white dark:hover:bg-[#131b2a]'
             }`}
           >
-            <Layers className="w-3.5 h-3.5 text-cyan-400" />
+            <Layers className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />
             <span>AST Findings</span>
-            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-700 text-slate-200 font-mono">
+            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 font-mono">
               {allFindings.length}
             </span>
           </button>
@@ -255,8 +255,8 @@ export function ImpactSidebar({
             onClick={() => setActiveMainTab('ai_review')}
             className={`flex-1 py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
               activeMainTab === 'ai_review'
-                ? 'bg-gradient-to-r from-indigo-950 to-purple-950 text-purple-200 border border-purple-500/40 shadow-sm'
-                : 'text-slate-300 hover:text-purple-300 hover:bg-purple-950/20'
+                ? 'bg-purple-100 text-purple-900 border border-purple-300 dark:bg-gradient-to-r dark:from-indigo-950 dark:to-purple-950 dark:text-purple-200 dark:border-purple-500/40 shadow-sm'
+                : 'text-slate-600 hover:text-purple-800 hover:bg-purple-50 dark:text-slate-300 dark:hover:text-purple-300 dark:hover:bg-purple-950/20'
             }`}
           >
             <Sparkles className="w-3.5 h-3.5 text-purple-400" />
@@ -284,13 +284,13 @@ export function ImpactSidebar({
       {activeMainTab === 'findings' && (
         <>
           {/* Metrics Banner */}
-          <div className="p-4 border-b border-slate-700/80 bg-[#0d1322]">
+          <div className="p-4 border-b border-slate-200 dark:border-slate-700/80 bg-slate-50 dark:bg-[#0d1322]">
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm font-bold text-white flex items-center gap-2">
-                <ShieldAlert className="w-4 h-4 text-cyan-400" />
+              <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <ShieldAlert className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
                 Blast Radius Impact
               </h2>
-              <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-[#162035] text-cyan-300 border border-slate-700 font-semibold">
+              <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-white dark:bg-[#162035] text-cyan-800 dark:text-cyan-300 border border-slate-200 dark:border-slate-700 font-semibold shadow-sm">
                 {summary.totalImpactedFiles} Files Impacted
               </span>
             </div>
@@ -301,15 +301,15 @@ export function ImpactSidebar({
                 onClick={() => setActiveFilterTab(activeFilterTab === 'critical' ? 'all' : 'critical')}
                 className={`p-2.5 rounded-xl border cursor-pointer transition-all ${
                   activeFilterTab === 'critical'
-                    ? 'bg-rose-950/80 border-rose-500 shadow-md shadow-rose-500/20'
-                    : 'bg-[#141d2f] border-slate-700/80 hover:border-rose-500/60 shadow-sm'
+                    ? 'bg-rose-100 dark:bg-rose-950/80 border-rose-400 dark:border-rose-500 shadow-md shadow-rose-500/20'
+                    : 'bg-white dark:bg-[#141d2f] border-slate-200 dark:border-slate-700/80 hover:border-rose-400 dark:hover:border-rose-500/60 shadow-sm'
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-slate-400">Broken Imports</span>
-                  <AlertOctagon className="w-3.5 h-3.5 text-rose-400" />
+                  <span className="text-xs text-slate-600 dark:text-slate-400 font-medium">Broken Imports</span>
+                  <AlertOctagon className="w-3.5 h-3.5 text-rose-500 dark:text-rose-400" />
                 </div>
-                <div className="text-xl font-bold font-mono text-rose-400 mt-1">
+                <div className="text-xl font-bold font-mono text-rose-600 dark:text-rose-400 mt-1">
                   {summary.brokenImportsCount}
                 </div>
               </div>
@@ -318,15 +318,15 @@ export function ImpactSidebar({
                 onClick={() => setActiveFilterTab(activeFilterTab === 'direct' ? 'all' : 'direct')}
                 className={`p-2.5 rounded-xl border cursor-pointer transition-all ${
                   activeFilterTab === 'direct'
-                    ? 'bg-orange-950/80 border-orange-500 shadow-md shadow-orange-500/20'
-                    : 'bg-[#141d2f] border-slate-700/80 hover:border-orange-500/60 shadow-sm'
+                    ? 'bg-orange-100 dark:bg-orange-950/80 border-orange-400 dark:border-orange-500 shadow-md shadow-orange-500/20'
+                    : 'bg-white dark:bg-[#141d2f] border-slate-200 dark:border-slate-700/80 hover:border-orange-400 dark:hover:border-orange-500/60 shadow-sm'
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-slate-300">Direct (Lv 1)</span>
-                  <AlertTriangle className="w-3.5 h-3.5 text-orange-400" />
+                  <span className="text-xs text-slate-600 dark:text-slate-300 font-medium">Direct (Lv 1)</span>
+                  <AlertTriangle className="w-3.5 h-3.5 text-orange-500 dark:text-orange-400" />
                 </div>
-                <div className="text-xl font-bold font-mono text-orange-400 mt-1">
+                <div className="text-xl font-bold font-mono text-orange-600 dark:text-orange-400 mt-1">
                   {summary.directImpactCount}
                 </div>
               </div>
@@ -335,15 +335,15 @@ export function ImpactSidebar({
                 onClick={() => setActiveFilterTab(activeFilterTab === 'transitive' ? 'all' : 'transitive')}
                 className={`p-2.5 rounded-xl border cursor-pointer transition-all ${
                   activeFilterTab === 'transitive'
-                    ? 'bg-yellow-950/80 border-yellow-500 shadow-md shadow-yellow-500/20'
-                    : 'bg-[#141d2f] border-slate-700/80 hover:border-yellow-500/60 shadow-sm'
+                    ? 'bg-yellow-100 dark:bg-yellow-950/80 border-yellow-400 dark:border-yellow-500 shadow-md shadow-yellow-500/20'
+                    : 'bg-white dark:bg-[#141d2f] border-slate-200 dark:border-slate-700/80 hover:border-yellow-400 dark:hover:border-yellow-500/60 shadow-sm'
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-slate-300">Transitive (Lv 2+)</span>
-                  <Layers className="w-3.5 h-3.5 text-yellow-400" />
+                  <span className="text-xs text-slate-600 dark:text-slate-300 font-medium">Transitive (Lv 2+)</span>
+                  <Layers className="w-3.5 h-3.5 text-yellow-500 dark:text-yellow-400" />
                 </div>
-                <div className="text-xl font-bold font-mono text-yellow-400 mt-1">
+                <div className="text-xl font-bold font-mono text-yellow-600 dark:text-yellow-400 mt-1">
                   {summary.transitiveImpactCount}
                 </div>
               </div>
@@ -352,15 +352,15 @@ export function ImpactSidebar({
                 onClick={() => setActiveFilterTab('all')}
                 className={`p-2.5 rounded-xl border cursor-pointer transition-all ${
                   activeFilterTab === 'all' && !selectedNodeId
-                    ? 'bg-cyan-950/80 border-cyan-500 shadow-md shadow-cyan-500/20'
-                    : 'bg-[#141d2f] border-slate-700/80 hover:border-cyan-500/60 shadow-sm'
+                    ? 'bg-cyan-100 dark:bg-cyan-950/80 border-cyan-400 dark:border-cyan-500 shadow-md shadow-cyan-500/20'
+                    : 'bg-white dark:bg-[#141d2f] border-slate-200 dark:border-slate-700/80 hover:border-cyan-400 dark:hover:border-cyan-500/60 shadow-sm'
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-slate-300">Changed Roots</span>
-                  <FileCode className="w-3.5 h-3.5 text-cyan-400" />
+                  <span className="text-xs text-slate-600 dark:text-slate-300 font-medium">Changed Roots</span>
+                  <FileCode className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />
                 </div>
-                <div className="text-xl font-bold font-mono text-cyan-400 mt-1">
+                <div className="text-xl font-bold font-mono text-cyan-700 dark:text-cyan-400 mt-1">
                   {summary.totalChangedFiles}
                 </div>
               </div>
@@ -485,14 +485,14 @@ export function ImpactSidebar({
           </div>
 
           {/* Filter Bar */}
-          <div className="px-4 py-2 bg-[#0c1220] border-b border-slate-700/80 flex items-center justify-between text-xs text-slate-300">
+          <div className="px-4 py-2 bg-slate-50 dark:bg-[#0c1220] border-b border-slate-200 dark:border-slate-700/80 flex items-center justify-between text-xs text-slate-700 dark:text-slate-300">
             <div className="flex items-center gap-2">
               <span>
-                Showing <strong className="text-white font-semibold">{filteredFindings.length}</strong> findings
+                Showing <strong className="text-slate-900 dark:text-white font-semibold">{filteredFindings.length}</strong> findings
               </span>
               <button
                 onClick={handleDownloadJson}
-                className="p-1 rounded text-slate-300 hover:text-purple-300 hover:bg-slate-800 transition-colors"
+                className="p-1 rounded text-slate-500 hover:text-purple-600 dark:text-slate-300 dark:hover:text-purple-300 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
                 title="Download AST findings as JSON (.json)"
               >
                 <Download className="w-3 h-3" />
@@ -502,7 +502,7 @@ export function ImpactSidebar({
               <button
                 onClick={() => setActiveFilterTab('all')}
                 className={`px-2 py-0.5 rounded text-[11px] transition-colors ${
-                  activeFilterTab === 'all' ? 'bg-cyan-600 text-white font-semibold' : 'text-slate-400 hover:text-white'
+                  activeFilterTab === 'all' ? 'bg-cyan-600 text-white font-semibold' : 'text-slate-600 hover:text-slate-950 dark:text-slate-400 dark:hover:text-white'
                 }`}
               >
                 All
@@ -510,7 +510,7 @@ export function ImpactSidebar({
               <button
                 onClick={() => setActiveFilterTab('critical')}
                 className={`px-2 py-0.5 rounded text-[11px] transition-colors ${
-                  activeFilterTab === 'critical' ? 'bg-rose-700 text-white font-semibold' : 'text-slate-400 hover:text-rose-300'
+                  activeFilterTab === 'critical' ? 'bg-rose-700 text-white font-semibold' : 'text-slate-600 hover:text-rose-700 dark:text-slate-400 dark:hover:text-rose-300'
                 }`}
               >
                 Critical
@@ -518,7 +518,7 @@ export function ImpactSidebar({
               <button
                 onClick={() => setActiveFilterTab('direct')}
                 className={`px-2 py-0.5 rounded text-[11px] transition-colors ${
-                  activeFilterTab === 'direct' ? 'bg-orange-700 text-white font-semibold' : 'text-slate-400 hover:text-orange-300'
+                  activeFilterTab === 'direct' ? 'bg-orange-700 text-white font-semibold' : 'text-slate-600 hover:text-orange-700 dark:text-slate-400 dark:hover:text-orange-300'
                 }`}
               >
                 Lv 1
@@ -530,9 +530,9 @@ export function ImpactSidebar({
           <div className="flex-1 overflow-y-auto p-4 pb-12 space-y-3.5">
             {filteredFindings.length === 0 ? (
               <div className="text-center py-12 px-4">
-                <CheckCircle2 className="w-10 h-10 text-emerald-400/80 mx-auto mb-2" />
-                <h3 className="text-sm font-semibold text-slate-200">No Findings Detected</h3>
-                <p className="text-xs text-slate-400 mt-1">
+                <CheckCircle2 className="w-10 h-10 text-emerald-500 dark:text-emerald-400/80 mx-auto mb-2" />
+                <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">No Findings Detected</h3>
+                <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
                   Either this file has no dependents, or it matches no active filter criteria.
                 </p>
               </div>
@@ -556,12 +556,12 @@ export function ImpactSidebar({
                     onClick={() => onSelectNode(file)}
                     className={`p-3.5 rounded-xl border text-left cursor-pointer transition-all shadow-sm ${
                       isSelected
-                        ? 'ring-2 ring-cyan-400 bg-[#16253d] border-cyan-400/90 shadow-cyan-500/10'
+                        ? 'ring-2 ring-cyan-500 bg-cyan-50 dark:bg-[#16253d] border-cyan-400 dark:border-cyan-400/90 shadow-cyan-500/10'
                         : isCritical
-                        ? 'bg-rose-950/30 border-rose-800/70 hover:border-rose-600/90'
+                        ? 'bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-800/70 hover:border-rose-400 dark:hover:border-rose-600/90'
                         : isHigh
-                        ? 'bg-orange-950/30 border-orange-800/70 hover:border-orange-600/90'
-                        : 'bg-[#131d2e] border-slate-700/80 hover:border-slate-600/90'
+                        ? 'bg-orange-50 dark:bg-orange-950/30 border-orange-200 dark:border-orange-800/70 hover:border-orange-400 dark:hover:border-orange-600/90'
+                        : 'bg-white dark:bg-[#131d2e] border-slate-200 dark:border-slate-700/80 hover:border-slate-300 dark:hover:border-slate-600/90'
                     }`}
                   >
                     <div className="flex items-center justify-between gap-2 mb-2">
@@ -637,34 +637,34 @@ export function ImpactSidebar({
                     </p>
 
                     {finding.path && finding.path.length > 1 && (
-                      <div className="mb-2 p-2 rounded bg-[#0a0f1d] border border-slate-700/80 text-[11px] font-mono text-slate-300 flex flex-wrap items-center gap-1.5">
-                        <span className="text-slate-400 font-medium">Route:</span>
+                      <div className="mb-2 p-2 rounded bg-slate-50 dark:bg-[#0a0f1d] border border-slate-200 dark:border-slate-700/80 text-[11px] font-mono text-slate-700 dark:text-slate-300 flex flex-wrap items-center gap-1.5">
+                        <span className="text-slate-500 dark:text-slate-400 font-medium">Route:</span>
                         {finding.path.map((segment, sIdx) => (
                           <React.Fragment key={sIdx}>
-                            <span className={sIdx === finding.path.length - 1 ? 'text-amber-300 font-semibold' : 'text-slate-300'}>
+                            <span className={sIdx === finding.path.length - 1 ? 'text-amber-700 dark:text-amber-300 font-semibold' : 'text-slate-700 dark:text-slate-300'}>
                               {segment.split('/').pop()}
                             </span>
-                            {sIdx < finding.path.length - 1 && <ArrowRight className="w-3 h-3 text-slate-500 shrink-0" />}
+                            {sIdx < finding.path.length - 1 && <ArrowRight className="w-3 h-3 text-slate-400 dark:text-slate-500 shrink-0" />}
                           </React.Fragment>
                         ))}
                       </div>
                     )}
 
                     {finding.evidence && (line !== null || snippet) && (
-                      <div className="mt-2.5 rounded-lg bg-[#0a0f1d] p-2.5 border border-slate-700/80 font-mono text-[11px] shadow-inner">
-                        <div className="text-[10px] text-slate-400 mb-1.5 flex items-center justify-between">
-                          <div className="flex items-center gap-1.5 text-cyan-400 font-semibold">
-                            <Code className="w-3 h-3 text-cyan-400 shrink-0" />
+                      <div className="mt-2.5 rounded-lg bg-slate-50 dark:bg-[#0a0f1d] p-2.5 border border-slate-200 dark:border-slate-700/80 font-mono text-[11px] shadow-inner">
+                        <div className="text-[10px] text-slate-500 dark:text-slate-400 mb-1.5 flex items-center justify-between">
+                          <div className="flex items-center gap-1.5 text-cyan-700 dark:text-cyan-400 font-semibold">
+                            <Code className="w-3 h-3 text-cyan-600 dark:text-cyan-400 shrink-0" />
                             <span>{line !== null ? `Line ${line}${column !== null ? `:${column}` : ''}` : 'Location'}</span>
                           </div>
                           {finding.evidence.specifier && (
-                            <span className="text-slate-400 text-[10px] font-mono truncate max-w-[200px]" title={finding.evidence.specifier}>
-                              specifier: <span className="text-amber-300/90 font-medium">"{finding.evidence.specifier}"</span>
+                            <span className="text-slate-500 dark:text-slate-400 text-[10px] font-mono truncate max-w-[200px]" title={finding.evidence.specifier}>
+                              specifier: <span className="text-amber-700 dark:text-amber-300/90 font-medium">"{finding.evidence.specifier}"</span>
                             </span>
                           )}
                         </div>
                         {snippet && (
-                          <div className="rounded bg-[#0e1627] p-2 border border-slate-700/80 text-cyan-300 font-mono text-[11px] whitespace-pre-wrap break-all leading-tight">
+                          <div className="rounded bg-white dark:bg-[#0e1627] p-2 border border-slate-200 dark:border-slate-700/80 text-cyan-800 dark:text-cyan-300 font-mono text-[11px] whitespace-pre-wrap break-all leading-tight shadow-sm">
                             {snippet}
                           </div>
                         )}
@@ -672,9 +672,9 @@ export function ImpactSidebar({
                     )}
 
                     {finding.recommendation && (
-                      <div className="mt-2.5 pt-2 border-t border-slate-700/60 flex items-start gap-1.5 text-xs text-slate-400">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
-                        <span className="text-slate-200 leading-tight">
+                      <div className="mt-2.5 pt-2 border-t border-slate-200 dark:border-slate-700/60 flex items-start gap-1.5 text-xs text-slate-600 dark:text-slate-400">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+                        <span className="text-slate-800 dark:text-slate-200 leading-tight">
                           {finding.recommendation}
                         </span>
                       </div>
@@ -705,27 +705,27 @@ export function ImpactSidebar({
           </div>
 
           {/* Executive Overview Box */}
-          <div className="bg-[#131d2e] border border-slate-700/80 rounded-xl p-3.5 shadow-sm">
-            <h4 className="text-xs font-bold text-slate-100 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+          <div className="bg-white dark:bg-[#131d2e] border border-slate-200 dark:border-slate-700/80 rounded-xl p-3.5 shadow-sm">
+            <h4 className="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
               Executive Impact Assessment
             </h4>
-            <p className="text-xs text-slate-200 leading-relaxed whitespace-pre-line">
+            <p className="text-xs text-slate-700 dark:text-slate-200 leading-relaxed whitespace-pre-line">
               {explanationData?.executiveSummary || explanationData?.aiNarrative || 'No analysis available.'}
             </p>
           </div>
 
           {/* Actionable Reviewer Checklist */}
           {explanationData?.actionItems && explanationData.actionItems.length > 0 && (
-            <div className="bg-[#131d2e] border border-slate-700/80 rounded-xl p-3.5 shadow-sm">
-              <h4 className="text-xs font-bold text-slate-100 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+            <div className="bg-white dark:bg-[#131d2e] border border-slate-200 dark:border-slate-700/80 rounded-xl p-3.5 shadow-sm">
+              <h4 className="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                 Required Actions Before Merging
               </h4>
               <ul className="space-y-2">
                 {explanationData.actionItems.map((item, i) => (
-                  <li key={i} className="flex items-start gap-2 text-xs text-slate-200 leading-normal">
-                    <span className="w-4 h-4 rounded border border-slate-600 bg-[#0a0f1d] shrink-0 mt-0.5 flex items-center justify-center text-[10px] text-cyan-400 font-bold">
+                  <li key={i} className="flex items-start gap-2 text-xs text-slate-700 dark:text-slate-200 leading-normal">
+                    <span className="w-4 h-4 rounded border border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-[#0a0f1d] shrink-0 mt-0.5 flex items-center justify-center text-[10px] text-cyan-700 dark:text-cyan-400 font-bold">
                       {i + 1}
                     </span>
                     <span>{item}</span>
@@ -736,10 +736,10 @@ export function ImpactSidebar({
           )}
 
           {/* GitHub PR Comment Section */}
-          <div className="bg-[#131d2e] border border-slate-700/80 rounded-xl p-3.5 shadow-sm">
+          <div className="bg-white dark:bg-[#131d2e] border border-slate-200 dark:border-slate-700/80 rounded-xl p-3.5 shadow-sm">
             <div className="flex items-center justify-between mb-2">
-              <h4 className="text-xs font-bold text-slate-100 uppercase tracking-wider flex items-center gap-1.5">
-                <GitPullRequest className="w-3.5 h-3.5 text-cyan-400" />
+              <h4 className="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider flex items-center gap-1.5">
+                <GitPullRequest className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />
                 GitHub PR Markdown Comment
               </h4>
               <button
@@ -760,33 +760,33 @@ export function ImpactSidebar({
               </button>
             </div>
 
-            <p className="text-[11px] text-slate-400 mb-2.5">
+            <p className="text-[11px] text-slate-600 dark:text-slate-400 mb-2.5">
               Paste this markdown report directly into GitHub PR review comments or CI bot scripts.
             </p>
 
-            <pre className="p-3 bg-[#0a0f1d] border border-slate-700/80 rounded-lg text-[10px] font-mono text-slate-200 overflow-x-auto max-h-48 overflow-y-auto whitespace-pre-wrap select-all shadow-inner">
+            <pre className="p-3 bg-slate-50 dark:bg-[#0a0f1d] border border-slate-200 dark:border-slate-700/80 rounded-lg text-[10px] font-mono text-slate-800 dark:text-slate-200 overflow-x-auto max-h-48 overflow-y-auto whitespace-pre-wrap select-all shadow-inner">
               {explanationData?.prCommentMarkdown || 'Generating markdown...'}
             </pre>
 
             {/* Quick Export Actions */}
-            <div className="mt-3 pt-3 border-t border-slate-700/80 flex items-center justify-between gap-2 flex-wrap">
-              <span className="text-[11px] font-semibold text-slate-300">Export Report:</span>
+            <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-700/80 flex items-center justify-between gap-2 flex-wrap">
+              <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">Export Report:</span>
               <div className="flex items-center gap-1.5 flex-wrap">
                 <button
                   onClick={handleDownloadMarkdown}
-                  className="px-2.5 py-1 rounded-lg bg-[#182338] hover:bg-[#1f2d48] text-slate-200 border border-slate-600/80 text-[11px] font-medium flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                  className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-[#182338] dark:hover:bg-[#1f2d48] text-slate-700 hover:text-slate-950 dark:text-slate-200 border border-slate-300 dark:border-slate-600/80 text-[11px] font-medium flex items-center gap-1 transition-all active:scale-95 shadow-sm"
                   title="Download report as Markdown file (.md)"
                 >
-                  <FileDown className="w-3 h-3 text-cyan-400" />
+                  <FileDown className="w-3 h-3 text-cyan-600 dark:text-cyan-400" />
                   <span>Markdown</span>
                 </button>
 
                 <button
                   onClick={handleDownloadJson}
-                  className="px-2.5 py-1 rounded-lg bg-[#182338] hover:bg-[#1f2d48] text-slate-200 border border-slate-600/80 text-[11px] font-medium flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                  className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-[#182338] dark:hover:bg-[#1f2d48] text-slate-700 hover:text-slate-950 dark:text-slate-200 border border-slate-300 dark:border-slate-600/80 text-[11px] font-medium flex items-center gap-1 transition-all active:scale-95 shadow-sm"
                   title="Download full analysis data as JSON (.json)"
                 >
-                  <Download className="w-3 h-3 text-purple-400" />
+                  <Download className="w-3 h-3 text-purple-600 dark:text-purple-400" />
                   <span>JSON</span>
                 </button>
 

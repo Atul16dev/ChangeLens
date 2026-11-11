@@ -740,7 +740,7 @@ export function ChatAssistant({ analysisId, selectedNodeId, isSimulating, simula
                   willChange: 'transform, width, height',
                 }
           }
-          className="bg-[#101726]/98 border border-slate-700/90 rounded-2xl shadow-2xl backdrop-blur-xl flex flex-col overflow-hidden ring-1 ring-cyan-500/20"
+          className="bg-white dark:bg-[#101726]/98 border border-slate-200 dark:border-slate-700/90 rounded-2xl shadow-2xl backdrop-blur-xl flex flex-col overflow-hidden ring-1 ring-cyan-500/20"
         >
           {/* Edge and Corner Resize Handles (Desktop Only & Non-Maximized Only) */}
           {!isMobile && !isMaximized && (
@@ -748,7 +748,7 @@ export function ChatAssistant({ analysisId, selectedNodeId, isSimulating, simula
               {/* Corner Handles */}
               <div
                 onMouseDown={(e) => handleResizeMouseDown('se', e)}
-                className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize flex items-center justify-center text-slate-500 hover:text-cyan-400 select-none z-20 group"
+                className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize flex items-center justify-center text-slate-400 dark:text-slate-500 hover:text-cyan-600 dark:hover:text-cyan-400 select-none z-20 group"
                 title="Resize window"
               >
                 <svg className="w-2.5 h-2.5 rotate-90 opacity-60 group-hover:opacity-100" viewBox="0 0 6 6" fill="currentColor">
@@ -801,7 +801,7 @@ export function ChatAssistant({ analysisId, selectedNodeId, isSimulating, simula
                     handleToggleMaximize(e);
                   }
             }
-            className={`p-3 bg-[#0c1220]/95 border-b border-slate-700/80 flex items-center justify-between select-none shrink-0 ${
+            className={`p-3 bg-white dark:bg-[#0c1220]/95 border-b border-slate-200 dark:border-slate-700/80 flex items-center justify-between select-none shrink-0 ${
               isMobile ? 'cursor-default' : isMaximized ? 'cursor-default' : 'cursor-grab active:cursor-grabbing'
             }`}
             title={
@@ -818,6 +818,7 @@ export function ChatAssistant({ analysisId, selectedNodeId, isSimulating, simula
               </div>
               <div>
                 <div className="flex items-center gap-1.5">
+                  <span className="font-bold text-xs text-slate-900 dark:text-white">ChangeLens AI</span>
                   <h3 className="text-xs font-bold text-white tracking-tight">ChangeLens Copilot</h3>
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
                 </div>
@@ -912,12 +913,12 @@ export function ChatAssistant({ analysisId, selectedNodeId, isSimulating, simula
                   className={`max-w-[88%] rounded-xl p-3 leading-relaxed shadow-sm ${
                     msg.role === 'user'
                       ? 'bg-cyan-600 text-white rounded-br-none'
-                      : 'bg-[#131d2e] text-slate-100 border border-slate-700/80 rounded-bl-none'
+                      : 'bg-slate-100 dark:bg-[#131d2e] text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-700/80 rounded-bl-none'
                   }`}
                 >
                   <MarkdownMessageContent content={msg.content} isUser={msg.role === 'user'} />
 
-                  <div className="mt-1.5 pt-1.5 flex items-center justify-between gap-2 text-[10px] opacity-70 border-t border-white/10">
+                  <div className="mt-1.5 pt-1.5 flex items-center justify-between gap-2 text-[10px] opacity-70 border-t border-slate-200 dark:border-white/10">
                     <span>{msg.provider ? `⚡ ${msg.provider}` : msg.timestamp}</span>
                     {msg.role === 'assistant' && (
                       <button
@@ -926,9 +927,9 @@ export function ChatAssistant({ analysisId, selectedNodeId, isSimulating, simula
                         title="Copy answer"
                       >
                         {copiedIndex === i ? (
-                          <Check className="w-3 h-3 text-emerald-400" />
+                          <Check className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
                         ) : (
-                          <Copy className="w-3 h-3 text-slate-400 hover:text-white" />
+                          <Copy className="w-3 h-3 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white" />
                         )}
                       </button>
                     )}
@@ -937,15 +938,15 @@ export function ChatAssistant({ analysisId, selectedNodeId, isSimulating, simula
 
                 {msg.role === 'user' && (
                   <div className="w-6 h-6 rounded-md bg-cyan-600/30 border border-cyan-500/40 flex items-center justify-center shrink-0 mt-0.5">
-                    <User className="w-3.5 h-3.5 text-cyan-300" />
+                    <User className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-300" />
                   </div>
                 )}
               </div>
             ))}
 
             {loading && (
-              <div className="flex gap-2.5 justify-start items-center text-slate-300 text-xs pl-8">
-                <RefreshCw className="w-3.5 h-3.5 text-purple-400 animate-spin" />
+              <div className="flex gap-2.5 justify-start items-center text-slate-600 dark:text-slate-300 text-xs pl-8">
+                <RefreshCw className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400 animate-spin" />
                 <span className="italic">Reasoning over AST dependency graph...</span>
               </div>
             )}
@@ -954,7 +955,7 @@ export function ChatAssistant({ analysisId, selectedNodeId, isSimulating, simula
           </div>
 
           {/* Quick Prompts Suggestions */}
-          <div className="px-3.5 py-2 bg-[#0e1627] border-t border-slate-700/80 flex items-center gap-1.5 overflow-x-auto no-scrollbar shrink-0">
+          <div className="px-3.5 py-2 bg-slate-50 dark:bg-[#0e1627] border-t border-slate-200 dark:border-slate-700/80 flex items-center gap-1.5 overflow-x-auto no-scrollbar shrink-0">
             {quickPrompts.map((qp, idx) => {
               const Icon = qp.icon;
               return (
@@ -962,9 +963,9 @@ export function ChatAssistant({ analysisId, selectedNodeId, isSimulating, simula
                   key={idx}
                   onClick={() => handleSendMessage(qp.prompt)}
                   disabled={loading}
-                  className="shrink-0 px-2.5 py-1 rounded-full bg-[#182338] hover:bg-[#1f2d48] text-slate-200 hover:text-white border border-slate-600/80 text-[10px] font-medium flex items-center gap-1 transition-all active:scale-95 disabled:opacity-40 cursor-pointer shadow-sm"
+                  className="shrink-0 px-2.5 py-1 rounded-full bg-white hover:bg-slate-100 dark:bg-[#182338] dark:hover:bg-[#1f2d48] text-slate-700 hover:text-slate-950 dark:text-slate-200 dark:hover:text-white border border-slate-200 dark:border-slate-600/80 text-[10px] font-medium flex items-center gap-1 transition-all active:scale-95 disabled:opacity-40 cursor-pointer shadow-sm"
                 >
-                  <Icon className="w-3.5 h-3.5 text-cyan-400" />
+                  <Icon className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />
                   <span>{qp.label}</span>
                 </button>
               );
@@ -977,7 +978,7 @@ export function ChatAssistant({ analysisId, selectedNodeId, isSimulating, simula
               e.preventDefault();
               handleSendMessage();
             }}
-            className="p-3 bg-[#0c1220] border-t border-slate-700/80 flex items-center gap-2 shrink-0"
+            className="p-3 bg-white dark:bg-[#0c1220] border-t border-slate-200 dark:border-slate-700/80 flex items-center gap-2 shrink-0"
           >
             <input
               ref={inputRef}
@@ -990,7 +991,7 @@ export function ChatAssistant({ analysisId, selectedNodeId, isSimulating, simula
                   : 'Ask about blast radius, tests, or risks...'
               }
               disabled={loading}
-              className="flex-1 bg-[#090e1a] border border-slate-600/80 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-cyan-400 transition-colors"
+              className="flex-1 bg-slate-50 dark:bg-[#090e1a] border border-slate-300 dark:border-slate-600/80 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-cyan-500 transition-colors"
             />
 
             <button

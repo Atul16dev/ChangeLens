@@ -117,11 +117,11 @@ export function UserProfileMenu({ compact = false }) {
 
         {/* Dropdown Popover */}
         {dropdownOpen && (
-          <div className="absolute right-0 mt-2.5 w-64 rounded-xl bg-slate-900/95 border border-slate-800 shadow-2xl backdrop-blur-xl z-50 py-1.5 focus:outline-none animate-in fade-in zoom-in-95 duration-150">
+          <div className="absolute right-0 mt-2.5 w-64 rounded-xl bg-white dark:bg-slate-900/95 border border-slate-200 dark:border-slate-800 shadow-xl dark:shadow-2xl backdrop-blur-xl z-50 py-1.5 focus:outline-none animate-in fade-in zoom-in-95 duration-150">
             {/* User Profile Header Card */}
-            <div className="px-4 py-3 border-b border-slate-800/80 bg-slate-950/40">
+            <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-800/80 bg-slate-50 dark:bg-slate-950/40">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full border border-indigo-400/40 overflow-hidden bg-slate-900 flex items-center justify-center shrink-0">
+                <div className="w-10 h-10 rounded-full border border-indigo-400/40 overflow-hidden bg-slate-100 dark:bg-slate-900 flex items-center justify-center shrink-0">
                   {user.avatar ? (
                     <img
                       src={user.avatar}
@@ -129,19 +129,19 @@ export function UserProfileMenu({ compact = false }) {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-indigo-950 via-slate-900 to-slate-950 flex items-center justify-center text-xs font-bold text-indigo-200">
+                    <div className="w-full h-full bg-gradient-to-br from-indigo-100 to-indigo-200 dark:from-indigo-950 dark:via-slate-900 dark:to-slate-950 flex items-center justify-center text-xs font-bold text-indigo-700 dark:text-indigo-200">
                       {initials}
                     </div>
                   )}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold text-white truncate">{user.name}</p>
-                  <p className="text-xs text-slate-400 truncate font-mono">{user.email}</p>
+                  <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{user.name}</p>
+                  <p className="text-xs text-slate-600 dark:text-slate-400 truncate font-mono">{user.email}</p>
                 </div>
               </div>
               <div className="mt-2 flex items-center gap-1.5">
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                  <ShieldCheck className="w-3 h-3 text-emerald-400" />
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 dark:bg-emerald-500/10 text-emerald-800 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-500/20">
+                  <ShieldCheck className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
                   Verified Developer
                 </span>
               </div>
@@ -156,9 +156,9 @@ export function UserProfileMenu({ compact = false }) {
                   setDropdownOpen(false);
                   setProfileModalOpen(true);
                 }}
-                className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-medium text-slate-200 hover:text-white hover:bg-slate-800/80 transition-colors text-left"
+                className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-medium text-slate-700 hover:text-slate-950 dark:text-slate-200 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors text-left cursor-pointer"
               >
-                <UserCog className="w-4 h-4 text-indigo-400 shrink-0" />
+                <UserCog className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
                 <span>Edit Profile & Photo</span>
               </button>
 
@@ -170,9 +170,9 @@ export function UserProfileMenu({ compact = false }) {
                     setDropdownOpen(false);
                     navigate('/');
                   }}
-                  className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-medium text-slate-200 hover:text-white hover:bg-slate-800/80 transition-colors text-left"
+                  className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-medium text-slate-700 hover:text-slate-950 dark:text-slate-200 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors text-left cursor-pointer"
                 >
-                  <Globe className="w-4 h-4 text-indigo-400 shrink-0" />
+                  <Globe className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
                   <span>Landing Page</span>
                 </button>
               ) : (
@@ -182,25 +182,25 @@ export function UserProfileMenu({ compact = false }) {
                     setDropdownOpen(false);
                     navigate('/app');
                   }}
-                  className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-medium text-slate-200 hover:text-white hover:bg-slate-800/80 transition-colors text-left"
+                  className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-medium text-slate-700 hover:text-slate-950 dark:text-slate-200 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors text-left cursor-pointer"
                 >
-                  <LayoutDashboard className="w-4 h-4 text-indigo-400 shrink-0" />
+                  <LayoutDashboard className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
                   <span>Launch Workspace</span>
                 </button>
               )}
             </div>
 
             {/* Divider */}
-            <div className="border-t border-slate-800/80 my-1" />
+            <div className="border-t border-slate-200 dark:border-slate-800/80 my-1" />
 
             {/* Option 3: Logout */}
             <div className="py-0.5">
               <button
                 type="button"
                 onClick={handleLogout}
-                className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition-colors text-left"
+                className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-medium text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors text-left cursor-pointer"
               >
-                <LogOut className="w-4 h-4 text-rose-400 shrink-0" />
+                <LogOut className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" />
                 <span>Log Out</span>
               </button>
             </div>

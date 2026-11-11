@@ -200,24 +200,24 @@ export function GitHubConnectorModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200">
       <div
-        className="w-full max-w-2xl bg-[#101726] border border-slate-700/80 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+        className="w-full max-w-2xl bg-white dark:bg-[#101726] border border-slate-200 dark:border-slate-700/80 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
         role="dialog"
         aria-modal="true"
       >
         {/* Modal Header */}
-        <div className="px-6 py-4 border-b border-slate-700/80 flex items-center justify-between bg-[#0c1220]">
+        <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700/80 flex items-center justify-between bg-white dark:bg-[#0c1220]">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-100">
+            <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-800 dark:text-slate-100">
               <GitHubIcon className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-white tracking-tight flex items-center gap-2">
+              <h3 className="text-base font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
                 <span>GitHub Pull Request Connector</span>
-                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-cyan-100 dark:bg-cyan-500/20 text-cyan-800 dark:text-cyan-300 border border-cyan-300 dark:border-cyan-500/30">
                   Live Sync
                 </span>
               </h3>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-600 dark:text-slate-400">
                 Inspect PR diffs, calculate AST blast radius, and automate CI checks
               </p>
             </div>
@@ -226,21 +226,21 @@ export function GitHubConnectorModal({
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Navigation Tabs */}
-        <div className="flex items-center gap-1 px-6 pt-3 border-b border-slate-700/80 bg-[#0c1220]/60 text-xs">
+        <div className="flex items-center gap-1 px-6 pt-3 border-b border-slate-200 dark:border-slate-700/80 bg-slate-50 dark:bg-[#0c1220]/60 text-xs">
           <button
             type="button"
             onClick={() => setActiveTab('analyze')}
             className={`flex items-center gap-1.5 px-3.5 py-2 font-semibold border-b-2 transition-all ${
               activeTab === 'analyze'
-                ? 'border-cyan-500 text-cyan-400'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
+                ? 'border-cyan-600 dark:border-cyan-500 text-cyan-700 dark:text-cyan-400'
+                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
             }`}
           >
             <GitPullRequest className="w-3.5 h-3.5" />
@@ -252,8 +252,8 @@ export function GitHubConnectorModal({
             onClick={() => setActiveTab('ci')}
             className={`flex items-center gap-1.5 px-3.5 py-2 font-semibold border-b-2 transition-all ${
               activeTab === 'ci'
-                ? 'border-cyan-500 text-cyan-400'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
+                ? 'border-cyan-600 dark:border-cyan-500 text-cyan-700 dark:text-cyan-400'
+                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
             }`}
           >
             <Sliders className="w-3.5 h-3.5" />
@@ -265,8 +265,8 @@ export function GitHubConnectorModal({
             onClick={() => setActiveTab('comment')}
             className={`flex items-center gap-1.5 px-3.5 py-2 font-semibold border-b-2 transition-all ${
               activeTab === 'comment'
-                ? 'border-cyan-500 text-cyan-400'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
+                ? 'border-cyan-600 dark:border-cyan-500 text-cyan-700 dark:text-cyan-400'
+                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
             }`}
           >
             <Send className="w-3.5 h-3.5" />
@@ -282,7 +282,7 @@ export function GitHubConnectorModal({
               {/* Form Input */}
               <form onSubmit={handleInspect} className="space-y-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-200 mb-1">
+                  <label className="block text-xs font-semibold text-slate-900 dark:text-slate-200 mb-1">
                     GitHub Pull Request URL
                   </label>
                   <div className="relative">
@@ -292,7 +292,7 @@ export function GitHubConnectorModal({
                       value={prUrl}
                       onChange={(e) => setPrUrl(e.target.value)}
                       placeholder="https://github.com/owner/repo/pull/123"
-                      className="w-full bg-[#090e1a] border border-slate-600/80 rounded-xl pl-10 pr-24 py-2.5 text-sm text-white placeholder-slate-400 focus:outline-none focus:border-cyan-400 font-mono text-xs shadow-inner transition-colors"
+                      className="w-full bg-white dark:bg-[#090e1a] border border-slate-300 dark:border-slate-600/80 rounded-xl pl-10 pr-24 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-cyan-500 font-mono text-xs shadow-inner transition-colors"
                     />
                     <button
                       type="submit"
@@ -306,7 +306,7 @@ export function GitHubConnectorModal({
 
                 {/* Quick Presets */}
                 <div className="flex items-center gap-1.5 flex-wrap text-xs">
-                  <span className="text-[11px] text-slate-400">Sample PRs:</span>
+                  <span className="text-[11px] text-slate-600 dark:text-slate-400">Sample PRs:</span>
                   {DEMO_PRESETS.map((p) => (
                     <button
                       key={p.name}
@@ -315,7 +315,7 @@ export function GitHubConnectorModal({
                         setPrUrl(p.url);
                         setError(null);
                       }}
-                      className="px-2 py-0.5 rounded-full bg-[#182338] hover:bg-[#1f2d48] text-slate-300 hover:text-white border border-slate-600/80 font-mono text-[11px] transition-colors cursor-pointer"
+                      className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-[#182338] hover:bg-slate-200 dark:hover:bg-[#1f2d48] text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white border border-slate-300 dark:border-slate-600/80 font-mono text-[11px] transition-colors cursor-pointer"
                     >
                       {p.name}
                     </button>
@@ -327,7 +327,7 @@ export function GitHubConnectorModal({
                   <button
                     type="button"
                     onClick={() => setShowTokenInput(!showTokenInput)}
-                    className="text-[11px] text-slate-400 hover:text-cyan-400 flex items-center gap-1 transition-colors cursor-pointer"
+                    className="text-[11px] text-slate-600 dark:text-slate-400 hover:text-cyan-700 dark:hover:text-cyan-400 flex items-center gap-1 transition-colors cursor-pointer"
                   >
                     <KeyRound className="w-3 h-3" />
                     <span>{showTokenInput ? 'Hide GitHub Token' : '+ Add Personal Access Token (for private repos or high rate limits)'}</span>
@@ -340,7 +340,7 @@ export function GitHubConnectorModal({
                         value={token}
                         onChange={(e) => setToken(e.target.value)}
                         placeholder="ghp_xxxxxxxxxxxx (Optional, stored in memory only)"
-                        className="w-full bg-[#090e1a] border border-slate-600/80 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-cyan-400 font-mono transition-colors"
+                        className="w-full bg-white dark:bg-[#090e1a] border border-slate-300 dark:border-slate-600/80 rounded-xl px-3.5 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-cyan-500 font-mono transition-colors"
                       />
                     </div>
                   )}
@@ -349,26 +349,26 @@ export function GitHubConnectorModal({
 
               {/* Error Message */}
               {error && (
-                <div className="p-3 rounded-xl bg-rose-950/60 border border-rose-500/40 text-rose-200 text-xs flex items-start gap-2.5">
-                  <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/60 border border-rose-300 dark:border-rose-500/40 text-rose-800 dark:text-rose-200 text-xs flex items-start gap-2.5">
+                  <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
                   <p>{error}</p>
                 </div>
               )}
 
               {/* Inspected PR Details Card */}
               {inspectedPR && (
-                <div className="p-4 rounded-xl bg-[#131d2e] border border-slate-700/80 space-y-3 animate-in fade-in duration-150 shadow-sm">
+                <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#131d2e] border border-slate-200 dark:border-slate-700/80 space-y-3 animate-in fade-in duration-150 shadow-sm">
                   <div className="flex items-start justify-between gap-3">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-xs font-mono font-bold text-slate-300">
+                        <span className="text-xs font-mono font-bold text-slate-700 dark:text-slate-300">
                           {inspectedPR.owner}/{inspectedPR.repo} #{inspectedPR.number}
                         </span>
-                        <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                        <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-500/30">
                           {inspectedPR.state}
                         </span>
                       </div>
-                      <h4 className="text-sm font-bold text-white leading-snug">
+                      <h4 className="text-sm font-bold text-slate-900 dark:text-white leading-snug">
                         {inspectedPR.title}
                       </h4>
                       <p className="text-xs text-slate-400 flex items-center gap-2">
@@ -482,47 +482,47 @@ export function GitHubConnectorModal({
               </div>
 
               {/* Configuration Toggles */}
-              <div className="p-3.5 rounded-xl bg-[#131d2e] border border-slate-700/80 space-y-2.5 text-xs shadow-sm">
-                <span className="text-slate-400 font-semibold block uppercase text-[10px] tracking-wider">
+              <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-[#131d2e] border border-slate-200 dark:border-slate-700/80 space-y-2.5 text-xs shadow-sm">
+                <span className="text-slate-500 dark:text-slate-400 font-semibold block uppercase text-[10px] tracking-wider">
                   Workflow Guard Policies
                 </span>
-                <label className="flex items-center gap-2.5 cursor-pointer text-slate-200">
+                <label className="flex items-center gap-2.5 cursor-pointer text-slate-800 dark:text-slate-200">
                   <input
                     type="checkbox"
                     checked={failOnCritical}
                     onChange={(e) => setFailOnCritical(e.target.checked)}
-                    className="rounded bg-[#090e1a] border-slate-600 text-cyan-500 focus:ring-cyan-500"
+                    className="rounded bg-white dark:bg-[#090e1a] border-slate-300 dark:border-slate-600 text-cyan-600 focus:ring-cyan-500"
                   />
                   <span>Fail CI build if <strong>CRITICAL</strong> risk or broken export is detected (Recommended)</span>
                 </label>
-                <label className="flex items-center gap-2.5 cursor-pointer text-slate-200">
+                <label className="flex items-center gap-2.5 cursor-pointer text-slate-800 dark:text-slate-200">
                   <input
                     type="checkbox"
                     checked={failOnHigh}
                     onChange={(e) => setFailOnHigh(e.target.checked)}
-                    className="rounded bg-[#090e1a] border-slate-600 text-cyan-500 focus:ring-cyan-500"
+                    className="rounded bg-white dark:bg-[#090e1a] border-slate-300 dark:border-slate-600 text-cyan-600 focus:ring-cyan-500"
                   />
                   <span>Fail CI build if <strong>HIGH</strong> risk threshold (Blast Radius &gt; 75) is exceeded</span>
                 </label>
               </div>
 
               {/* YAML Code Box */}
-              <div className="relative rounded-xl bg-[#0a0f1d] border border-slate-700/80 overflow-hidden shadow-inner">
-                <div className="px-4 py-2 bg-[#0e1627] border-b border-slate-700/80 flex items-center justify-between text-xs font-mono text-slate-300">
+              <div className="relative rounded-xl bg-slate-50 dark:bg-[#0a0f1d] border border-slate-200 dark:border-slate-700/80 overflow-hidden shadow-inner">
+                <div className="px-4 py-2 bg-slate-100 dark:bg-[#0e1627] border-b border-slate-200 dark:border-slate-700/80 flex items-center justify-between text-xs font-mono text-slate-800 dark:text-slate-300">
                   <span>.github/workflows/changelens.yml</span>
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
                       onClick={handleCopyWorkflow}
-                      className="flex items-center gap-1 px-2.5 py-1 rounded bg-[#182338] hover:bg-[#1f2d48] text-slate-200 border border-slate-600/80 transition-colors text-xs font-sans cursor-pointer shadow-sm"
+                      className="flex items-center gap-1 px-2.5 py-1 rounded bg-white dark:bg-[#182338] hover:bg-slate-50 dark:hover:bg-[#1f2d48] text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-600/80 transition-colors text-xs font-sans cursor-pointer shadow-sm"
                     >
-                      {copiedWorkflow ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                      {copiedWorkflow ? <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                       <span>{copiedWorkflow ? 'Copied' : 'Copy YAML'}</span>
                     </button>
                     <button
                       type="button"
                       onClick={handleDownloadWorkflow}
-                      className="flex items-center gap-1 px-2.5 py-1 rounded bg-[#182338] hover:bg-[#1f2d48] text-slate-200 border border-slate-600/80 transition-colors text-xs font-sans cursor-pointer shadow-sm"
+                      className="flex items-center gap-1 px-2.5 py-1 rounded bg-white dark:bg-[#182338] hover:bg-slate-50 dark:hover:bg-[#1f2d48] text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-600/80 transition-colors text-xs font-sans cursor-pointer shadow-sm"
                     >
                       <Download className="w-3.5 h-3.5" />
                       <span>Download</span>
@@ -530,7 +530,7 @@ export function GitHubConnectorModal({
                   </div>
                 </div>
 
-                <pre className="p-4 text-xs font-mono text-slate-200 overflow-x-auto max-h-60 leading-relaxed">
+                <pre className="p-4 text-xs font-mono text-slate-900 dark:text-slate-200 overflow-x-auto max-h-60 leading-relaxed">
                   {workflowYaml || 'Loading workflow template...'}
                 </pre>
               </div>
@@ -541,42 +541,42 @@ export function GitHubConnectorModal({
           {activeTab === 'comment' && (
             <div className="space-y-4">
               <div className="space-y-1">
-                <h4 className="text-sm font-bold text-white flex items-center gap-2">
-                  <Send className="w-4 h-4 text-cyan-400" />
+                <h4 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  <Send className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
                   <span>Publish Blast Radius Report to GitHub PR</span>
                 </h4>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-slate-600 dark:text-slate-400">
                   Posts or updates an official ChangeLens review comment on GitHub PR discussions.
                 </p>
               </div>
 
               {commentSuccess && (
-                <div className="p-3 rounded-xl bg-emerald-950/60 border border-emerald-500/40 text-emerald-200 text-xs flex items-center gap-2.5">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-500/40 text-emerald-800 dark:text-emerald-200 text-xs flex items-center gap-2.5">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                   <span>{commentSuccess}</span>
                 </div>
               )}
 
               {commentError && (
-                <div className="p-3 rounded-xl bg-rose-950/60 border border-rose-500/40 text-rose-200 text-xs flex items-center gap-2.5">
-                  <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+                <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/60 border border-rose-300 dark:border-rose-500/40 text-rose-800 dark:text-rose-200 text-xs flex items-center gap-2.5">
+                  <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" />
                   <span>{commentError}</span>
                 </div>
               )}
 
-              <div className="p-4 rounded-xl bg-[#131d2e] border border-slate-700/80 space-y-3 text-xs shadow-sm">
+              <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#131d2e] border border-slate-200 dark:border-slate-700/80 space-y-3 text-xs shadow-sm">
                 <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Target Pull Request</label>
+                  <label className="block text-slate-900 dark:text-slate-300 font-semibold mb-1">Target Pull Request</label>
                   <input
                     type="text"
                     disabled
                     value={inspectedPR ? `${inspectedPR.owner}/${inspectedPR.repo} #${inspectedPR.number} (${inspectedPR.title})` : 'No PR inspected yet (Use the Analyze tab)'}
-                    className="w-full bg-[#0a0f1d] border border-slate-700/80 rounded-lg px-3 py-2 text-slate-300 font-mono text-xs opacity-90"
+                    className="w-full bg-slate-100 dark:bg-[#0a0f1d] border border-slate-300 dark:border-slate-700/80 rounded-lg px-3 py-2 text-slate-700 dark:text-slate-300 font-mono text-xs opacity-90"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-slate-300 font-semibold mb-1">
+                  <label className="block text-slate-900 dark:text-slate-300 font-semibold mb-1">
                     GitHub Personal Access Token (PAT)
                   </label>
                   <input
@@ -584,7 +584,7 @@ export function GitHubConnectorModal({
                     value={token}
                     onChange={(e) => setToken(e.target.value)}
                     placeholder="ghp_xxxxxxxxxxxx (Requires repo / pull-requests write scope)"
-                    className="w-full bg-[#090e1a] border border-slate-600/80 rounded-lg px-3 py-2 text-white font-mono text-xs focus:outline-none focus:border-cyan-400 transition-colors"
+                    className="w-full bg-white dark:bg-[#090e1a] border border-slate-300 dark:border-slate-600/80 rounded-lg px-3 py-2 text-slate-900 dark:text-white font-mono text-xs focus:outline-none focus:border-cyan-500 transition-colors"
                   />
                 </div>
 

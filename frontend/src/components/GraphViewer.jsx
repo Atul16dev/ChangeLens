@@ -34,6 +34,8 @@ import {
   Trash2,
 } from 'lucide-react';
 import { exportGraphToPng, exportGraphToSvg } from '../utils/export.js';
+import { useTheme } from '../context/ThemeContext.jsx';
+import { GraphGalaxy3D } from './GraphGalaxy3D.jsx';
 
 function GraphViewerInternal({
   graphData,
@@ -45,6 +47,7 @@ function GraphViewerInternal({
   onExitSimulation,
   children,
 }) {
+  const { isDark } = useTheme();
   const containerRef = useRef(null);
   const [isExporting, setIsExporting] = useState(false);
   const [exportSuccess, setExportSuccess] = useState(null); // 'png' | 'svg'
@@ -82,6 +85,7 @@ function GraphViewerInternal({
   const { fitView, getViewport, setViewport } = useReactFlow();
 
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [viewDimension, setViewDimension] = useState('2D'); // '2D' | '3D'
   const [filterMode, setFilterMode] = useState('all'); // 'all' | 'blast_only'
   const [semanticMode, setSemanticMode] = useState('impact'); // 'impact' | 'dependency'
   const [isLayoutComputing, setIsLayoutComputing] = useState(false);
@@ -363,10 +367,14 @@ function GraphViewerInternal({
         isFullscreen && !document.fullscreenElement ? 'fixed inset-0 z-50 w-screen h-screen' : ''
       }`}
       style={{
-        background: 'radial-gradient(circle at 50% 35%, #152136 0%, #0d1527 60%, #080d19 100%)',
+        background: isDark
+          ? 'radial-gradient(circle at 50% 35%, #152136 0%, #0d1527 60%, #080d19 100%)'
+          : 'radial-gradient(circle at 50% 35%, #dee5ed 0%, #ccd5e2 50%, #9aa9bd 100%)',
       }}
     >
-      <ReactFlow
+      {/* 2D ReactFlow Layered DAG Graph View */}
+      <div className={`w-full h-full ${viewDimension === '2D' ? 'block' : 'hidden'}`}>
+        <ReactFlow
         nodes={displayNodes}
         edges={displayEdges}
         nodeTypes={nodeTypes}
@@ -390,12 +398,21 @@ function GraphViewerInternal({
         edgesFocusable={false}
         defaultEdgeOptions={{ type: 'impactEdge' }}
       >
-        <Background variant="dots" color="rgba(148, 163, 184, 0.22)" gap={24} size={1.2} />
+        <Background
+          variant="dots"
+          color={isDark ? 'rgba(148, 163, 184, 0.22)' : 'rgba(30, 41, 59, 0.35)'}
+          gap={24}
+          size={1.3}
+        />
 
         <Controls
           position="bottom-left"
           showInteractive={false}
-          className="!bg-[#0f172a]/95 !border-slate-700/80 !rounded-xl !shadow-2xl !fill-slate-200 [&>button]:!bg-[#0f172a] [&>button]:!border-slate-700/80 [&>button]:!text-slate-200 hover:[&>button]:!bg-slate-800 !bottom-4 !left-4"
+          className={`!rounded-xl !shadow-2xl !bottom-4 !left-4 ${
+            isDark
+              ? '!bg-[#0f172a]/95 !border-slate-700/80 !fill-slate-200 [&>button]:!bg-[#0f172a] [&>button]:!border-slate-700/80 [&>button]:!text-slate-200 hover:[&>button]:!bg-slate-800'
+              : '!bg-white/95 !border-slate-300 !fill-slate-700 [&>button]:!bg-white [&>button]:!border-slate-300 [&>button]:!text-slate-700 hover:[&>button]:!bg-slate-100 !shadow-xl'
+          }`}
         >
           <ControlButton
             onClick={toggleFullscreen}
@@ -417,25 +434,60 @@ function GraphViewerInternal({
             if (n.data?.severity === 'CRITICAL') return '#f43f5e';
             if (n.data?.severity === 'HIGH') return '#fb923c';
             if (n.data?.severity === 'MEDIUM') return '#facc15';
-            return '#334155';
+            return isDark ? '#334155' : '#cbd5e1';
           }}
-          maskColor="rgba(8, 13, 25, 0.8)"
+          maskColor={isDark ? 'rgba(8, 13, 25, 0.8)' : 'rgba(203, 213, 225, 0.7)'}
           pannable={true}
           zoomable={true}
-          className="!bg-[#0f172a] !border-slate-700/80 !rounded-xl !shadow-2xl !top-4 !right-4 !w-44 !h-32 hidden md:block"
+          className={`!rounded-xl !top-4 !right-4 !w-44 !h-32 hidden md:block ${
+            isDark
+              ? '!bg-[#0f172a] !border-slate-700/80 !shadow-2xl'
+              : '!bg-[#d8e0ea] !border-slate-300 !shadow-lg'
+          }`}
         />
 
         {/* TOP-LEFT TOOLBAR: CONTROLS, MODES & FILTERS */}
         <Panel position="top-left" className="m-4">
-          <div className="flex flex-wrap items-center gap-2 bg-[#0f172a]/95 backdrop-blur-md p-1.5 rounded-xl border border-slate-700/80 shadow-2xl">
+          <div className="flex flex-wrap items-center gap-2 bg-white/95 dark:bg-[#0f172a]/95 backdrop-blur-md p-1.5 rounded-xl border border-slate-200 dark:border-slate-700/80 shadow-lg dark:shadow-2xl text-slate-800 dark:text-slate-200">
+            {/* 2D / 3D Dimension Switcher */}
+            <div className="flex items-center bg-slate-200/90 dark:bg-[#060b16] p-0.5 rounded-lg border border-slate-300 dark:border-slate-800 shadow-inner">
+              <button
+                type="button"
+                onClick={() => setViewDimension('2D')}
+                className={`px-2.5 py-1 rounded-md text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                  viewDimension === '2D'
+                    ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-sm'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                }`}
+                title="Switch to 2D Layered DAG Graph (ELK.js)"
+              >
+                <Layers className="w-3.5 h-3.5" />
+                <span>2D Graph</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewDimension('3D')}
+                className={`px-2.5 py-1 rounded-md text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                  viewDimension === '3D'
+                    ? 'bg-gradient-to-r from-cyan-500 to-indigo-600 text-white shadow-md shadow-indigo-600/30'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-cyan-600 dark:hover:text-cyan-300'
+                }`}
+                title="Switch to 3D Celestial Codebase Galaxy (Three.js WebGL)"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-cyan-500 dark:text-cyan-300" />
+                <span>3D Galaxy</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+              </button>
+            </div>
+
             {/* View Scope Toggle */}
-            <div className="flex items-center bg-[#090e1a] p-0.5 rounded-lg border border-slate-800">
+            <div className="flex items-center bg-slate-100 dark:bg-[#090e1a] p-0.5 rounded-lg border border-slate-200 dark:border-slate-800">
               <button
                 onClick={() => handleFilterToggle('all')}
                 className={`px-3 py-1 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all ${
                   filterMode === 'all'
                     ? 'bg-cyan-600 text-white shadow-sm'
-                    : 'text-slate-400 hover:text-slate-200'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                 }`}
                 title="Display complete repository dependency graph"
               >
@@ -448,11 +500,11 @@ function GraphViewerInternal({
                 className={`px-3 py-1 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all ${
                   filterMode === 'blast_only'
                     ? 'bg-amber-600 text-white shadow-sm'
-                    : 'text-slate-400 hover:text-amber-300'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-amber-700 dark:hover:text-amber-300'
                 }`}
                 title="Focus exclusively on changed file roots and impacted dependents"
               >
-                <Flame className="w-3.5 h-3.5 text-amber-300" />
+                <Flame className="w-3.5 h-3.5 text-amber-500 dark:text-amber-300" />
                 <span>Blast Radius Only ({impactedNodesCount})</span>
               </button>
             </div>
@@ -460,35 +512,35 @@ function GraphViewerInternal({
             {/* Semantic Flow Toggle */}
             <button
               onClick={handleSemanticModeToggle}
-              className="px-2.5 py-1 rounded-lg bg-[#090e1a] hover:bg-slate-800 border border-slate-800 text-xs font-medium text-slate-300 hover:text-white flex items-center gap-1.5 transition-colors"
+              className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-[#090e1a] dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-xs font-medium text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white flex items-center gap-1.5 transition-colors"
               title={
                 semanticMode === 'impact'
                   ? 'Showing Change Impact Flow (Root Changes ➔ Downstream Consumers)'
                   : 'Showing Code Dependency Flow (Downstream Consumers ➔ Imported Providers)'
               }
             >
-              <ArrowRightLeft className="w-3 h-3 text-cyan-400" />
+              <ArrowRightLeft className="w-3 h-3 text-cyan-600 dark:text-cyan-400" />
               <span>
                 {semanticMode === 'impact' ? 'Mode: Impact Flow (Root ➔ Consumers)' : 'Mode: Code Imports (Consumers ➔ Root)'}
               </span>
             </button>
 
             {/* Graph Snapshot Export (PNG & SVG) */}
-            <div className="flex items-center bg-[#090e1a] p-0.5 rounded-lg border border-slate-800">
+            <div className="flex items-center bg-slate-100 dark:bg-[#090e1a] p-0.5 rounded-lg border border-slate-200 dark:border-slate-800">
               <button
                 onClick={handleExportPng}
                 disabled={isExporting}
                 className={`px-2.5 py-1 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all active:scale-95 ${
                   exportSuccess === 'png'
-                    ? 'bg-emerald-950 text-emerald-300'
-                    : 'text-slate-300 hover:text-cyan-300 hover:bg-slate-900'
+                    ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-bold'
+                    : 'text-slate-700 dark:text-slate-300 hover:text-cyan-700 dark:hover:text-cyan-300 hover:bg-slate-200 dark:hover:bg-slate-900'
                 }`}
                 title="Save high-resolution PNG snapshot of graph"
               >
                 {exportSuccess === 'png' ? (
-                  <Check className="w-3.5 h-3.5 text-emerald-400" />
+                  <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                 ) : (
-                  <Camera className="w-3.5 h-3.5 text-cyan-400" />
+                  <Camera className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />
                 )}
                 <span>{exportSuccess === 'png' ? 'Saved!' : 'PNG'}</span>
               </button>
@@ -496,17 +548,17 @@ function GraphViewerInternal({
               <button
                 onClick={handleExportSvg}
                 disabled={isExporting}
-                className={`px-2.5 py-1 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all active:scale-95 border-l border-slate-800 ${
+                className={`px-2.5 py-1 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all active:scale-95 border-l border-slate-200 dark:border-slate-800 ${
                   exportSuccess === 'svg'
-                    ? 'bg-emerald-950 text-emerald-300'
-                    : 'text-slate-300 hover:text-purple-300 hover:bg-slate-900'
+                    ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-bold'
+                    : 'text-slate-700 dark:text-slate-300 hover:text-purple-700 dark:hover:text-purple-300 hover:bg-slate-200 dark:hover:bg-slate-900'
                 }`}
                 title="Save vector SVG of graph"
               >
                 {exportSuccess === 'svg' ? (
-                  <Check className="w-3.5 h-3.5 text-emerald-400" />
+                  <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                 ) : (
-                  <Download className="w-3.5 h-3.5 text-purple-400" />
+                  <Download className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
                 )}
                 <span>{exportSuccess === 'svg' ? 'Saved!' : 'SVG'}</span>
               </button>
@@ -517,29 +569,29 @@ function GraphViewerInternal({
               <div
                 className={`flex items-center gap-1.5 border px-2.5 py-1 rounded-lg text-xs font-semibold shadow-lg ${
                   simulatedChangeType === 'deleted'
-                    ? 'bg-gradient-to-r from-rose-950 via-[#2f1322] to-slate-950 border-rose-500/60 text-rose-200'
-                    : 'bg-gradient-to-r from-purple-950 via-indigo-950 to-slate-950 border-purple-500/50 text-purple-200'
+                    ? 'bg-rose-100 dark:bg-gradient-to-r dark:from-rose-950 dark:via-[#2f1322] dark:to-slate-950 border-rose-300 dark:border-rose-500/60 text-rose-900 dark:text-rose-200'
+                    : 'bg-purple-100 dark:bg-gradient-to-r dark:from-purple-950 dark:via-indigo-950 dark:to-slate-950 border-purple-300 dark:border-purple-500/50 text-purple-900 dark:text-purple-200'
                 }`}
               >
                 {simulatedChangeType === 'deleted' ? (
-                  <Trash2 className="w-3.5 h-3.5 text-rose-400 animate-pulse shrink-0" />
+                  <Trash2 className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400 animate-pulse shrink-0" />
                 ) : (
-                  <Zap className="w-3.5 h-3.5 text-amber-400 animate-pulse shrink-0" />
+                  <Zap className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400 animate-pulse shrink-0" />
                 )}
                 <span
                   className={`text-[10px] font-bold uppercase tracking-wider ${
-                    simulatedChangeType === 'deleted' ? 'text-rose-400' : 'text-amber-400'
+                    simulatedChangeType === 'deleted' ? 'text-rose-700 dark:text-rose-400' : 'text-amber-700 dark:text-amber-400'
                   }`}
                 >
                   {simulatedChangeType === 'deleted' ? 'Simulate (Delete):' : 'Simulation:'}
                 </span>
-                <span className="font-mono text-[11px] text-white truncate max-w-[140px]" title={simulatedFile}>
+                <span className="font-mono text-[11px] text-slate-900 dark:text-white truncate max-w-[140px]" title={simulatedFile}>
                   {simulatedFile?.split('/').pop()}
                 </span>
                 {onExitSimulation && (
                   <button
                     onClick={onExitSimulation}
-                    className="ml-1 p-0.5 rounded text-slate-300 hover:text-white hover:bg-slate-800 transition-colors"
+                    className="ml-1 p-0.5 rounded text-slate-500 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
                     title="Exit simulation"
                   >
                     <X className="w-3.5 h-3.5" />
@@ -552,9 +604,9 @@ function GraphViewerInternal({
 
         {/* BOTTOM-LEFT: REFINED COLOR & TIER LEGEND (SHIFTED RIGHT OF ZOOM CONTROLS) */}
         <Panel position="bottom-left" className="!mb-4 !ml-16 sm:!ml-[72px] hidden sm:block">
-          <div className="bg-[#0f172a]/95 backdrop-blur-md border border-slate-700/80 rounded-xl px-3.5 py-2 shadow-2xl flex flex-wrap items-center gap-3.5 text-xs text-slate-300">
-            <span className="font-bold text-slate-400 flex items-center gap-1 border-r border-slate-800 pr-3 text-[11px]">
-              <Layers className="w-3.5 h-3.5 text-cyan-400" />
+          <div className="bg-white/95 dark:bg-[#0f172a]/95 backdrop-blur-md border border-slate-200 dark:border-slate-700/80 rounded-xl px-3.5 py-2 shadow-lg dark:shadow-2xl flex flex-wrap items-center gap-3.5 text-xs text-slate-700 dark:text-slate-300">
+            <span className="font-bold text-slate-800 dark:text-slate-400 flex items-center gap-1 border-r border-slate-200 dark:border-slate-800 pr-3 text-[11px]">
+              <Layers className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />
               Impact Legend
             </span>
             <div className="flex items-center gap-1.5 text-[11px]">
@@ -574,12 +626,38 @@ function GraphViewerInternal({
               <span>Transitive (Lv 2+)</span>
             </div>
             <div className="flex items-center gap-1.5 text-[11px]">
-              <span className="w-2.5 h-2.5 rounded-full bg-slate-600 border border-slate-500/50"></span>
-              <span className="text-slate-300">Clean File</span>
+              <span className="w-2.5 h-2.5 rounded-full bg-slate-400 dark:bg-slate-600 border border-slate-300 dark:border-slate-500/50"></span>
+              <span className="text-slate-700 dark:text-slate-300">Clean File</span>
             </div>
           </div>
         </Panel>
       </ReactFlow>
+      </div>
+
+      {/* 3D Spatial Codebase Viewport */}
+      {viewDimension === '3D' && (
+        <div className="w-full h-full absolute inset-0 z-10">
+          <GraphGalaxy3D
+            graphData={graphData}
+            layoutNodes={displayNodes}
+            layoutEdges={displayEdges}
+            selectedNodeId={selectedNodeId}
+            onSelectNode={onSelectNode}
+            isSimulating={isSimulating}
+            simulatedFile={simulatedFile}
+            simulatedChangeType={simulatedChangeType}
+            filterMode={filterMode}
+            onFilterToggle={handleFilterToggle}
+            semanticMode={semanticMode}
+            onSemanticModeToggle={handleSemanticModeToggle}
+            viewDimension={viewDimension}
+            onToggleDimension={setViewDimension}
+            onExitSimulation={onExitSimulation}
+            isFullscreen={isFullscreen}
+            onToggleFullscreen={toggleFullscreen}
+          />
+        </div>
+      )}
 
       {/* Embedded overlays like ChatAssistant that persist in fullscreen mode */}
       {children}

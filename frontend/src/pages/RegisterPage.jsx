@@ -6,6 +6,7 @@ import {
   AlertCircle, CheckCircle2, XCircle, RefreshCw, ArrowRight
 } from 'lucide-react';
 import { BrandLogo } from '../components/BrandLogo.jsx';
+import { ThemeToggle } from '../components/ThemeToggle.jsx';
 
 export function RegisterPage() {
   const { register, isAuthenticated } = useAuth();
@@ -62,7 +63,11 @@ export function RegisterPage() {
   );
 
   return (
-    <div className="min-h-screen bg-[#070b14] text-slate-100 font-sans flex flex-col items-center justify-center py-10 px-4 relative overflow-x-hidden">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#070b14] text-slate-900 dark:text-slate-100 font-sans flex flex-col items-center justify-center py-10 px-4 relative overflow-x-hidden">
+      {/* Top right theme toggle */}
+      <div className="absolute top-4 right-4 z-20">
+        <ThemeToggle size="sm" />
+      </div>
 
       {/* Ambient glow */}
       <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-indigo-600/10 blur-[140px] rounded-full pointer-events-none" />
@@ -71,21 +76,21 @@ export function RegisterPage() {
       {/* ── Brand header (centered, above card) ── */}
       <div className="flex flex-col items-center gap-2 mb-6 relative z-10">
         <BrandLogo size="lg" />
-        <h1 className="text-2xl font-bold tracking-tight text-center bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">
+        <h1 className="text-2xl font-bold tracking-tight text-center text-slate-900 dark:text-white">
           Create your ChangeLens Account
         </h1>
-        <p className="text-xs text-slate-400 text-center">
+        <p className="text-xs text-slate-600 dark:text-slate-400 text-center">
           Ship with confidence using AST-powered Blast Radius Analysis
         </p>
       </div>
 
       {/* ── Card ── */}
-      <div className="w-full max-w-lg bg-slate-900/80 border border-slate-700/60 rounded-2xl px-7 py-6 backdrop-blur-xl shadow-2xl shadow-black/40 relative z-10">
+      <div className="w-full max-w-lg bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-700/60 rounded-2xl px-7 py-6 backdrop-blur-xl shadow-xl dark:shadow-2xl shadow-slate-900/5 dark:shadow-black/40 relative z-10">
 
         {/* Error */}
         {error && (
-          <div className="mb-4 bg-rose-950/70 border border-rose-500/40 rounded-xl p-3 flex items-start gap-2.5 text-rose-200 text-xs">
-            <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+          <div className="mb-4 bg-rose-50 dark:bg-rose-950/70 border border-rose-200 dark:border-rose-500/40 rounded-xl p-3 flex items-start gap-2.5 text-rose-800 dark:text-rose-200 text-xs">
+            <AlertCircle className="w-4 h-4 text-rose-500 dark:text-rose-400 shrink-0 mt-0.5" />
             <p className="font-medium leading-relaxed">{error}</p>
           </div>
         )}
@@ -96,26 +101,26 @@ export function RegisterPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {/* Name */}
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5" htmlFor="name">Full Name</label>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5" htmlFor="name">Full Name</label>
               <div className="relative">
-                <User className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <User className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <input id="name" type="text" value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Ada Lovelace" required
-                  className="w-full bg-slate-950/80 border border-slate-700/80 rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/20 font-mono transition-all"
+                  className="w-full bg-slate-50 dark:bg-slate-950/80 border border-slate-300 dark:border-slate-700/80 rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/20 font-mono transition-all"
                 />
               </div>
             </div>
 
             {/* Email */}
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5" htmlFor="email">Work Email</label>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5" htmlFor="email">Work Email</label>
               <div className="relative">
-                <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <Mail className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <input id="email" type="email" value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="dev@company.com" required
-                  className="w-full bg-slate-950/80 border border-slate-700/80 rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/20 font-mono transition-all"
+                  className="w-full bg-slate-50 dark:bg-slate-950/80 border border-slate-300 dark:border-slate-700/80 rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/20 font-mono transition-all"
                 />
               </div>
             </div>
@@ -125,16 +130,16 @@ export function RegisterPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {/* Password */}
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5" htmlFor="password">Password</label>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5" htmlFor="password">Password</label>
               <div className="relative">
-                <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <Lock className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <input id="password" type={showPassword ? 'text' : 'password'} value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Min 8 characters" required
-                  className="w-full bg-slate-950/80 border border-slate-700/80 rounded-xl pl-10 pr-10 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/20 font-mono transition-all"
+                  className="w-full bg-slate-50 dark:bg-slate-950/80 border border-slate-300 dark:border-slate-700/80 rounded-xl pl-10 pr-10 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/20 font-mono transition-all"
                 />
                 <button type="button" onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors">
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
@@ -142,18 +147,18 @@ export function RegisterPage() {
 
             {/* Confirm Password */}
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5" htmlFor="confirmPassword">Confirm Password</label>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5" htmlFor="confirmPassword">Confirm Password</label>
               <div className="relative">
-                <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <Lock className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <input id="confirmPassword" type={showPassword ? 'text' : 'password'} value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Re-enter password" required
-                  className={`w-full bg-slate-950/80 border rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 font-mono transition-all ${
+                  className={`w-full bg-slate-50 dark:bg-slate-950/80 border rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-1 font-mono transition-all ${
                     confirmPassword
                       ? passwordsMatch
                         ? 'border-emerald-500/60 focus:border-emerald-500 focus:ring-emerald-500/20'
                         : 'border-rose-500/60 focus:border-rose-500 focus:ring-rose-500/20'
-                      : 'border-slate-700/80 focus:border-cyan-500 focus:ring-cyan-500/20'
+                      : 'border-slate-300 dark:border-slate-700/80 focus:border-cyan-500 focus:ring-cyan-500/20'
                   }`}
                 />
               </div>
@@ -161,7 +166,7 @@ export function RegisterPage() {
           </div>
 
           {/* Password strength checklist — horizontal inline */}
-          <div className="flex items-center justify-between flex-wrap gap-x-4 gap-y-1 px-3.5 py-2.5 bg-slate-950/50 rounded-xl border border-slate-800/60">
+          <div className="flex items-center justify-between flex-wrap gap-x-4 gap-y-1 px-3.5 py-2.5 bg-slate-100/80 dark:bg-slate-950/50 rounded-xl border border-slate-200 dark:border-slate-800/60">
             <Criterion met={hasMinLength} label="8+ chars" />
             <Criterion met={hasUpper && hasLower} label="Aa mixed" />
             <Criterion met={hasNumber} label="Number" />
@@ -183,15 +188,15 @@ export function RegisterPage() {
 
         {/* Divider */}
         <div className="relative my-4">
-          <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-800" /></div>
+          <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-200 dark:border-slate-800" /></div>
           <div className="relative flex justify-center text-[11px] uppercase tracking-widest">
-            <span className="bg-slate-900 px-3 text-slate-500 font-medium">Or continue with</span>
+            <span className="bg-white dark:bg-slate-900 px-3 text-slate-500 font-medium">Or continue with</span>
           </div>
         </div>
 
         {/* Google OAuth */}
         <button type="button" onClick={handleGoogleSignup}
-          className="w-full bg-slate-950/80 hover:bg-slate-800/80 border border-slate-700/80 hover:border-slate-600 text-slate-200 text-sm font-medium py-2.5 px-4 rounded-xl transition-all flex items-center justify-center gap-3 shadow-sm">
+          className="w-full bg-slate-50 dark:bg-slate-950/80 hover:bg-slate-100 dark:hover:bg-slate-800/80 border border-slate-300 dark:border-slate-700/80 hover:border-slate-400 text-slate-800 dark:text-slate-200 text-sm font-medium py-2.5 px-4 rounded-xl transition-all flex items-center justify-center gap-3 shadow-sm">
           <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
             <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.66v3.05h3.87c2.27-2.09 3.675-5.17 3.675-9.15z" />
             <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.87-3.05c-1.08.72-2.45 1.16-4.06 1.16-3.13 0-5.78-2.11-6.73-4.96H1.28v3.16C3.26 21.31 7.34 24 12 24z" />
@@ -202,9 +207,9 @@ export function RegisterPage() {
         </button>
 
         {/* Footer */}
-        <p className="mt-4 text-center text-xs text-slate-400">
+        <p className="mt-4 text-center text-xs text-slate-600 dark:text-slate-400">
           Already have an account?{' '}
-          <Link to="/login" className="text-cyan-400 hover:text-cyan-300 font-semibold transition-colors">
+          <Link to="/login" className="text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 font-semibold transition-colors">
             Log in
           </Link>
         </p>

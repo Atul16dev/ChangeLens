@@ -123,28 +123,28 @@ export function HistoryDrawer({ isOpen, onClose, onLoadAnalysis, currentAnalysis
           role="dialog"
           aria-modal="true"
           aria-labelledby="history-drawer-title"
-          className="w-screen max-w-xl bg-[#101726] border-l border-slate-700/80 shadow-2xl flex flex-col relative z-10"
+          className="w-screen max-w-xl bg-white dark:bg-[#101726] border-l border-slate-200 dark:border-slate-700/80 shadow-2xl flex flex-col relative z-10"
         >
           {/* Header */}
-          <div className="px-6 py-4 border-b border-slate-700/80 bg-[#0c1220]/95 backdrop-blur-md flex items-center justify-between gap-4">
+          <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700/80 bg-white dark:bg-[#0c1220]/95 backdrop-blur-md flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
+              <div className="w-9 h-9 rounded-lg bg-cyan-100 dark:bg-cyan-500/10 border border-cyan-200 dark:border-cyan-500/20 flex items-center justify-center text-cyan-700 dark:text-cyan-400">
                 <History className="w-5 h-5" />
               </div>
               <div>
-                <h2 id="history-drawer-title" className="text-base font-bold text-white flex items-center gap-2">
+                <h2 id="history-drawer-title" className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
                   <span>Analysis History</span>
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-cyan-950 text-cyan-400 border border-cyan-800/40 font-semibold">
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-cyan-100 dark:bg-cyan-950 text-cyan-800 dark:text-cyan-400 border border-cyan-200 dark:border-cyan-800/40 font-semibold">
                     {total} Total
                   </span>
                   {pinnedCount > 0 && (
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-violet-950 text-violet-300 border border-violet-800/40 flex items-center gap-1 font-semibold">
-                      <BookmarkCheck className="w-3 h-3 text-violet-400" />
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-violet-100 dark:bg-violet-950 text-violet-800 dark:text-violet-300 border border-violet-200 dark:border-violet-800/40 flex items-center gap-1 font-semibold">
+                      <BookmarkCheck className="w-3 h-3 text-violet-600 dark:text-violet-400" />
                       {pinnedCount} Saved
                     </span>
                   )}
                 </h2>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-slate-600 dark:text-slate-400">
                   Cloud-persisted blast radius graphs in MongoDB Atlas
                 </p>
               </div>
@@ -155,15 +155,15 @@ export function HistoryDrawer({ isOpen, onClose, onLoadAnalysis, currentAnalysis
                 type="button"
                 onClick={() => fetchHistory()}
                 disabled={loading}
-                className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
+                className="p-2 text-slate-500 hover:text-slate-950 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
                 title="Refresh history"
               >
-                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-cyan-400' : ''}`} />
+                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-cyan-600 dark:text-cyan-400' : ''}`} />
               </button>
               <button
                 type="button"
                 onClick={onClose}
-                className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
+                className="p-2 text-slate-500 hover:text-slate-950 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
                 title="Close drawer"
               >
                 <X className="w-5 h-5" />
@@ -172,22 +172,22 @@ export function HistoryDrawer({ isOpen, onClose, onLoadAnalysis, currentAnalysis
           </div>
 
           {/* 30-Day Auto-Deletion Policy Notice Banner */}
-          <div className="px-5 py-3 bg-gradient-to-r from-indigo-950/80 via-[#131d2e] to-indigo-950/50 border-b border-indigo-700/40 flex items-start gap-3">
-            <div className="p-1 rounded-md bg-indigo-500/15 border border-indigo-500/25 text-indigo-400 shrink-0 mt-0.5">
+          <div className="px-5 py-3 bg-indigo-50 dark:bg-gradient-to-r dark:from-indigo-950/80 dark:via-[#131d2e] dark:to-indigo-950/50 border-b border-indigo-200 dark:border-indigo-700/40 flex items-start gap-3">
+            <div className="p-1 rounded-md bg-indigo-100 dark:bg-indigo-500/15 border border-indigo-200 dark:border-indigo-500/25 text-indigo-700 dark:text-indigo-400 shrink-0 mt-0.5">
               <Clock className="w-4 h-4" />
             </div>
             <div className="text-xs space-y-0.5">
-              <p className="font-semibold text-slate-200">
+              <p className="font-semibold text-slate-900 dark:text-slate-200">
                 History will be deleted after 30 days automatically.
               </p>
-              <p className="text-slate-400 text-[11px] leading-relaxed">
-                To save your history for a long time, please <span className="text-indigo-300 font-semibold">pin</span> or <span className="text-indigo-300 font-semibold">save</span>. Pinned reports will never be deleted.
+              <p className="text-slate-600 dark:text-slate-400 text-[11px] leading-relaxed">
+                To save your history for a long time, please <span className="text-indigo-700 dark:text-indigo-300 font-semibold">pin</span> or <span className="text-indigo-700 dark:text-indigo-300 font-semibold">save</span>. Pinned reports will never be deleted.
               </p>
             </div>
           </div>
 
           {/* Search & Stats Bar */}
-          <div className="p-4 bg-[#0e1627] border-b border-slate-700/80 space-y-3">
+          <div className="p-4 bg-slate-50 dark:bg-[#0e1627] border-b border-slate-200 dark:border-slate-700/80 space-y-3">
             <form onSubmit={handleSearchSubmit} className="relative">
               <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
@@ -195,34 +195,34 @@ export function HistoryDrawer({ isOpen, onClose, onLoadAnalysis, currentAnalysis
                 placeholder="Search by repo path, changed file, or title..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-9 pr-20 py-2 bg-[#090e1a] border border-slate-600/80 rounded-lg text-xs text-white placeholder-slate-400 focus:outline-none focus:border-cyan-400 transition-colors"
+                className="w-full pl-9 pr-20 py-2 bg-white dark:bg-[#090e1a] border border-slate-300 dark:border-slate-600/80 rounded-lg text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-cyan-500 transition-colors shadow-inner"
               />
               <button
                 type="submit"
-                className="absolute right-1.5 top-1/2 -translate-y-1/2 px-2.5 py-1 text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 rounded font-medium transition-colors cursor-pointer"
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 px-2.5 py-1 text-xs bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 rounded font-medium border border-slate-300 dark:border-transparent transition-colors cursor-pointer"
               >
                 Search
               </button>
             </form>
 
             <div className="grid grid-cols-3 gap-2">
-              <div className="bg-[#131d2e] border border-slate-700/80 rounded-lg p-2.5 shadow-sm">
-                <span className="text-[11px] text-slate-400 flex items-center gap-1 font-medium">
-                  <Layers className="w-3.5 h-3.5 text-cyan-400" /> Total Reports
+              <div className="bg-white dark:bg-[#131d2e] border border-slate-200 dark:border-slate-700/80 rounded-lg p-2.5 shadow-sm">
+                <span className="text-[11px] text-slate-600 dark:text-slate-400 flex items-center gap-1 font-medium">
+                  <Layers className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" /> Total Reports
                 </span>
-                <p className="text-base font-bold text-white mt-0.5">{total}</p>
+                <p className="text-base font-bold text-slate-900 dark:text-white mt-0.5">{total}</p>
               </div>
-              <div className="bg-[#131d2e] border border-slate-700/80 rounded-lg p-2.5 shadow-sm">
-                <span className="text-[11px] text-violet-400 flex items-center gap-1 font-medium">
-                  <BookmarkCheck className="w-3.5 h-3.5 text-violet-400" /> Pinned / Saved
+              <div className="bg-white dark:bg-[#131d2e] border border-slate-200 dark:border-slate-700/80 rounded-lg p-2.5 shadow-sm">
+                <span className="text-[11px] text-violet-700 dark:text-violet-400 flex items-center gap-1 font-medium">
+                  <BookmarkCheck className="w-3.5 h-3.5 text-violet-600 dark:text-violet-400" /> Pinned / Saved
                 </span>
-                <p className="text-base font-bold text-violet-300 mt-0.5">{pinnedCount}</p>
+                <p className="text-base font-bold text-violet-700 dark:text-violet-300 mt-0.5">{pinnedCount}</p>
               </div>
-              <div className="bg-[#131d2e] border border-slate-700/80 rounded-lg p-2.5 shadow-sm">
-                <span className="text-[11px] text-amber-400 flex items-center gap-1 font-medium">
-                  <ShieldAlert className="w-3.5 h-3.5" /> High Risk
+              <div className="bg-white dark:bg-[#131d2e] border border-slate-200 dark:border-slate-700/80 rounded-lg p-2.5 shadow-sm">
+                <span className="text-[11px] text-amber-700 dark:text-amber-400 flex items-center gap-1 font-medium">
+                  <ShieldAlert className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" /> High Risk
                 </span>
-                <p className="text-base font-bold text-amber-300 mt-0.5">{highRiskCount}</p>
+                <p className="text-base font-bold text-amber-700 dark:text-amber-300 mt-0.5">{highRiskCount}</p>
               </div>
             </div>
           </div>
@@ -308,10 +308,10 @@ export function HistoryDrawer({ isOpen, onClose, onLoadAnalysis, currentAnalysis
                     key={item.analysisId}
                     className={`border rounded-xl p-4 transition-all shadow-sm ${
                       isSelected
-                        ? 'border-cyan-400 ring-2 ring-cyan-400/30 bg-[#16253d] shadow-lg shadow-cyan-950/40'
+                        ? 'border-cyan-400 ring-2 ring-cyan-400/30 bg-cyan-50/80 dark:bg-[#16253d] shadow-lg shadow-cyan-950/40'
                         : item.isPinned
-                        ? 'border-violet-600/60 bg-gradient-to-b from-[#141a2e] to-violet-950/20 hover:border-violet-500/80'
-                        : 'bg-[#131d2e] border-slate-700/80 hover:border-slate-600'
+                        ? 'border-violet-300 dark:border-violet-600/60 bg-violet-50/50 dark:bg-gradient-to-b dark:from-[#141a2e] dark:to-violet-950/20 hover:border-violet-400 dark:hover:border-violet-500/80'
+                        : 'bg-white dark:bg-[#131d2e] border-slate-200 dark:border-slate-700/80 hover:border-slate-300 dark:hover:border-slate-600'
                     }`}
                   >
                     <div className="flex items-start justify-between gap-3">
@@ -320,37 +320,37 @@ export function HistoryDrawer({ isOpen, onClose, onLoadAnalysis, currentAnalysis
                           <span className={`px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase border ${riskColor}`}>
                             {riskLevel}
                           </span>
-                          <span className="text-[11px] text-slate-400 flex items-center gap-1 font-medium">
+                          <span className="text-[11px] text-slate-600 dark:text-slate-400 flex items-center gap-1 font-medium">
                             <Calendar className="w-3 h-3" />
                             {formattedDate}
                           </span>
                           {item.isPinned ? (
-                            <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-violet-500/20 text-violet-300 border border-violet-500/40 flex items-center gap-1 shadow-sm">
-                              <BookmarkCheck className="w-3 h-3 text-violet-400" />
+                            <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-violet-100 dark:bg-violet-500/20 text-violet-800 dark:text-violet-300 border border-violet-200 dark:border-violet-500/40 flex items-center gap-1 shadow-sm">
+                              <BookmarkCheck className="w-3 h-3 text-violet-600 dark:text-violet-400" />
                               Saved Permanently
                             </span>
                           ) : (
                             <span
-                              className="px-2 py-0.5 rounded text-[10px] font-medium bg-[#0a0f1d] text-slate-300 border border-slate-700/70 flex items-center gap-1"
+                              className="px-2 py-0.5 rounded text-[10px] font-medium bg-slate-100 dark:bg-[#0a0f1d] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700/70 flex items-center gap-1"
                               title="Automatically deleted after 30 days unless pinned/saved"
                             >
-                              <Clock className="w-3 h-3 text-slate-400" />
+                              <Clock className="w-3 h-3 text-slate-500 dark:text-slate-400" />
                               Auto-deletes in {daysLeft}d
                             </span>
                           )}
                           {isSelected && (
-                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-cyan-950 text-cyan-300 font-semibold border border-cyan-500/50">
+                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-cyan-100 dark:bg-cyan-950 text-cyan-800 dark:text-cyan-300 font-semibold border border-cyan-300 dark:border-cyan-500/50">
                               Active in Workspace
                             </span>
                           )}
                         </div>
 
-                        <h4 className="text-sm font-semibold text-white truncate" title={item.title}>
+                        <h4 className="text-sm font-semibold text-slate-900 dark:text-white truncate" title={item.title}>
                           {item.title}
                         </h4>
 
                         {item.targetDir && (
-                          <p className="text-xs text-slate-400 truncate flex items-center gap-1">
+                          <p className="text-xs text-slate-600 dark:text-slate-400 truncate flex items-center gap-1">
                             <FolderGit2 className="w-3 h-3 text-slate-500 shrink-0" />
                             <span>{item.targetDir}</span>
                           </p>
@@ -365,8 +365,8 @@ export function HistoryDrawer({ isOpen, onClose, onLoadAnalysis, currentAnalysis
                           disabled={pinningId === item.analysisId}
                           className={`px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm cursor-pointer ${
                             item.isPinned
-                              ? 'bg-violet-950 text-violet-200 hover:bg-violet-900 border border-violet-600/70 hover:border-violet-500'
-                              : 'bg-[#182338] text-slate-200 hover:text-white hover:bg-[#1f2d48] border border-slate-600/80'
+                              ? 'bg-violet-100 dark:bg-violet-950 text-violet-800 dark:text-violet-200 hover:bg-violet-200 dark:hover:bg-violet-900 border border-violet-300 dark:border-violet-600/70 hover:border-violet-400 dark:hover:border-violet-500'
+                              : 'bg-slate-100 dark:bg-[#182338] text-slate-800 dark:text-slate-200 hover:text-slate-950 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-[#1f2d48] border border-slate-300 dark:border-slate-600/80'
                           }`}
                           title={
                             item.isPinned
@@ -377,15 +377,15 @@ export function HistoryDrawer({ isOpen, onClose, onLoadAnalysis, currentAnalysis
                           {pinningId === item.analysisId ? (
                             <RefreshCw className="w-3.5 h-3.5 animate-spin text-violet-400" />
                           ) : item.isPinned ? (
-                            <BookmarkCheck className="w-3.5 h-3.5 text-violet-400" />
+                            <BookmarkCheck className="w-3.5 h-3.5 text-violet-600 dark:text-violet-400" />
                           ) : (
-                            <Bookmark className="w-3.5 h-3.5 text-slate-400" />
+                            <Bookmark className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
                           )}
                           <span>{item.isPinned ? 'Saved' : 'Save History'}</span>
                         </button>
 
                         {isConfirmingDelete ? (
-                          <div className="flex items-center gap-1 bg-rose-950/80 border border-rose-800/60 p-1 rounded-lg">
+                          <div className="flex items-center gap-1 bg-rose-100 dark:bg-rose-950/80 border border-rose-300 dark:border-rose-800/60 p-1 rounded-lg">
                             <button
                               type="button"
                               onClick={() => handleDelete(item.analysisId)}
@@ -397,7 +397,7 @@ export function HistoryDrawer({ isOpen, onClose, onLoadAnalysis, currentAnalysis
                             <button
                               type="button"
                               onClick={() => setDeleteConfirmId(null)}
-                              className="px-2 py-0.5 text-[10px] text-slate-300 hover:text-white"
+                              className="px-2 py-0.5 text-[10px] text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
                             >
                               Cancel
                             </button>
@@ -406,7 +406,7 @@ export function HistoryDrawer({ isOpen, onClose, onLoadAnalysis, currentAnalysis
                           <button
                             type="button"
                             onClick={() => setDeleteConfirmId(item.analysisId)}
-                            className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-rose-950/30 rounded-lg transition-colors cursor-pointer"
+                            className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-950/30 rounded-lg transition-colors cursor-pointer"
                             title="Delete from history"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -416,16 +416,16 @@ export function HistoryDrawer({ isOpen, onClose, onLoadAnalysis, currentAnalysis
                     </div>
 
                     {/* Metric pills */}
-                    <div className="mt-3 pt-3 border-t border-slate-700/60 flex items-center justify-between gap-2 flex-wrap">
-                      <div className="flex items-center gap-2 text-xs text-slate-300">
-                        <span className="bg-[#0a0f1d] px-2 py-0.5 rounded border border-slate-700/80 font-medium">
-                          <strong className="text-white">{item.summary?.affectedFilesCount ?? 0}</strong> impacted
+                    <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-700/60 flex items-center justify-between gap-2 flex-wrap">
+                      <div className="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300">
+                        <span className="bg-slate-100 dark:bg-[#0a0f1d] px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700/80 font-medium">
+                          <strong className="text-slate-900 dark:text-white">{item.summary?.affectedFilesCount ?? 0}</strong> impacted
                         </span>
-                        <span className="bg-[#0a0f1d] px-2 py-0.5 rounded border border-slate-700/80 font-medium">
-                          <strong className="text-white">{item.summary?.directDependentsCount ?? 0}</strong> direct
+                        <span className="bg-slate-100 dark:bg-[#0a0f1d] px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700/80 font-medium">
+                          <strong className="text-slate-900 dark:text-white">{item.summary?.directDependentsCount ?? 0}</strong> direct
                         </span>
                         {(item.summary?.brokenSymbolsCount ?? 0) > 0 && (
-                          <span className="bg-rose-950/80 text-rose-300 border border-rose-800/60 px-2 py-0.5 rounded font-semibold">
+                          <span className="bg-rose-100 dark:bg-rose-950/80 text-rose-800 dark:text-rose-300 border border-rose-300 dark:border-rose-800/60 px-2 py-0.5 rounded font-semibold">
                             {item.summary.brokenSymbolsCount} broken
                           </span>
                         )}
@@ -437,7 +437,7 @@ export function HistoryDrawer({ isOpen, onClose, onLoadAnalysis, currentAnalysis
                         disabled={isLoadingThis || isSelected}
                         className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                           isSelected
-                            ? 'bg-slate-800 text-slate-400 cursor-default'
+                            ? 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 cursor-default'
                             : 'bg-cyan-600 hover:bg-cyan-500 text-white shadow-md shadow-cyan-600/20'
                         }`}
                       >

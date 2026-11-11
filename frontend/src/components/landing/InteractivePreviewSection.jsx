@@ -11,14 +11,31 @@ import {
   ChevronRight,
   Copy,
   Check,
+  Layers,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { ScrollReveal } from './ScrollReveal.jsx';
+import { GraphGalaxy3D } from '../GraphGalaxy3D.jsx';
+
+const PREVIEW_GRAPH_DATA = {
+  nodes: [
+    { id: 'user.js', data: { label: 'user.js', depth: 0, isChanged: true, severity: 'ROOT', language: 'JavaScript' } },
+    { id: 'user-controller.js', data: { label: 'user-controller.js', depth: 1, isImpacted: true, severity: 'HIGH', language: 'JavaScript' } },
+    { id: 'user-routes.js', data: { label: 'user-routes.js', depth: 2, isImpacted: true, severity: 'MEDIUM', language: 'JavaScript' } },
+    { id: 'server.js', data: { label: 'server.js', depth: 3, isImpacted: true, severity: 'LOW', language: 'JavaScript' } },
+  ],
+  edges: [
+    { id: 'e1', source: 'user.js', target: 'user-controller.js', data: { isImpactPath: true } },
+    { id: 'e2', source: 'user-controller.js', target: 'user-routes.js', data: { isImpactPath: true } },
+    { id: 'e3', source: 'user-routes.js', target: 'server.js', data: { isImpactPath: true } },
+  ],
+};
 
 export function InteractivePreviewSection() {
   const { isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState('graph');
+  const [previewDimension, setPreviewDimension] = useState('2D'); // '2D' | '3D'
   const [selectedNode, setSelectedNode] = useState('user.js');
   const [copied, setCopied] = useState(false);
 
@@ -154,64 +171,108 @@ npm test tests/auth.test.js
                     Reverse BFS calculated across 18 repository files. Click any node to inspect.
                   </p>
                 </div>
-                <div className="flex items-center gap-2 text-xs">
-                  <span className="text-slate-300">
-                    Selected: <strong className="text-cyan-400 font-mono">{selectedNode}</strong>
+                <div className="flex items-center gap-2.5 text-xs">
+                  {/* 2D / 3D Dimension Switcher Pill */}
+                  <div className="flex items-center bg-[#090e1a] p-0.5 rounded-lg border border-slate-700/80 shadow-inner">
+                    <button
+                      type="button"
+                      onClick={() => setPreviewDimension('2D')}
+                      className={`px-2.5 py-1 rounded-md text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                        previewDimension === '2D'
+                          ? 'bg-cyan-600 text-white shadow-sm'
+                          : 'text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      <Layers className="w-3 h-3" />
+                      <span>2D DAG</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPreviewDimension('3D')}
+                      className={`px-2.5 py-1 rounded-md text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                        previewDimension === '3D'
+                          ? 'bg-gradient-to-r from-cyan-500 to-indigo-600 text-white shadow-md shadow-indigo-600/30'
+                          : 'text-slate-400 hover:text-cyan-300'
+                      }`}
+                    >
+                      <Sparkles className="w-3 h-3 text-cyan-300" />
+                      <span>3D Galaxy</span>
+                      <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                    </button>
+                  </div>
+
+                  <span className="text-slate-300 hidden sm:inline font-mono">
+                    Node: <strong className="text-cyan-400">{selectedNode}</strong>
                   </span>
                 </div>
               </div>
 
-              {/* Visual Graph DAG simulation (2 cols on mobile, 4 on desktop) */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
-                {[
-                  { id: 'user.js', label: 'user.js', depth: 'Depth 0', type: 'Changed Root', risk: 'ROOT', desc: 'Mongoose User schema modified' },
-                  { id: 'user-controller.js', label: 'user-controller.js', depth: 'Depth 1', type: 'Direct Dependent', risk: 'HIGH', desc: 'Imports User directly' },
-                  { id: 'user-routes.js', label: 'user-routes.js', depth: 'Depth 2', type: 'Transitive', risk: 'MEDIUM', desc: 'Mounts userController' },
-                  { id: 'server.js', label: 'server.js', depth: 'Depth 3', type: 'Application Root', risk: 'LOW', desc: 'Bootstraps routes' },
-                ].map((node) => {
-                  const isNodeActive = selectedNode === node.id;
-                  return (
-                    <div
-                      key={node.id}
-                      onClick={() => setSelectedNode(node.id)}
-                      className={`p-3 sm:p-4 rounded-xl border transition-all cursor-pointer ${
-                        isNodeActive
-                          ? 'bg-cyan-950/40 border-cyan-500 shadow-lg shadow-cyan-950/50 ring-2 ring-cyan-500/30'
-                          : 'bg-[#131d2e] border-slate-700/80 hover:border-slate-600'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between mb-1.5">
-                        <span className="text-[9px] sm:text-[10px] font-mono px-1.5 py-0.5 rounded bg-[#0a0f1d] text-slate-300 border border-slate-700/80">
-                          {node.depth}
-                        </span>
-                        <span className="text-[9px] sm:text-[10px] font-bold uppercase text-cyan-400 truncate">
-                          {node.risk}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-1.5 mb-1">
-                        <FileCode2 className={`w-3.5 h-3.5 ${isNodeActive ? 'text-cyan-400' : 'text-slate-400'}`} />
-                        <h5 className="text-[11px] sm:text-xs font-mono font-bold text-slate-100 truncate">
-                          {node.label}
-                        </h5>
-                      </div>
-                      <p className="text-[10px] sm:text-[11px] text-slate-300 leading-tight">
-                        {node.desc}
-                      </p>
-                    </div>
-                  );
-                })}
-              </div>
+              {/* Conditional 2D vs 3D View */}
+              {previewDimension === '3D' ? (
+                <div className="w-full h-[380px] rounded-2xl overflow-hidden relative border border-slate-700/80 shadow-2xl">
+                  <GraphGalaxy3D
+                    graphData={PREVIEW_GRAPH_DATA}
+                    selectedNodeId={selectedNode}
+                    onSelectNode={setSelectedNode}
+                    viewDimension={previewDimension}
+                    onToggleDimension={setPreviewDimension}
+                  />
+                </div>
+              ) : (
+                <>
+                  {/* Visual Graph DAG simulation (2 cols on mobile, 4 on desktop) */}
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+                    {[
+                      { id: 'user.js', label: 'user.js', depth: 'Depth 0', type: 'Changed Root', risk: 'ROOT', desc: 'Mongoose User schema modified' },
+                      { id: 'user-controller.js', label: 'user-controller.js', depth: 'Depth 1', type: 'Direct Dependent', risk: 'HIGH', desc: 'Imports User directly' },
+                      { id: 'user-routes.js', label: 'user-routes.js', depth: 'Depth 2', type: 'Transitive', risk: 'MEDIUM', desc: 'Mounts userController' },
+                      { id: 'server.js', label: 'server.js', depth: 'Depth 3', type: 'Application Root', risk: 'LOW', desc: 'Bootstraps routes' },
+                    ].map((node) => {
+                      const isNodeActive = selectedNode === node.id;
+                      return (
+                        <div
+                          key={node.id}
+                          onClick={() => setSelectedNode(node.id)}
+                          className={`p-3 sm:p-4 rounded-xl border transition-all cursor-pointer ${
+                            isNodeActive
+                              ? 'bg-cyan-950/40 border-cyan-500 shadow-lg shadow-cyan-950/50 ring-2 ring-cyan-500/30'
+                              : 'bg-[#131d2e] border-slate-700/80 hover:border-slate-600'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between mb-1.5">
+                            <span className="text-[9px] sm:text-[10px] font-mono px-1.5 py-0.5 rounded bg-[#0a0f1d] text-slate-300 border border-slate-700/80">
+                              {node.depth}
+                            </span>
+                            <span className="text-[9px] sm:text-[10px] font-bold uppercase text-cyan-400 truncate">
+                              {node.risk}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1.5 mb-1">
+                            <FileCode2 className={`w-3.5 h-3.5 ${isNodeActive ? 'text-cyan-400' : 'text-slate-400'}`} />
+                            <h5 className="text-[11px] sm:text-xs font-mono font-bold text-slate-100 truncate">
+                              {node.label}
+                            </h5>
+                          </div>
+                          <p className="text-[10px] sm:text-[11px] text-slate-300 leading-tight">
+                            {node.desc}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
 
-              {/* Edge Connection Bar */}
-              <div className="p-2.5 sm:p-3 bg-[#0a0f1d] border border-slate-700/80 rounded-xl text-xs flex items-center justify-between flex-wrap gap-2">
-                <div className="flex items-center gap-2 text-slate-300 text-[11px] sm:text-xs">
-                  <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
-                  <span>Layout Engine: <strong>ELK.js</strong> crossing minimization</span>
-                </div>
-                <div className="font-mono text-[10px] sm:text-[11px] text-slate-400">
-                  <span>Edges: 3 Direct, 4 Transitive</span>
-                </div>
-              </div>
+                  {/* Edge Connection Bar */}
+                  <div className="p-2.5 sm:p-3 bg-[#0a0f1d] border border-slate-700/80 rounded-xl text-xs flex items-center justify-between flex-wrap gap-2">
+                    <div className="flex items-center gap-2 text-slate-300 text-[11px] sm:text-xs">
+                      <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
+                      <span>Layout Engine: <strong>ELK.js</strong> crossing minimization</span>
+                    </div>
+                    <div className="font-mono text-[10px] sm:text-[11px] text-slate-400">
+                      <span>Edges: 3 Direct, 4 Transitive</span>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           )}
 

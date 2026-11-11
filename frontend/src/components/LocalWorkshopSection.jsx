@@ -239,18 +239,18 @@ export function LocalWorkshopSection({ onComplete, onFocusGuide }) {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-5 border-b border-slate-800/80 gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1.5">
-            <span className="px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400 text-[10px] font-bold border border-amber-500/20">
+            <span className="px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-400 text-[10px] font-bold border border-amber-500/20">
               OFFLINE & PRIVATE WORKSPACE BRIDGE
             </span>
-            <span className="px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 text-[10px] font-mono">
+            <span className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] font-mono border border-slate-200 dark:border-transparent">
               v1.0 AST Engine
             </span>
           </div>
-          <h2 className="text-xl font-bold text-white tracking-tight">
+          <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
             Connect Local Machine & VS Code
           </h2>
-          <p className="text-xs text-slate-400 mt-1 max-w-xl leading-relaxed">
-            Scan your local projects directly from your hard drive (<code className="text-amber-300 font-mono">C:\</code> or <code className="text-amber-300 font-mono">D:\</code>) without pushing to GitHub. Tree-Sitter AST parsing runs completely offline on your laptop.
+          <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 max-w-xl leading-relaxed">
+            Scan your local projects directly from your hard drive (<code className="text-amber-700 dark:text-amber-300 font-mono">C:\</code> or <code className="text-amber-700 dark:text-amber-300 font-mono">D:\</code>) without pushing to GitHub. Tree-Sitter AST parsing runs completely offline on your laptop.
           </p>
         </div>
 
@@ -258,42 +258,42 @@ export function LocalWorkshopSection({ onComplete, onFocusGuide }) {
           <button
             type="button"
             onClick={onFocusGuide}
-            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-750 border border-slate-700/80 hover:border-amber-500 text-slate-200 hover:text-white font-semibold text-xs transition-all shadow-sm shrink-0 cursor-pointer"
+            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-750 border border-slate-300 dark:border-slate-700/80 hover:border-amber-500 text-slate-800 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white font-semibold text-xs transition-all shadow-sm shrink-0 cursor-pointer"
           >
-            <ExternalLink className="w-3.5 h-3.5 text-amber-400" />
+            <ExternalLink className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
             <span>Connection Steps</span>
           </button>
         )}
       </div>
 
       {/* ─── STEP 1: TERMINAL COMMAND RUNNER (ONE-CLICK COPY) ────────── */}
-      <div className="p-5 rounded-2xl bg-[#131d2e] border border-slate-700/80 shadow-md">
+      <div className="p-5 rounded-2xl bg-white dark:bg-[#131d2e] border border-slate-200 dark:border-slate-700/80 shadow-md">
         <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2 text-xs font-bold text-white">
-            <Terminal className="w-4 h-4 text-amber-400" />
+          <div className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white">
+            <Terminal className="w-4 h-4 text-amber-600 dark:text-amber-400" />
             <span>Step 1: Run Bridge Agent in Your Terminal</span>
           </div>
-          <span className="text-[10px] text-slate-400 font-mono">Zero installation • Powered by npx</span>
+          <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">Zero installation • Powered by npx</span>
         </div>
 
-        <p className="text-[11px] text-slate-300 mb-3">
+        <p className="text-[11px] text-slate-600 dark:text-slate-300 mb-3">
           Open your project in VS Code or Terminal, and run this single command to bridge your local files securely:
         </p>
 
         {/* Copyable Terminal Command Block */}
         <div className="relative group">
-          <div className="flex items-center justify-between bg-[#090e1a] border border-amber-500/40 rounded-xl px-4 py-3 font-mono text-xs text-amber-300 shadow-inner overflow-x-auto">
+          <div className="flex items-center justify-between bg-slate-50 dark:bg-[#090e1a] border border-amber-500/40 rounded-xl px-4 py-3 font-mono text-xs text-amber-800 dark:text-amber-300 shadow-inner overflow-x-auto">
             <span className="select-all font-semibold">{commandToRun}</span>
             <button
               type="button"
               onClick={handleCopyCommand}
-              className="ml-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-950/90 hover:bg-amber-900 border border-amber-500/60 text-amber-200 hover:text-white text-xs font-sans font-semibold transition-all shadow-sm active:scale-95 cursor-pointer shrink-0 outline-none focus:outline-none"
+              className="ml-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-100 dark:bg-amber-950/90 hover:bg-amber-200 dark:hover:bg-amber-900 border border-amber-300 dark:border-amber-500/60 text-amber-900 dark:text-amber-200 hover:text-slate-950 dark:hover:text-white text-xs font-sans font-semibold transition-all shadow-sm active:scale-95 cursor-pointer shrink-0 outline-none focus:outline-none"
               title="Copy command to clipboard"
             >
               {copiedCommand ? (
                 <>
-                  <Check className="w-3.5 h-3.5 text-emerald-400" />
-                  <span className="text-emerald-300">Copied!</span>
+                  <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                  <span className="text-emerald-700 dark:text-emerald-300">Copied!</span>
                 </>
               ) : (
                 <>
@@ -307,13 +307,13 @@ export function LocalWorkshopSection({ onComplete, onFocusGuide }) {
       </div>
 
       {/* ─── STEP 2: SESSION PAIRING & LIVE STATUS ───────────────────── */}
-      <div className="p-5 rounded-2xl bg-[#131d2e] border border-slate-700/80 shadow-md space-y-3">
+      <div className="p-5 rounded-2xl bg-white dark:bg-[#131d2e] border border-slate-200 dark:border-slate-700/80 shadow-md space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <label htmlFor="bridge-session-input" className="block text-xs font-bold text-white">
+          <label htmlFor="bridge-session-input" className="block text-xs font-bold text-slate-900 dark:text-white">
             Step 2: Session Pairing Token
           </label>
-          <span className="text-[11px] text-slate-300">
-            Generated by the terminal CLI (e.g. <code className="text-amber-400 font-semibold">CL-7842</code>)
+          <span className="text-[11px] text-slate-600 dark:text-slate-300">
+            Generated by the terminal CLI (e.g. <code className="text-amber-600 dark:text-amber-400 font-semibold">CL-7842</code>)
           </span>
         </div>
 
@@ -333,50 +333,50 @@ export function LocalWorkshopSection({ onComplete, onFocusGuide }) {
             }}
             placeholder="e.g. CL-7842"
             maxLength={10}
-            className="flex-1 bg-[#090e1a] border border-slate-600/80 focus:border-amber-400 rounded-xl px-4 py-2.5 text-sm font-mono text-white placeholder-slate-400 outline-none focus:outline-none transition-colors uppercase"
+            className="flex-1 bg-slate-50 dark:bg-[#090e1a] border border-slate-300 dark:border-slate-600/80 focus:border-amber-400 rounded-xl px-4 py-2.5 text-sm font-mono text-slate-900 dark:text-white placeholder-slate-400 outline-none focus:outline-none transition-colors uppercase"
           />
           <button
             type="button"
             onClick={() => checkStatus(sessionCode.trim(), false)}
             disabled={connectionStatus === 'checking' || !sessionCode.trim()}
-            className="px-4 py-2.5 rounded-xl bg-[#1a253c] hover:bg-[#22304d] text-slate-100 hover:text-white font-semibold text-xs border border-slate-600/80 transition-colors flex items-center gap-2 cursor-pointer disabled:opacity-50 outline-none focus:outline-none"
+            className="px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-[#1a253c] hover:bg-slate-200 dark:hover:bg-[#22304d] text-slate-800 dark:text-slate-100 hover:text-slate-900 dark:hover:text-white font-semibold text-xs border border-slate-300 dark:border-slate-600/80 transition-colors flex items-center gap-2 cursor-pointer disabled:opacity-50 outline-none focus:outline-none"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${connectionStatus === 'checking' ? 'animate-spin text-amber-400' : ''}`} />
+            <RefreshCw className={`w-3.5 h-3.5 ${connectionStatus === 'checking' ? 'animate-spin text-amber-500' : ''}`} />
             <span>Check</span>
           </button>
         </div>
 
         {/* Connection Status Banner */}
         {connectionStatus === 'connected' && workspaceInfo && (
-          <div className="p-3.5 rounded-xl bg-emerald-950/60 border border-emerald-500/50 text-emerald-200 text-xs space-y-2 transition-all duration-200">
+          <div className="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-500/50 text-emerald-900 dark:text-emerald-200 text-xs space-y-2 transition-all duration-200">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 font-bold text-emerald-400">
+              <div className="flex items-center gap-2 font-bold text-emerald-700 dark:text-emerald-400">
                 <span className="relative flex h-2.5 w-2.5">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
                 </span>
                 <span>Local Machine Connected ({workspaceInfo.hostname || 'Local Host'})</span>
               </div>
-              <span className="px-2 py-0.5 rounded-md text-[10px] font-mono bg-emerald-900/80 text-emerald-300 border border-emerald-700/60 font-semibold">
+              <span className="px-2 py-0.5 rounded-md text-[10px] font-mono bg-emerald-100 dark:bg-emerald-900/80 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700/60 font-semibold">
                 {workspaceInfo.platform || 'windows'}
               </span>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 pt-1 text-[11px] text-slate-200">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 pt-1 text-[11px] text-slate-700 dark:text-slate-200">
               <div className="flex items-center gap-1.5 truncate">
-                <Folder className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                <Folder className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400 shrink-0" />
                 <span className="font-mono truncate" title={workspaceInfo.path}>
                   {workspaceInfo.path}
                 </span>
               </div>
               <div className="flex items-center gap-1.5">
-                <GitBranch className="w-3.5 h-3.5 text-orange-400 shrink-0" />
+                <GitBranch className="w-3.5 h-3.5 text-orange-500 dark:text-orange-400 shrink-0" />
                 <span>
-                  Branch: <strong className="text-white font-mono">{workspaceInfo.gitBranch || workspaceInfo.branch || 'main'}</strong>
+                  Branch: <strong className="text-slate-900 dark:text-white font-mono">{workspaceInfo.gitBranch || workspaceInfo.branch || 'main'}</strong>
                 </span>
-                <span className="text-slate-500">•</span>
+                <span className="text-slate-400 dark:text-slate-500">•</span>
                 <span>
-                  <strong className="text-amber-400 font-mono">{workspaceInfo.uncommittedCount ?? uncommittedChanges.length}</strong> dirty files
+                  <strong className="text-amber-600 dark:text-amber-400 font-mono">{workspaceInfo.uncommittedCount ?? uncommittedChanges.length}</strong> dirty files
                 </span>
               </div>
             </div>
@@ -384,36 +384,36 @@ export function LocalWorkshopSection({ onComplete, onFocusGuide }) {
         )}
 
         {connectionStatus === 'disconnected' && sessionCode.trim() && (
-          <div className="p-3 rounded-xl bg-amber-950/60 border border-amber-500/50 text-amber-200 text-xs flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />
+          <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/60 border border-amber-300 dark:border-amber-500/50 text-amber-900 dark:text-amber-200 text-xs flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
             <span>
-              No active CLI agent detected for session <strong>{sessionCode}</strong>. Make sure <code className="text-amber-300 font-mono">npx changelens connect</code> is running in your terminal.
+              No active CLI agent detected for session <strong>{sessionCode}</strong>. Make sure <code className="text-amber-700 dark:text-amber-300 font-mono">npx changelens connect</code> is running in your terminal.
             </span>
           </div>
         )}
       </div>
 
       {/* ─── STEP 3: DUAL ANALYSIS MODES CONFIGURATION ───────────────── */}
-      <div className="p-5 rounded-2xl bg-[#131d2e] border border-slate-700/80 shadow-md space-y-4">
+      <div className="p-5 rounded-2xl bg-white dark:bg-[#131d2e] border border-slate-200 dark:border-slate-700/80 shadow-md space-y-4">
         <div className="flex items-center justify-between">
-          <label className="block text-xs font-bold text-white">
+          <label className="block text-xs font-bold text-slate-900 dark:text-white">
             Step 3: Select Analysis Mode
           </label>
-          <span className="text-[11px] text-slate-300">Choose how to target changed files</span>
+          <span className="text-[11px] text-slate-600 dark:text-slate-300">Choose how to target changed files</span>
         </div>
 
         {/* Mode Selector Tabs */}
-        <div className="grid grid-cols-2 gap-2 bg-[#0a0f1d] p-1.5 rounded-xl border border-slate-700/80">
+        <div className="grid grid-cols-2 gap-2 bg-slate-100 dark:bg-[#0a0f1d] p-1.5 rounded-xl border border-slate-200 dark:border-slate-700/80">
           <button
             type="button"
             onClick={() => setMode('auto')}
             className={`flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-semibold transition-all cursor-pointer outline-none focus:outline-none ${
               mode === 'auto'
-                ? 'bg-amber-500/20 border border-amber-500/50 text-amber-300 shadow-sm'
-                : 'text-slate-300 hover:text-white hover:bg-slate-800/60 border border-transparent'
+                ? 'bg-amber-100 dark:bg-amber-500/20 border border-amber-300 dark:border-amber-500/50 text-amber-900 dark:text-amber-300 shadow-sm'
+                : 'text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-800/60 border border-transparent'
             }`}
           >
-            <Zap className={`w-3.5 h-3.5 ${mode === 'auto' ? 'text-amber-400' : 'text-slate-400'}`} />
+            <Zap className={`w-3.5 h-3.5 ${mode === 'auto' ? 'text-amber-600 dark:text-amber-400' : 'text-slate-500 dark:text-slate-400'}`} />
             <span>Mode 1: Auto-Detect from Git</span>
           </button>
 
@@ -422,28 +422,28 @@ export function LocalWorkshopSection({ onComplete, onFocusGuide }) {
             onClick={() => setMode('manual')}
             className={`flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-semibold transition-all cursor-pointer outline-none focus:outline-none ${
               mode === 'manual'
-                ? 'bg-amber-500/20 border border-amber-500/50 text-amber-300 shadow-sm'
-                : 'text-slate-300 hover:text-white hover:bg-slate-800/60 border border-transparent'
+                ? 'bg-amber-100 dark:bg-amber-500/20 border border-amber-300 dark:border-amber-500/50 text-amber-900 dark:text-amber-300 shadow-sm'
+                : 'text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-800/60 border border-transparent'
             }`}
           >
-            <Sliders className={`w-3.5 h-3.5 ${mode === 'manual' ? 'text-amber-400' : 'text-slate-400'}`} />
+            <Sliders className={`w-3.5 h-3.5 ${mode === 'manual' ? 'text-amber-600 dark:text-amber-400' : 'text-slate-500 dark:text-slate-400'}`} />
             <span>Mode 2: Custom Target Files</span>
           </button>
         </div>
 
         {/* Mode 1 Content: Git Auto-Detect Preview */}
         {mode === 'auto' && (
-          <div className="space-y-2.5 p-3.5 rounded-xl bg-[#090e1a] border border-slate-700/80">
+          <div className="space-y-2.5 p-3.5 rounded-xl bg-slate-50 dark:bg-[#090e1a] border border-slate-200 dark:border-slate-700/80">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-200 flex items-center gap-1.5">
-                <GitBranch className="w-3.5 h-3.5 text-amber-400" />
+              <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                <GitBranch className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
                 <span>Live Git Working Tree Changes</span>
               </span>
               <button
                 type="button"
                 onClick={() => fetchChanges()}
                 disabled={loadingChanges}
-                className="text-[11px] text-amber-400 hover:text-amber-300 font-semibold flex items-center gap-1 cursor-pointer outline-none focus:outline-none"
+                className="text-[11px] text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 font-semibold flex items-center gap-1 cursor-pointer outline-none focus:outline-none"
               >
                 <RefreshCw className={`w-3 h-3 ${loadingChanges ? 'animate-spin' : ''}`} />
                 <span>Refresh</span>
@@ -455,16 +455,16 @@ export function LocalWorkshopSection({ onComplete, onFocusGuide }) {
                 {uncommittedChanges.map((change, idx) => (
                   <div
                     key={idx}
-                    className="flex items-center justify-between p-2 rounded-lg bg-[#141d2f] border border-slate-700/80 text-slate-200"
+                    className="flex items-center justify-between p-2 rounded-lg bg-white dark:bg-[#141d2f] border border-slate-200 dark:border-slate-700/80 text-slate-800 dark:text-slate-200"
                   >
                     <span className="truncate pr-2 font-medium">{change.path}</span>
                     <span
                       className={`text-[10px] px-2 py-0.5 rounded font-bold uppercase ${
                         change.status === 'deleted'
-                          ? 'bg-rose-950 text-rose-300 border border-rose-700/50'
+                          ? 'bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300 border border-rose-300 dark:border-rose-700/50'
                           : change.status === 'added' || change.status === 'untracked'
-                          ? 'bg-emerald-950 text-emerald-300 border border-emerald-700/50'
-                          : 'bg-amber-950 text-amber-300 border border-amber-700/50'
+                          ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700/50'
+                          : 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700/50'
                       }`}
                     >
                       {change.statusCode || change.status || 'M'}
@@ -473,7 +473,7 @@ export function LocalWorkshopSection({ onComplete, onFocusGuide }) {
                 ))}
               </div>
             ) : (
-              <p className="text-[11px] text-slate-300 italic">
+              <p className="text-[11px] text-slate-600 dark:text-slate-300 italic">
                 No uncommitted changes detected in local Git working tree. Edit any file in VS Code and it will auto-detect here!
               </p>
             )}
@@ -482,8 +482,8 @@ export function LocalWorkshopSection({ onComplete, onFocusGuide }) {
 
         {/* Mode 2 Content: Comma-Separated Manual Input */}
         {mode === 'manual' && (
-          <div className="space-y-2 p-3.5 rounded-xl bg-[#090e1a] border border-slate-700/80">
-            <label className="block text-xs font-semibold text-slate-200">
+          <div className="space-y-2 p-3.5 rounded-xl bg-slate-50 dark:bg-[#090e1a] border border-slate-200 dark:border-slate-700/80">
+            <label className="block text-xs font-semibold text-slate-800 dark:text-slate-200">
               Target Changed Files (Comma-Separated)
             </label>
             <input
@@ -491,12 +491,12 @@ export function LocalWorkshopSection({ onComplete, onFocusGuide }) {
               value={manualFiles}
               onChange={(e) => setManualFiles(e.target.value)}
               placeholder="e.g. server/models/user.js, server/controllers/user-controller.js"
-              className="w-full bg-[#101726] border border-slate-600/80 focus:border-amber-400 rounded-xl px-3.5 py-2.5 text-xs font-mono text-white placeholder-slate-400 outline-none focus:outline-none transition-colors"
+              className="w-full bg-white dark:bg-[#101726] border border-slate-300 dark:border-slate-600/80 focus:border-amber-500 rounded-xl px-3.5 py-2.5 text-xs font-mono text-slate-900 dark:text-white placeholder-slate-400 outline-none focus:outline-none transition-colors"
             />
-            <p className="text-[11px] text-slate-300 flex items-center gap-1.5">
-              <Zap className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+            <p className="text-[11px] text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
+              <Zap className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
               <span>
-                <strong>Smart Path Matching:</strong> You can type partial paths like <code className="text-amber-300 font-mono">user.js</code> and ChangeLens will auto-resolve them to the exact repository location.
+                <strong>Smart Path Matching:</strong> You can type partial paths like <code className="text-amber-700 dark:text-amber-300 font-mono">user.js</code> and ChangeLens will auto-resolve them to the exact repository location.
               </span>
             </p>
           </div>
@@ -504,7 +504,7 @@ export function LocalWorkshopSection({ onComplete, onFocusGuide }) {
 
         {/* Traversal Depth Control */}
         <div className="flex items-center justify-between pt-1">
-          <span className="text-xs font-semibold text-slate-300">Max Ripple Depth:</span>
+          <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">Max Ripple Depth:</span>
           <div className="flex items-center gap-1.5">
             {[5, 10, 20].map((d) => (
               <button
@@ -514,7 +514,7 @@ export function LocalWorkshopSection({ onComplete, onFocusGuide }) {
                 className={`px-2.5 py-1 rounded-lg text-xs font-mono font-semibold transition-all cursor-pointer outline-none focus:outline-none ${
                   maxDepth === d
                     ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-bold shadow shadow-amber-500/20'
-                    : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+                    : 'bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-800'
                 }`}
               >
                 {d}
@@ -526,15 +526,15 @@ export function LocalWorkshopSection({ onComplete, onFocusGuide }) {
 
       {/* ─── ERROR & SUCCESS ALERTS ─────────────────────────────────── */}
       {errorMessage && (
-        <div className="p-3.5 rounded-xl bg-rose-950/60 border border-rose-500/40 text-rose-200 text-xs flex items-center gap-2.5">
-          <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+        <div className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/60 border border-rose-300 dark:border-rose-500/40 text-rose-800 dark:text-rose-200 text-xs flex items-center gap-2.5">
+          <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" />
           <span>{errorMessage}</span>
         </div>
       )}
 
       {successMessage && (
-        <div className="p-3.5 rounded-xl bg-emerald-950/60 border border-emerald-500/40 text-emerald-200 text-xs flex items-center gap-2.5">
-          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+        <div className="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-500/40 text-emerald-800 dark:text-emerald-200 text-xs flex items-center gap-2.5">
+          <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
           <span>{successMessage}</span>
         </div>
       )}
@@ -562,10 +562,10 @@ export function LocalWorkshopSection({ onComplete, onFocusGuide }) {
       </div>
 
       {/* ─── PRIVACY GUARANTEE FOOTER ────────────────────────────────── */}
-      <div className="p-3.5 rounded-xl bg-slate-950/50 border border-slate-800/80 flex items-start gap-3">
-        <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-        <p className="text-[11px] text-slate-400 leading-relaxed">
-          <strong className="text-slate-200">100% Code Privacy Guarantee:</strong> Your proprietary source code never leaves your computer. ChangeLens runs Tree-Sitter WASM parsers locally on your laptop and only transmits visual dependency graph metadata.
+      <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800/80 flex items-start gap-3">
+        <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+        <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
+          <strong className="text-slate-900 dark:text-slate-200">100% Code Privacy Guarantee:</strong> Your proprietary source code never leaves your computer. ChangeLens runs Tree-Sitter WASM parsers locally on your laptop and only transmits visual dependency graph metadata.
         </p>
       </div>
     </div>
