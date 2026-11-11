@@ -88,9 +88,11 @@ export function DashboardPage() {
   }, []);
 
   // Load a previously saved analysis directly from MongoDB / cache
-  const loadSavedAnalysis = useCallback(async (analysisId) => {
-    setLoading(true);
-    setLoadingMessage('Loading Saved AST Graph & Impact Telemetry...');
+  const loadSavedAnalysis = useCallback(async (analysisId, { manageLoading = true, onSuccess = null } = {}) => {
+    if (manageLoading) {
+      setLoading(true);
+      setLoadingMessage('Loading Saved AST Graph & Impact Telemetry...');
+    }
     setError(null);
     try {
       setCurrentAnalysisId(analysisId);
@@ -117,16 +119,31 @@ export function DashboardPage() {
         repoPath: targetDir,
         changedFiles: Array.isArray(targetChangedFiles) ? targetChangedFiles : [],
       });
+      if (onSuccess) onSuccess();
+      return true;
     } catch (err) {
       console.error('Failed to load saved analysis:', err);
       setError(err.message || 'Failed to load saved analysis report');
+      return false;
     } finally {
-      setLoading(false);
+      if (manageLoading) {
+        setLoading(false);
+      }
     }
   }, []);
 
+  const handleOpenSavedReport = useCallback(
+    async (id) => {
+      setIsDemoMode(false);
+      await loadSavedAnalysis(id, {
+        onSuccess: () => setIsProjectHubOpen(false),
+      });
+    },
+    [loadSavedAnalysis]
+  );
+
   // Trigger analysis pipeline
-  const executeAnalysis = useCallback(async (options = {}) => {
+  const executeAnalysis = useCallback(async (options = {}, { onSuccess = null } = {}) => {
     setLoading(true);
     setLoadingMessage('Scanning ASTs & Computing Multi-Hop Blast Radius...');
     setError(null);
@@ -161,10 +178,13 @@ export function DashboardPage() {
         repoPath: targetDir,
         changedFiles: Array.isArray(targetChangedFiles) ? targetChangedFiles : [],
       });
+      if (onSuccess) onSuccess();
       refreshRecentAnalyses();
+      return true;
     } catch (err) {
       console.error('Analysis failed:', err);
       setError(err.message || 'Failed to complete blast radius analysis');
+      return false;
     } finally {
       setLoading(false);
     }
@@ -205,9 +225,11 @@ export function DashboardPage() {
         });
 
         setLoadingMessage('Building Interactive 2D / 3D Dependency Graph...');
-        await loadSavedAnalysis(syncResult.analysisId);
-        setIsProjectHubOpen(false);
-        refreshRecentAnalyses();
+        const loaded = await loadSavedAnalysis(syncResult.analysisId, { manageLoading: false });
+        if (loaded) {
+          setIsProjectHubOpen(false);
+          refreshRecentAnalyses();
+        }
       } catch (err) {
         console.error('Failed to connect GitHub repository:', err);
         setError(err.message || 'Failed to connect GitHub repository');
@@ -232,9 +254,11 @@ export function DashboardPage() {
       setConnectedRepo(null);
       try {
         const result = await analyzeGitHubPR({ prUrl, token });
-        await loadSavedAnalysis(result.analysisId);
-        setIsProjectHubOpen(false);
-        refreshRecentAnalyses();
+        const loaded = await loadSavedAnalysis(result.analysisId, { manageLoading: false });
+        if (loaded) {
+          setIsProjectHubOpen(false);
+          refreshRecentAnalyses();
+        }
       } catch (err) {
         console.error('Failed to analyze GitHub PR:', err);
         setError(err.message || 'Failed to analyze GitHub Pull Request');
@@ -279,7 +303,7 @@ export function DashboardPage() {
         lastSyncedSha: freshHeadSha,
       }));
 
-      await loadSavedAnalysis(syncResult.analysisId);
+      await loadSavedAnalysis(syncResult.analysisId, { manageLoading: false });
     } catch (err) {
       console.error('Cumulative push sync failed:', err);
       setError(err.message || 'Failed to sync all pushes');
@@ -319,7 +343,7 @@ export function DashboardPage() {
         lastSyncedSha: freshHeadSha,
       }));
 
-      await loadSavedAnalysis(syncResult.analysisId);
+      await loadSavedAnalysis(syncResult.analysisId, { manageLoading: false });
     } catch (err) {
       console.error('Latest push sync failed:', err);
       setError(err.message || 'Failed to sync latest push');
@@ -343,7 +367,7 @@ export function DashboardPage() {
           commitSha,
         });
 
-        await loadSavedAnalysis(syncResult.analysisId);
+        await loadSavedAnalysis(syncResult.analysisId, { manageLoading: false });
       } catch (err) {
         console.error('Failed to sync specific commit:', err);
         setError(err.message || 'Failed to sync commit');
@@ -367,7 +391,6 @@ export function DashboardPage() {
       } catch {}
       setConnectedRepo(null);
       setIsDemoMode(false);
-      setIsProjectHubOpen(false);
 
       setActiveTargetContext({
         repoPath: repoPath || '',
@@ -383,12 +406,15 @@ export function DashboardPage() {
         setSimulationData(null);
         setIsSimulating(false);
         setBackendStatus('online');
+        setIsProjectHubOpen(false);
         refreshRecentAnalyses();
         return;
       }
 
-      await executeAnalysis({ repoPath, changedFiles });
-      refreshRecentAnalyses();
+      await executeAnalysis(
+        { repoPath, changedFiles },
+        { onSuccess: () => setIsProjectHubOpen(false) }
+      );
     },
     [executeAnalysis, refreshRecentAnalyses]
   );
@@ -400,12 +426,14 @@ export function DashboardPage() {
     } catch {}
     setConnectedRepo(null);
     setIsDemoMode(true);
-    setIsProjectHubOpen(false);
     setActiveTargetContext({
       repoPath: 'mern-sample',
       changedFiles: ['server/models/user.js'],
     });
-    await executeAnalysis({ changedFiles: ['server/models/user.js'] });
+    await executeAnalysis(
+      { changedFiles: ['server/models/user.js'] },
+      { onSuccess: () => setIsProjectHubOpen(false) }
+    );
   }, [executeAnalysis]);
 
   // Simulate What-If impact for any given file
@@ -579,11 +607,7 @@ export function DashboardPage() {
             onOpenLocalWorkspace={handleOpenLocalWorkspace}
             onLaunchDemo={handleLaunchDemo}
             recentAnalyses={recentAnalyses}
-            onLoadSavedAnalysis={async (id) => {
-              setIsDemoMode(false);
-              await loadSavedAnalysis(id);
-              setIsProjectHubOpen(false);
-            }}
+            onLoadSavedAnalysis={handleOpenSavedReport}
             loading={loading}
             apiError={error}
             onClearApiError={() => setError(null)}
@@ -646,11 +670,7 @@ export function DashboardPage() {
       <HistoryDrawer
         isOpen={isHistoryOpen}
         onClose={() => setIsHistoryOpen(false)}
-        onLoadAnalysis={async (id) => {
-          setIsDemoMode(false);
-          await loadSavedAnalysis(id);
-          setIsProjectHubOpen(false);
-        }}
+        onLoadAnalysis={handleOpenSavedReport}
         currentAnalysisId={currentAnalysisId}
       />
 
@@ -658,11 +678,7 @@ export function DashboardPage() {
       <GitHubConnectorModal
         isOpen={isGitHubOpen}
         onClose={() => setIsGitHubOpen(false)}
-        onAnalysisComplete={async (analysisId) => {
-          setIsDemoMode(false);
-          await loadSavedAnalysis(analysisId);
-          setIsProjectHubOpen(false);
-        }}
+        onAnalysisComplete={handleOpenSavedReport}
         currentAnalysisId={currentAnalysisId}
       />
     </div>

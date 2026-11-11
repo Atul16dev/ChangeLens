@@ -36,7 +36,6 @@ import {
 import { exportGraphToPng, exportGraphToSvg } from '../utils/export.js';
 import { useTheme } from '../context/ThemeContext.jsx';
 import { GraphGalaxy3D } from './GraphGalaxy3D.jsx';
-import { AstBlastLoaderOverlay } from './AstScannerLoader3D.jsx';
 
 function GraphViewerInternal({
   graphData,
@@ -89,7 +88,6 @@ function GraphViewerInternal({
   const [viewDimension, setViewDimension] = useState('2D'); // '2D' | '3D'
   const [filterMode, setFilterMode] = useState('all'); // 'all' | 'blast_only'
   const [semanticMode, setSemanticMode] = useState('impact'); // 'impact' | 'dependency'
-  const [isLayoutComputing, setIsLayoutComputing] = useState(false);
 
   const lastDimensionsRef = useRef({ width: 0, height: 0 });
   const lastViewportRef = useRef({ x: 0, y: 0, zoom: 1 });
@@ -245,7 +243,6 @@ function GraphViewerInternal({
     async (targetFilterMode = filterMode, targetSemanticMode = semanticMode) => {
       if (!graphData || !graphData.nodes) return;
 
-      setIsLayoutComputing(true);
       try {
         // 1. Filter nodes
         const rawVisibleNodes = (graphData.nodes || []).filter((node) => {
@@ -279,8 +276,6 @@ function GraphViewerInternal({
         }, 50);
       } catch (err) {
         console.error('Failed to compute ELK layout:', err);
-      } finally {
-        setIsLayoutComputing(false);
       }
     },
     [graphData, filterMode, semanticMode, setNodes, setEdges, fitView]
@@ -658,16 +653,6 @@ function GraphViewerInternal({
             onToggleFullscreen={toggleFullscreen}
           />
         </div>
-      )}
-
-      {/* ELK.js Layout Computation 3D AST Loader */}
-      {isLayoutComputing && (
-        <AstBlastLoaderOverlay
-          badge="GRAPH LAYOUT ENGINE"
-          message="Positioning AST Dependency Graph..."
-          subMessage="Running deterministic ELK.js layered DAG spatial calculation"
-          className="!z-30"
-        />
       )}
 
       {/* Embedded overlays like ChatAssistant that persist in fullscreen mode */}
