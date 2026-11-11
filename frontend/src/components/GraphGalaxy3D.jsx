@@ -141,7 +141,7 @@ function getNodeTheme(node, isSimulating, simulatedFile, simulatedChangeType, is
   if (severity === 'HIGH' || node.data?.depth === 1) return { color: 0xf97316, glow: 0xc2410c, radius: 0.52, tier: 'high', label: '▲ HIGH', labelColor: '#f97316' };
   if (severity === 'MEDIUM' || node.data?.depth === 2) return { color: 0x06b6d4, glow: 0x0284c7, radius: 0.44, tier: 'medium', label: '■ MED', labelColor: '#06b6d4' };
   if (node.data?.isImpacted) return { color: 0x10b981, glow: 0x047857, radius: 0.38, tier: 'impacted', label: '● IMP', labelColor: '#10b981' };
-  return { color: isDark ? 0x64748b : 0x94a3b8, glow: 0x334155, radius: 0.28, tier: 'clean', label: '○', labelColor: isDark ? '#64748b' : '#94a3b8' };
+  return { color: isDark ? 0x64748b : 0x475569, glow: isDark ? 0x334155 : 0x334155, radius: 0.28, tier: 'clean', label: '○', labelColor: isDark ? '#64748b' : '#475569' };
 }
 
 // ─── MAIN 3D GRAPH COMPONENT ──────────────────────────────────────────────────
@@ -229,8 +229,8 @@ export function GraphGalaxy3D({
 
     // ── Scene Setup ──────────────────────────────────────────────────────────
     const scene = new THREE.Scene();
-    // Very subtle fog so deep nodes are still visible
-    scene.fog = new THREE.FogExp2(isDark ? 0x070c18 : 0xe8edf4, 0.004);
+    // Matches 2D graph background gradient tone seamlessly
+    scene.fog = new THREE.FogExp2(isDark ? 0x080d19 : 0xb5c2d3, 0.003);
 
     const W = container.clientWidth || 900;
     const H = container.clientHeight || 650;
@@ -252,7 +252,7 @@ export function GraphGalaxy3D({
     container.appendChild(renderer.domElement);
 
     // ── Lighting ──────────────────────────────────────────────────────────────
-    scene.add(new THREE.AmbientLight(isDark ? 0x1e293b : 0xffffff, isDark ? 1.8 : 2.6));
+    scene.add(new THREE.AmbientLight(isDark ? 0x1e293b : 0xffffff, isDark ? 1.8 : 2.5));
     const keyLight = new THREE.DirectionalLight(0x38bdf8, isDark ? 3.0 : 2.0);
     keyLight.position.set(25, 40, 30);
     scene.add(keyLight);
@@ -266,10 +266,10 @@ export function GraphGalaxy3D({
     const graphGroup = new THREE.Group();
     scene.add(graphGroup);
 
-    // Subtle reference grid
+    // Subtle reference grid (high contrast slate lines in light mode)
     const grid = new THREE.GridHelper(200, 60,
-      isDark ? 0x1e293b : 0xc7d2e0,
-      isDark ? 0x0f172a : 0xdde3ea
+      isDark ? 0x1e293b : 0x7e92ab,
+      isDark ? 0x0f172a : 0xa4b4c7
     );
     grid.position.y = -14;
     scene.add(grid);
@@ -283,7 +283,7 @@ export function GraphGalaxy3D({
       ptPos[i * 3 + 2] = (Math.random() - 0.5) * 120;
     }
     ptGeo.setAttribute('position', new THREE.BufferAttribute(ptPos, 3));
-    const ptMat = new THREE.PointsMaterial({ color: isDark ? 0x38bdf8 : 0x94a3b8, size: 0.18, transparent: true, opacity: isDark ? 0.4 : 0.3 });
+    const ptMat = new THREE.PointsMaterial({ color: isDark ? 0x38bdf8 : 0x475569, size: 0.18, transparent: true, opacity: isDark ? 0.4 : 0.35 });
     scene.add(new THREE.Points(ptGeo, ptMat));
 
     // ── 3D Spatial Layout Engine ─────────────────────────────────────────────
@@ -448,11 +448,11 @@ export function GraphGalaxy3D({
       const curve = new THREE.QuadraticBezierCurve3(p1, mid, p2);
       const pts = curve.getPoints(32);
       const lGeo = new THREE.BufferGeometry().setFromPoints(pts);
-      const edgeColor = isImpact ? 0x06b6d4 : isDark ? 0x334155 : 0x94a3b8;
+      const edgeColor = isImpact ? 0x06b6d4 : isDark ? 0x334155 : 0x475569;
       const lMat = new THREE.LineBasicMaterial({
         color: edgeColor,
         transparent: true,
-        opacity: isImpact ? (isDark ? 0.75 : 0.80) : (isDark ? 0.22 : 0.30),
+        opacity: isImpact ? (isDark ? 0.75 : 0.85) : (isDark ? 0.22 : 0.38),
         linewidth: 1,
       });
       const lineMesh = new THREE.Line(lGeo, lMat);
@@ -847,11 +847,18 @@ export function GraphGalaxy3D({
 
   // ── JSX Layout ────────────────────────────────────────────────────────────
   return (
-    <div className={`relative w-full h-full min-h-[500px] select-none overflow-hidden ${isDark ? 'bg-[#070c18]' : 'bg-[#e8edf4]'}`}>
+    <div
+      className="relative w-full h-full min-h-[500px] select-none overflow-hidden transition-all duration-300"
+      style={{
+        background: isDark
+          ? 'radial-gradient(circle at 50% 35%, #152136 0%, #0d1527 60%, #080d19 100%)'
+          : 'radial-gradient(circle at 50% 35%, #dee5ed 0%, #ccd5e2 50%, #9aa9bd 100%)',
+      }}
+    >
 
-      {/* Ambient nebula glows */}
-      <div className={`absolute top-1/4 left-1/3 w-[500px] h-[500px] rounded-full blur-[180px] pointer-events-none ${isDark ? 'bg-cyan-500/12' : 'bg-cyan-400/18'}`} />
-      <div className={`absolute bottom-1/3 right-1/4 w-[400px] h-[400px] rounded-full blur-[160px] pointer-events-none ${isDark ? 'bg-violet-500/10' : 'bg-indigo-300/20'}`} />
+      {/* Ambient subtle depth glows */}
+      <div className={`absolute top-1/4 left-1/3 w-[500px] h-[500px] rounded-full blur-[180px] pointer-events-none ${isDark ? 'bg-cyan-500/12' : 'bg-slate-400/20'}`} />
+      <div className={`absolute bottom-1/3 right-1/4 w-[400px] h-[400px] rounded-full blur-[160px] pointer-events-none ${isDark ? 'bg-violet-500/10' : 'bg-slate-500/20'}`} />
 
       {/* WebGL Canvas */}
       <div ref={containerRef} className="w-full h-full absolute inset-0 cursor-grab active:cursor-grabbing" />
@@ -1069,49 +1076,57 @@ export function GraphGalaxy3D({
         </div>
       )}
 
-      {/* ── SELECTED / HOVERED NODE INFO CARD – BOTTOM-RIGHT, away from AI chat ── */}
+      {/* ── SELECTED / HOVERED NODE INFO CARD – TOP-RIGHT (Zero conflict with ChangeLens AI button) ── */}
       {(activeSelectedNode || hoveredNode) && (
-        <div className="absolute bottom-3 right-3 z-20 pointer-events-auto w-64 animate-fade-in">
+        <div className="absolute top-14 sm:top-4 right-3 sm:right-4 z-20 pointer-events-auto w-72 max-w-[calc(100vw-32px)] animate-fade-in">
           {(() => {
             const target = activeSelectedNode || hoveredNode;
+            const isTargetSelected = activeSelectedNode?.id === target.id;
             const d = target.data || {};
             const isRoot = d.isChanged || d.isDeleted;
             const severity = d.severity;
             const theme = getNodeTheme(target, isSimulating, simulatedFile, simulatedChangeType, isDark);
             return (
-              <div className="p-3.5 rounded-2xl bg-white/97 dark:bg-slate-900/97 border border-slate-200 dark:border-slate-700/80 shadow-2xl backdrop-blur-xl space-y-2 border-l-4"
+              <div className="p-3.5 rounded-2xl bg-white/95 dark:bg-slate-900/95 border border-slate-200 dark:border-slate-700/80 shadow-2xl backdrop-blur-xl space-y-2 border-l-4"
                 style={{ borderLeftColor: theme.labelColor }}>
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
-                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-mono font-bold uppercase tracking-wider bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700/60">
-                      {isRoot ? 'Root Changed' : `Depth ${d.depth ?? 1}`}
-                    </span>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-mono font-bold uppercase tracking-wider bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700/60">
+                        {isRoot ? 'Root Changed' : `Depth ${d.depth ?? 1}`}
+                      </span>
+                      <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-cyan-50 dark:bg-cyan-950/50 text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800/60">
+                        {isTargetSelected ? 'Selected' : 'Hovered'}
+                      </span>
+                    </div>
                     <h4 className="text-xs font-bold font-mono text-slate-900 dark:text-white mt-1 truncate" title={target.id}>
                       {target.id?.split('/').pop()}
                     </h4>
-                    <p className="text-[9px] font-mono text-slate-500 dark:text-slate-400 truncate">{target.id}</p>
+                    <p className="text-[9px] font-mono text-slate-500 dark:text-slate-400 truncate" title={target.id}>{target.id}</p>
                   </div>
                   {activeSelectedNode && (
                     <button type="button" onClick={() => { setActiveSelectedNode(null); setIsIsolated(false); if (onSelectNode) onSelectNode(null); }}
-                      className="p-1 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                      className="p-1 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                      title="Deselect node">
                       <X className="w-3.5 h-3.5" />
                     </button>
                   )}
                 </div>
                 <div className="grid grid-cols-2 gap-1.5 text-[10px] font-mono pt-1.5 border-t border-slate-200 dark:border-slate-700/60">
-                  <div className="p-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60">
-                    <span className="text-[9px] text-slate-500 block uppercase">Risk</span>
-                    <strong style={{ color: theme.labelColor }}>{severity || (isRoot ? 'ROOT' : 'CLEAN')}</strong>
+                  <div className="p-1.5 rounded-lg bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60">
+                    <span className="text-[9px] text-slate-500 block uppercase">Risk Tier</span>
+                    <strong style={{ color: theme.labelColor }}>{severity || (isRoot ? 'ROOT MUTATION' : 'CLEAN')}</strong>
                   </div>
-                  <div className="p-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60">
+                  <div className="p-1.5 rounded-lg bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60">
                     <span className="text-[9px] text-slate-500 block uppercase">Language</span>
                     <strong className="text-cyan-600 dark:text-cyan-400">{d.language || 'Code'}</strong>
                   </div>
                 </div>
                 {d.metrics && (
-                  <div className="flex items-center justify-between text-[9px] font-mono text-slate-500 dark:text-slate-400 px-0.5">
-                    <span>Direct: <strong>{d.metrics.directDependents ?? 0}</strong></span>
-                    <span>Transitive: <strong>{d.metrics.transitiveDependents ?? 0}</strong></span>
+                  <div className="flex items-center justify-between text-[9px] font-mono text-slate-600 dark:text-slate-400 px-0.5 pt-0.5">
+                    <span>Direct: <strong className="text-slate-900 dark:text-white">{d.metrics.directDependents ?? 0}</strong></span>
+                    <span>Transitive: <strong className="text-slate-900 dark:text-white">{d.metrics.transitiveDependents ?? 0}</strong></span>
+                    <span>Exports: <strong className="text-slate-900 dark:text-white">{d.metrics.exportsCount ?? 0}</strong></span>
                   </div>
                 )}
               </div>
