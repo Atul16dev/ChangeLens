@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   AlertOctagon,
   AlertTriangle,
@@ -22,8 +22,16 @@ import {
   Printer,
   FileDown,
   Trash2,
+  ChevronsLeft,
+  ChevronsRight,
+  GripVertical,
+  Search,
 } from 'lucide-react';
 import { downloadText, downloadJson, printOrSavePDF } from '../utils/export.js';
+
+const DEFAULT_SIDEBAR_WIDTH = 420;
+const MIN_SIDEBAR_WIDTH = 340;
+const STORAGE_KEY = 'changelens_sidebar_width';
 
 export function ImpactSidebar({
   impactData,
@@ -41,6 +49,111 @@ export function ImpactSidebar({
   const [activeMainTab, setActiveMainTab] = useState('findings'); // 'findings' | 'ai_review'
   const [activeFilterTab, setActiveFilterTab] = useState('all'); // 'all' | 'critical' | 'direct' | 'transitive'
   const [copied, setCopied] = useState(false);
+  const [findingSearchQuery, setFindingSearchQuery] = useState('');
+
+  // Resizable sidebar state with localStorage persistence
+  const [sidebarWidth, setSidebarWidth] = useState(() => {
+    if (typeof window === 'undefined') return DEFAULT_SIDEBAR_WIDTH;
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = parseInt(saved, 10);
+        if (!isNaN(parsed) && parsed >= MIN_SIDEBAR_WIDTH) {
+          return parsed;
+        }
+      }
+    } catch {}
+    return DEFAULT_SIDEBAR_WIDTH;
+  });
+
+  const [isDragging, setIsDragging] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(() => {
+    return typeof window !== 'undefined' ? window.innerWidth >= 1024 : true;
+  });
+
+  const asideRef = useRef(null);
+  const widthRef = useRef(sidebarWidth);
+  widthRef.current = sidebarWidth;
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsDesktop(window.innerWidth >= 1024);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Butter-smooth dragging handle for left divider
+  const handleResizeMouseDown = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    setIsDragging(true);
+    document.body.style.userSelect = 'none';
+    document.body.style.cursor = 'col-resize';
+
+    const startX = e.clientX;
+    const startWidth = widthRef.current;
+    let pendingWidth = startWidth;
+    let rafId = null;
+
+    const onMouseMove = (moveEvent) => {
+      // Sidebar is on the right side of the screen.
+      // Dragging to the LEFT (moveEvent.clientX < startX) increases the width!
+      const deltaX = startX - moveEvent.clientX;
+      const screenWidth = window.innerWidth;
+      const minGraphSpace = 360;
+      const maxWidth = Math.max(MIN_SIDEBAR_WIDTH, Math.min(screenWidth - minGraphSpace, 1150));
+      const proposedWidth = Math.max(MIN_SIDEBAR_WIDTH, Math.min(maxWidth, startWidth + deltaX));
+
+      pendingWidth = proposedWidth;
+
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => {
+        if (asideRef.current) {
+          asideRef.current.style.width = `${pendingWidth}px`;
+        }
+      });
+    };
+
+    const onMouseUp = () => {
+      if (rafId) cancelAnimationFrame(rafId);
+      setIsDragging(false);
+      document.body.style.userSelect = '';
+      document.body.style.cursor = '';
+
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+
+      setSidebarWidth(pendingWidth);
+      try {
+        localStorage.setItem(STORAGE_KEY, pendingWidth.toString());
+      } catch {}
+    };
+
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+  };
+
+  const isExpanded = sidebarWidth > 580;
+
+  const toggleExpandWidth = () => {
+    const screenWidth = typeof window !== 'undefined' ? window.innerWidth : 1200;
+    const targetExpandedWidth = Math.max(MIN_SIDEBAR_WIDTH, Math.min(screenWidth - 380, 780));
+    const nextWidth = isExpanded ? DEFAULT_SIDEBAR_WIDTH : targetExpandedWidth;
+
+    setSidebarWidth(nextWidth);
+    if (asideRef.current) {
+      asideRef.current.style.width = `${nextWidth}px`;
+    }
+    try {
+      localStorage.setItem(STORAGE_KEY, nextWidth.toString());
+    } catch {}
+  };
+
+  const handleDoubleClickReset = () => {
+    toggleExpandWidth();
+  };
 
   const rawSummary = impactData?.summary || {};
   const summary = {
@@ -54,7 +167,7 @@ export function ImpactSidebar({
 
   const allFindings = impactData?.allFindings || [];
 
-  // Filter findings based on selected node or active tab
+  // Filter findings based on selected node, search query, or active tab
   const filteredFindings = allFindings.filter((finding) => {
     const file = finding.affectedFile || finding.consumerFile;
     const rootFile = finding.changedFile || finding.deletedFile;
@@ -74,6 +187,26 @@ export function ImpactSidebar({
     if (activeFilterTab === 'critical') return finding.severity === 'CRITICAL';
     if (activeFilterTab === 'direct') return finding.depth === 1;
     if (activeFilterTab === 'transitive') return finding.depth > 1;
+
+    // Search query filter (instant search across file, symbol, location, or reason)
+    if (findingSearchQuery.trim()) {
+      const q = findingSearchQuery.trim().toLowerCase();
+      const fName = (file || '').toLowerCase();
+      const rName = (rootFile || '').toLowerCase();
+      const reason = (finding.explanation || finding.reason || '').toLowerCase();
+      const missing = (finding.missingSymbol || '').toLowerCase();
+      const spec = (finding.evidence?.specifier || '').toLowerCase();
+      if (
+        !fName.includes(q) &&
+        !rName.includes(q) &&
+        !reason.includes(q) &&
+        !missing.includes(q) &&
+        !spec.includes(q)
+      ) {
+        return false;
+      }
+    }
+
     return true;
   });
 
@@ -155,6 +288,11 @@ export function ImpactSidebar({
 
   return (
     <>
+      {/* Full-viewport Drag Overlay when resizing sidebar to prevent mouse capture loss */}
+      {isDragging && (
+        <div className="fixed inset-0 z-[60] cursor-col-resize select-none pointer-events-auto" />
+      )}
+
       {/* Mobile Drawer Backdrop */}
       {isMobileOpen && (
         <div
@@ -165,10 +303,57 @@ export function ImpactSidebar({
       )}
 
       <aside
-        className={`fixed top-0 right-0 bottom-0 z-50 w-full sm:w-[420px] lg:static lg:z-auto lg:w-96 xl:w-[430px] h-full bg-white dark:bg-[#0e1422] border-l border-slate-200 dark:border-slate-700/80 flex flex-col backdrop-blur-xl shrink-0 select-none shadow-2xl transition-transform duration-300 ease-in-out ${
+        ref={asideRef}
+        style={{
+          width: isDesktop ? `${sidebarWidth}px` : undefined,
+        }}
+        className={`fixed top-0 right-0 bottom-0 z-50 w-full sm:w-[420px] lg:static lg:z-auto h-full bg-white dark:bg-[#0e1422] border-l border-slate-200 dark:border-slate-700/80 flex flex-col backdrop-blur-xl shrink-0 select-none shadow-2xl relative ${
+          isDragging ? 'transition-none select-none' : 'transition-[width,transform] duration-200 ease-out'
+        } ${
           isMobileOpen ? 'translate-x-0 shadow-2xl' : 'translate-x-full lg:translate-x-0'
         }`}
       >
+        {/* Left Edge Resizable Drag Handle (Desktop Only) */}
+        {isDesktop && (
+          <div
+            onMouseDown={handleResizeMouseDown}
+            onDoubleClick={handleDoubleClickReset}
+            className={`hidden lg:flex absolute top-0 -left-2 bottom-0 w-4 cursor-col-resize z-40 group items-center justify-center select-none ${
+              isDragging ? 'bg-cyan-500/20' : 'hover:bg-cyan-500/10'
+            }`}
+            title="Drag left to widen panel • Double-click to toggle wide view"
+          >
+            {/* Visual border highlight line */}
+            <div
+              className={`w-[2px] h-full transition-colors ${
+                isDragging
+                  ? 'bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.9)]'
+                  : 'bg-transparent group-hover:bg-cyan-500/80'
+              }`}
+            />
+
+            {/* Centered Floating Grip Pill */}
+            <div
+              className={`absolute top-1/2 -translate-y-1/2 -left-1.5 px-0.5 py-2.5 rounded-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 shadow-lg flex flex-col items-center justify-center gap-0.5 transition-all ${
+                isDragging
+                  ? 'opacity-100 ring-2 ring-cyan-500 scale-110'
+                  : 'opacity-0 group-hover:opacity-100 group-hover:scale-105'
+              }`}
+            >
+              <span className="w-1 h-1 rounded-full bg-cyan-500" />
+              <span className="w-1 h-1 rounded-full bg-cyan-500" />
+              <span className="w-1 h-1 rounded-full bg-cyan-500" />
+            </div>
+
+            {/* Live Width Badge during dragging */}
+            {isDragging && (
+              <div className="absolute top-4 -left-16 px-2 py-0.5 rounded-md bg-slate-900 text-cyan-400 border border-cyan-500/50 shadow-xl text-[10px] font-mono pointer-events-none animate-fade-in">
+                {sidebarWidth}px
+              </div>
+            )}
+          </div>
+        )}
+
         {/* WHAT-IF SIMULATION MODE BANNER */}
         {isSimulating && (
           <div
@@ -235,10 +420,10 @@ export function ImpactSidebar({
         )}
 
         {/* Top Main Navigation Tabs */}
-        <div className="flex items-center border-b border-slate-200 dark:border-slate-700/80 bg-slate-100 dark:bg-[#090d18] p-2 gap-2">
+        <div className="flex items-center border-b border-slate-200 dark:border-slate-700/80 bg-slate-100 dark:bg-[#090d18] p-2 gap-1.5">
           <button
             onClick={() => setActiveMainTab('findings')}
-            className={`flex-1 py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
+            className={`flex-1 py-2 px-2.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
               activeMainTab === 'findings'
                 ? 'bg-white text-slate-900 border border-slate-300 dark:bg-[#182338] dark:text-white dark:border-slate-600 shadow-sm'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60 dark:text-slate-300 dark:hover:text-white dark:hover:bg-[#131b2a]'
@@ -253,7 +438,7 @@ export function ImpactSidebar({
 
           <button
             onClick={() => setActiveMainTab('ai_review')}
-            className={`flex-1 py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
+            className={`flex-1 py-2 px-2.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
               activeMainTab === 'ai_review'
                 ? 'bg-purple-100 text-purple-900 border border-purple-300 dark:bg-gradient-to-r dark:from-indigo-950 dark:to-purple-950 dark:text-purple-200 dark:border-purple-500/40 shadow-sm'
                 : 'text-slate-600 hover:text-purple-800 hover:bg-purple-50 dark:text-slate-300 dark:hover:text-purple-300 dark:hover:bg-purple-950/20'
@@ -267,6 +452,36 @@ export function ImpactSidebar({
               </span>
             )}
           </button>
+
+          {/* Desktop Width Quick Expand / Collapse Button */}
+          {isDesktop && (
+            <button
+              type="button"
+              onClick={toggleExpandWidth}
+              className={`p-2 rounded-lg text-xs font-semibold border transition-all cursor-pointer flex items-center gap-1 shrink-0 ${
+                isExpanded
+                  ? 'bg-cyan-50 dark:bg-cyan-950/60 text-cyan-700 dark:text-cyan-300 border-cyan-300 dark:border-cyan-700/80 hover:bg-cyan-100 dark:hover:bg-cyan-900/50'
+                  : 'bg-white dark:bg-[#151f33] text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700/80 hover:bg-slate-200/60 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
+              }`}
+              title={
+                isExpanded
+                  ? 'Collapse to Standard View (420px)'
+                  : 'Panel Bada Karein / Wide View (120+ findings aasaani se padhne ke liye)'
+              }
+            >
+              {isExpanded ? (
+                <>
+                  <ChevronsRight className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />
+                  <span className="hidden xl:inline text-[11px]">Normal</span>
+                </>
+              ) : (
+                <>
+                  <ChevronsLeft className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
+                  <span className="hidden xl:inline text-[11px]">Expand</span>
+                </>
+              )}
+            </button>
+          )}
 
           {onCloseMobile && (
             <button
@@ -295,8 +510,8 @@ export function ImpactSidebar({
               </span>
             </div>
 
-            {/* 4 Stat Cards */}
-            <div className="grid grid-cols-2 gap-2">
+            {/* 4 Stat Cards – Responsive grid (4 cols when wide, 2 cols when narrow) */}
+            <div className={`grid gap-2 ${sidebarWidth >= 600 ? 'grid-cols-4' : 'grid-cols-2'}`}>
               <div
                 onClick={() => setActiveFilterTab(activeFilterTab === 'critical' ? 'all' : 'critical')}
                 className={`p-2.5 rounded-xl border cursor-pointer transition-all ${
@@ -481,6 +696,35 @@ export function ImpactSidebar({
                   </div>
                 )}
               </div>
+            )}
+          </div>
+
+          {/* Quick Search for 120+ Findings */}
+          <div className="px-3.5 py-1.5 bg-slate-100/80 dark:bg-[#0a0e1a] border-b border-slate-200 dark:border-slate-700/80 flex items-center gap-2">
+            <div className="relative flex-1 flex items-center">
+              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 pointer-events-none" />
+              <input
+                type="text"
+                value={findingSearchQuery}
+                onChange={(e) => setFindingSearchQuery(e.target.value)}
+                placeholder="Search findings (file, symbol, reason)..."
+                className="w-full pl-8 pr-7 py-1 text-xs rounded-lg bg-white dark:bg-[#121929] border border-slate-200 dark:border-slate-700/80 text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-cyan-500 font-mono"
+              />
+              {findingSearchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setFindingSearchQuery('')}
+                  className="absolute right-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-0.5"
+                  title="Clear search"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              )}
+            </div>
+            {findingSearchQuery && (
+              <span className="text-[10px] font-mono text-cyan-600 dark:text-cyan-400 shrink-0">
+                {filteredFindings.length} matches
+              </span>
             )}
           </div>
 
