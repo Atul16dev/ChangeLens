@@ -26,6 +26,8 @@ import {
   ChevronsRight,
   GripVertical,
   Search,
+  LayoutGrid,
+  List,
 } from 'lucide-react';
 import { downloadText, downloadJson, printOrSavePDF } from '../utils/export.js';
 
@@ -50,6 +52,7 @@ export function ImpactSidebar({
   const [activeFilterTab, setActiveFilterTab] = useState('all'); // 'all' | 'critical' | 'direct' | 'transitive'
   const [copied, setCopied] = useState(false);
   const [findingSearchQuery, setFindingSearchQuery] = useState('');
+  const [viewLayout, setViewLayout] = useState('auto'); // 'auto' | 'grid' | 'list'
 
   // Resizable sidebar state with localStorage persistence
   const [sidebarWidth, setSidebarWidth] = useState(() => {
@@ -70,6 +73,15 @@ export function ImpactSidebar({
   const [isDesktop, setIsDesktop] = useState(() => {
     return typeof window !== 'undefined' ? window.innerWidth >= 1024 : true;
   });
+
+  // Calculate grid columns for findings cards based on panel width
+  const effectiveGridCols = (() => {
+    if (viewLayout === 'list') return 1;
+    if (sidebarWidth >= 1050) return 3;
+    if (sidebarWidth >= 620) return 2;
+    if (viewLayout === 'grid' && sidebarWidth >= 500) return 2;
+    return 1;
+  })();
 
   const asideRef = useRef(null);
   const widthRef = useRef(sidebarWidth);
@@ -742,7 +754,37 @@ export function ImpactSidebar({
                 <Download className="w-3 h-3" />
               </button>
             </div>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1.5">
+              {/* Grid / List Layout Switcher when sidebar is wide */}
+              {sidebarWidth >= 600 && (
+                <div className="flex items-center bg-slate-200/80 dark:bg-slate-800 p-0.5 rounded-lg mr-1 border border-slate-300 dark:border-slate-700">
+                  <button
+                    type="button"
+                    onClick={() => setViewLayout('grid')}
+                    className={`p-1 rounded text-[11px] transition-all cursor-pointer ${
+                      effectiveGridCols > 1
+                        ? 'bg-cyan-600 text-white shadow-sm'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                    }`}
+                    title="Grid View (Multi-column: Kam scroll me zyada node boxes dekhein)"
+                  >
+                    <LayoutGrid className="w-3 h-3" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setViewLayout('list')}
+                    className={`p-1 rounded text-[11px] transition-all cursor-pointer ${
+                      effectiveGridCols === 1
+                        ? 'bg-cyan-600 text-white shadow-sm'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                    }`}
+                    title="Single Column List View"
+                  >
+                    <List className="w-3 h-3" />
+                  </button>
+                </div>
+              )}
+
               <button
                 onClick={() => setActiveFilterTab('all')}
                 className={`px-2 py-0.5 rounded text-[11px] transition-colors ${
@@ -771,7 +813,7 @@ export function ImpactSidebar({
           </div>
 
           {/* Findings Scroll Area */}
-          <div className="flex-1 overflow-y-auto p-4 pb-12 space-y-3.5">
+          <div className="flex-1 overflow-y-auto p-4 pb-12">
             {filteredFindings.length === 0 ? (
               <div className="text-center py-12 px-4">
                 <CheckCircle2 className="w-10 h-10 text-emerald-500 dark:text-emerald-400/80 mx-auto mb-2" />
@@ -781,33 +823,42 @@ export function ImpactSidebar({
                 </p>
               </div>
             ) : (
-              filteredFindings.map((finding, idx) => {
-                const isCritical = finding.severity === 'CRITICAL';
-                const isHigh = finding.severity === 'HIGH';
-                const file = finding.affectedFile || finding.consumerFile;
-                const isSelected = selectedNodeId === file;
-                const isBrokenImport = finding.type === 'broken_import';
+              <div
+                className={`grid gap-3 transition-all duration-200 items-start ${
+                  effectiveGridCols === 3
+                    ? 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-3'
+                    : effectiveGridCols === 2
+                    ? 'grid-cols-1 sm:grid-cols-2'
+                    : 'grid-cols-1'
+                }`}
+              >
+                {filteredFindings.map((finding, idx) => {
+                  const isCritical = finding.severity === 'CRITICAL';
+                  const isHigh = finding.severity === 'HIGH';
+                  const file = finding.affectedFile || finding.consumerFile;
+                  const isSelected = selectedNodeId === file;
+                  const isBrokenImport = finding.type === 'broken_import';
 
-                // Robust extraction supporting AST location objects and legacy line/column
-                const line = finding.evidence?.location?.startLine ?? finding.evidence?.line ?? null;
-                const column = finding.evidence?.location?.startColumn ?? finding.evidence?.column ?? null;
-                const snippet = finding.evidence?.rawSource || finding.evidence?.snippet || (finding.evidence?.specifier ? `import ... from "${finding.evidence.specifier}";` : null);
-                const explanation = finding.explanation || finding.reason || 'Impacted by dependency change.';
+                  // Robust extraction supporting AST location objects and legacy line/column
+                  const line = finding.evidence?.location?.startLine ?? finding.evidence?.line ?? null;
+                  const column = finding.evidence?.location?.startColumn ?? finding.evidence?.column ?? null;
+                  const snippet = finding.evidence?.rawSource || finding.evidence?.snippet || (finding.evidence?.specifier ? `import ... from "${finding.evidence.specifier}";` : null);
+                  const explanation = finding.explanation || finding.reason || 'Impacted by dependency change.';
 
-                return (
-                  <div
-                    key={idx}
-                    onClick={() => onSelectNode(file)}
-                    className={`p-3.5 rounded-xl border text-left cursor-pointer transition-all shadow-sm ${
-                      isSelected
-                        ? 'ring-2 ring-cyan-500 bg-cyan-50 dark:bg-[#16253d] border-cyan-400 dark:border-cyan-400/90 shadow-cyan-500/10'
-                        : isCritical
-                        ? 'bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-800/70 hover:border-rose-400 dark:hover:border-rose-600/90'
-                        : isHigh
-                        ? 'bg-orange-50 dark:bg-orange-950/30 border-orange-200 dark:border-orange-800/70 hover:border-orange-400 dark:hover:border-orange-600/90'
-                        : 'bg-white dark:bg-[#131d2e] border-slate-200 dark:border-slate-700/80 hover:border-slate-300 dark:hover:border-slate-600/90'
-                    }`}
-                  >
+                  return (
+                    <div
+                      key={idx}
+                      onClick={() => onSelectNode(file)}
+                      className={`p-3.5 rounded-xl border text-left cursor-pointer transition-all shadow-sm flex flex-col justify-between h-full ${
+                        isSelected
+                          ? 'ring-2 ring-cyan-500 bg-cyan-50 dark:bg-[#16253d] border-cyan-400 dark:border-cyan-400/90 shadow-cyan-500/10'
+                          : isCritical
+                          ? 'bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-800/70 hover:border-rose-400 dark:hover:border-rose-600/90'
+                          : isHigh
+                          ? 'bg-orange-50 dark:bg-orange-950/30 border-orange-200 dark:border-orange-800/70 hover:border-orange-400 dark:hover:border-orange-600/90'
+                          : 'bg-white dark:bg-[#131d2e] border-slate-200 dark:border-slate-700/80 hover:border-slate-300 dark:hover:border-slate-600/90'
+                      }`}
+                    >
                     <div className="flex items-center justify-between gap-2 mb-2">
                       <div className="flex items-center gap-1.5 flex-wrap">
                         <span
@@ -925,7 +976,8 @@ export function ImpactSidebar({
                     )}
                   </div>
                 );
-              })
+              })}
+              </div>
             )}
           </div>
         </>
