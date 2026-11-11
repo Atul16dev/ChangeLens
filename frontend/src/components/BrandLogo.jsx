@@ -391,14 +391,16 @@ export function BrandLogo({ size = 'md', className = '' }) {
       {/* Bespoke Optical Lens + Prism SVG fallback if WebGL is unavailable */}
       <svg
         ref={fallbackRef}
-        viewBox="0 0 32 32"
+        viewBox="0 0 64 64"
         fill="none"
         aria-hidden="true"
         className={`${ICON_SIZES[size] || ICON_SIZES.md} text-white`}
       >
-        <circle cx="16" cy="16" r="10.5" stroke="currentColor" strokeWidth="2.2" strokeOpacity="0.9" />
-        <polygon points="16,9 22,16 16,23 10,16" stroke="#38bdf8" strokeWidth="1.8" fill="#38bdf8" fillOpacity="0.28" />
-        <circle cx="25.5" cy="9" r="2" fill="#fb7185" />
+        <ellipse cx="32" cy="32" rx="23" ry="9" transform="rotate(-28 32 32)" stroke="#7dd3fc" strokeOpacity="0.8" strokeWidth="2.5" />
+        <circle cx="32" cy="32" r="16" stroke="currentColor" strokeWidth="4" />
+        <polygon points="32,20 42,32 32,44 22,32" fill="#38bdf8" fillOpacity="0.45" stroke="#e0f2fe" strokeWidth="2" strokeLinejoin="round" />
+        <circle cx="50.5" cy="21.5" r="4.5" fill="#fb7185" />
+        <circle cx="13.5" cy="42.5" r="3.8" fill="#22d3ee" />
       </svg>
 
       {/* High-DPI Three.js 3D Lens & Prism Canvas */}
