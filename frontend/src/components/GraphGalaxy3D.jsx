@@ -1015,12 +1015,13 @@ export function GraphGalaxy3D({
         </div>
       </div>
 
-      {/* ── BOTTOM-LEFT: Legend ─────────────────────────────────────────────── */}
-      <div className="absolute bottom-3 left-20 z-20 pointer-events-none hidden sm:block">
-        <div className="p-3 rounded-2xl bg-white/95 dark:bg-slate-900/95 border border-slate-200 dark:border-slate-700/80 shadow-xl backdrop-blur-md text-[10px] font-mono space-y-1 max-w-[200px]">
-          <div className="text-[9px] uppercase font-bold text-slate-500 dark:text-slate-400 tracking-wider pb-1 border-b border-slate-200 dark:border-slate-700/60">
-            Node Shapes & Tiers
-          </div>
+      {/* ── BOTTOM-LEFT: Horizontal Node Shapes & Tiers Legend (Matches 2D Graph Style) ── */}
+      <div className="absolute bottom-4 left-20 right-[185px] z-20 pointer-events-none hidden sm:flex items-end">
+        <div className="bg-white/95 dark:bg-[#0f172a]/95 backdrop-blur-md border border-slate-200 dark:border-slate-700/80 rounded-xl px-3.5 py-2 shadow-lg dark:shadow-2xl flex flex-wrap items-center gap-x-3.5 gap-y-1.5 text-xs text-slate-700 dark:text-slate-300">
+          <span className="font-bold text-slate-800 dark:text-slate-400 flex items-center gap-1.5 border-r border-slate-200 dark:border-slate-800 pr-3 text-[11px] shrink-0">
+            <Layers className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />
+            <span>Node Shapes &amp; Tiers</span>
+          </span>
           {[
             { shape: '◆', label: 'Root Changed', color: 'text-amber-500' },
             { shape: '✦', label: 'Critical', color: 'text-rose-500' },
@@ -1029,14 +1030,11 @@ export function GraphGalaxy3D({
             { shape: '⬤', label: 'Impacted File', color: 'text-emerald-500' },
             { shape: '●', label: 'Clean / Stable', color: 'text-slate-500' },
           ].map(({ shape, label, color }) => (
-            <div key={label} className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
-              <span className={`${color} w-4 text-center text-xs`}>{shape}</span>
+            <div key={label} className="flex items-center gap-1.5 text-[11px] shrink-0">
+              <span className={`${color} text-xs leading-none`}>{shape}</span>
               <span>{label}</span>
             </div>
           ))}
-          <div className="pt-1 border-t border-slate-200 dark:border-slate-700/60 text-[8px] text-slate-400 leading-tight">
-            Drag mouse → Rotate | Shift+Drag → Pan | Scroll → Zoom | Dbl-click → Focus
-          </div>
         </div>
       </div>
 
