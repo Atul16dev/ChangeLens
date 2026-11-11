@@ -507,41 +507,37 @@ export async function startLocalBridgeServer(options = {}) {
     }
   });
 
-  // Attempt listening on desired port; if taken, automatically increment up to 10 ports
-  const basePort = options.port || 3099;
+  // Attempt listening on desired port (or jump directly to ephemeral OS port when 0 is requested)
+  const basePort = options.port ?? 3099;
   let activePort = basePort;
 
   const tryListen = (portToTry) => {
     return new Promise((resolve, reject) => {
-      server.once("error", (err) => {
-        if (err.code === "EADDRINUSE") {
-          reject(err);
-        } else {
-          reject(err);
-        }
-      });
+      const onError = (err) => reject(err);
+      server.once("error", onError);
       server.listen(portToTry, "127.0.0.1", () => {
-        resolve(portToTry);
+        server.removeListener("error", onError);
+        resolve(server.address()?.port || portToTry);
       });
     });
   };
 
   let listening = false;
-  for (let attempt = 0; attempt < 10; attempt++) {
-    try {
-      await tryListen(basePort + attempt);
-      activePort = basePort + attempt;
-      listening = true;
-      break;
-    } catch (err) {
-      if (err.code !== "EADDRINUSE") throw err;
+  if (basePort > 0) {
+    for (let attempt = 0; attempt < 10; attempt++) {
+      try {
+        activePort = await tryListen(basePort + attempt);
+        listening = true;
+        break;
+      } catch (err) {
+        if (err.code !== "EADDRINUSE") throw err;
+      }
     }
   }
 
-  // If all 10 ports busy, listen on any free OS port (0)
+  // If 0 was requested or all sequential ports are busy, bind any free OS port (0)
   if (!listening) {
-    await tryListen(0);
-    activePort = server.address().port;
+    activePort = await tryListen(0);
   }
 
   // Connect to Cloud Relay via outbound WebSocket tunnel if enabled

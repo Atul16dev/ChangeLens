@@ -45,7 +45,7 @@ test("ChangeLens Local Bridge Agent Suite (Phase 1)", async (t) => {
   await t.test("startLocalBridgeServer provides HTTP endpoints & CORS headers", async () => {
     const agent = await startLocalBridgeServer({
       targetDir: FIXTURE_DIR,
-      port: 4899,
+      port: 0,
       sessionCode: "CL-TEST",
       cloudUrl: false,
       quiet: true,

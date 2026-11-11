@@ -33,6 +33,19 @@ test("ChangeLens Cloud & Terminal WebSocket Tunnel Relay Suite (Phase 2)", async
 
   const sessionCode = "CL-TUNNEL1";
 
+  async function waitForTunnelOnline(targetSession, timeoutMs = 4000) {
+    const deadline = Date.now() + timeoutMs;
+    while (Date.now() < deadline) {
+      const res = await fetch(`${baseUrl}/api/v1/bridge/status/${targetSession}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.connected && data.workspace) return data;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 40));
+    }
+    throw new Error(`Timed out waiting for bridge tunnel ${targetSession} to connect`);
+  }
+
   await t.test("GET /api/v1/bridge/status returns connected: false when no agent is online", async () => {
     const res = await fetch(`${baseUrl}/api/v1/bridge/status/${sessionCode}`);
     assert.equal(res.status, 200);
@@ -42,8 +55,9 @@ test("ChangeLens Cloud & Terminal WebSocket Tunnel Relay Suite (Phase 2)", async
   });
 
   await t.test("Agent connects via WebSocket, registers workspace metadata, and status updates", async () => {
+    const metaSession = "CL-TUNNEL-META";
     const agentTunnel = connectCloudTunnel({
-      sessionCode,
+      sessionCode: metaSession,
       targetDir: FIXTURE_DIR,
       cloudUrl: wsUrl,
       isGit: false,
@@ -53,16 +67,10 @@ test("ChangeLens Cloud & Terminal WebSocket Tunnel Relay Suite (Phase 2)", async
     });
 
     try {
-      // Wait briefly for WebSocket handshake
-      await new Promise((resolve) => setTimeout(resolve, 150));
-
-      // Query REST status endpoint
-      const res = await fetch(`${baseUrl}/api/v1/bridge/status/${sessionCode}`);
-      assert.equal(res.status, 200);
-      const data = await res.json();
+      const data = await waitForTunnelOnline(metaSession);
       assert.equal(data.success, true);
       assert.equal(data.connected, true);
-      assert.equal(data.sessionCode, sessionCode);
+      assert.equal(data.sessionCode, metaSession);
       assert.equal(data.workspace.path, FIXTURE_DIR);
       assert.equal(data.workspace.branch, "feature/auth");
     } finally {
@@ -71,8 +79,9 @@ test("ChangeLens Cloud & Terminal WebSocket Tunnel Relay Suite (Phase 2)", async
   });
 
   await t.test("End-to-End Tunnel: POST /api/v1/bridge/scan executes AST blast radius on local agent", async () => {
+    const scanSession = "CL-TUNNEL-SCAN";
     const agentTunnel = connectCloudTunnel({
-      sessionCode,
+      sessionCode: scanSession,
       targetDir: FIXTURE_DIR,
       cloudUrl: wsUrl,
       isGit: false,
@@ -82,10 +91,10 @@ test("ChangeLens Cloud & Terminal WebSocket Tunnel Relay Suite (Phase 2)", async
     });
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 150));
+      await waitForTunnelOnline(scanSession);
 
       // Trigger blast radius calculation via Cloud Server
-      const res = await fetch(`${baseUrl}/api/v1/bridge/scan/${sessionCode}`, {
+      const res = await fetch(`${baseUrl}/api/v1/bridge/scan/${scanSession}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

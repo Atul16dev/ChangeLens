@@ -7,9 +7,7 @@ import {
   Play,
   KeyRound,
   ShieldCheck,
-  Code2,
   Sparkles,
-  Layers,
   AlertTriangle,
   CheckCircle2,
   ExternalLink,
@@ -20,20 +18,16 @@ import {
   Check,
   Download,
   Send,
-  FileCode2,
   RefreshCw,
-  Sliders,
-  CheckCircle,
-  HelpCircle,
   Activity,
   Workflow,
   Search,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
-import { BrandLogo } from './BrandLogo.jsx';
 import { ConnectionGuideModal } from './ConnectionGuideModal.jsx';
 import { LocalWorkshopSection } from './LocalWorkshopSection.jsx';
 import { ProjectHubBackdrop3D } from './ProjectHubBackdrop3D.jsx';
+import { GreetingMascot3D } from './GreetingMascot3D.jsx';
 import {
   inspectGitHubPR,
   getGitHubWorkflowTemplate,
@@ -88,11 +82,13 @@ export function ProjectHub({
     }
   };
 
-  useEffect(() => {
-    if (initialActiveMode && initialActiveMode !== activeMode) {
+  const [prevInitialActiveMode, setPrevInitialActiveMode] = useState(initialActiveMode);
+  if (initialActiveMode && initialActiveMode !== prevInitialActiveMode) {
+    setPrevInitialActiveMode(initialActiveMode);
+    if (initialActiveMode !== activeMode) {
       setActiveModeState(initialActiveMode);
     }
-  }, [initialActiveMode]);
+  }
 
   // Interactive Blur Walkthrough Modal State
   const [isGuideModalOpen, setIsGuideModalOpen] = useState(false);
@@ -147,10 +143,6 @@ export function ProjectHub({
   const [commentSuccess, setCommentSuccess] = useState(null);
   const [commentError, setCommentError] = useState(null);
 
-  // Form states - Local Workspace
-  const [localPath, setLocalPath] = useState('');
-  const [localFiles, setLocalFiles] = useState('');
-
   // General error banner
   const [error, setError] = useState(null);
 
@@ -161,13 +153,16 @@ export function ProjectHub({
       effectiveError.toLowerCase().includes('access forbidden') ||
       effectiveError.toLowerCase().includes('token'));
 
-  // Auto-expand token field if rate limit or access forbidden error occurred
-  useEffect(() => {
-    if (isRateLimitError) {
+  // Auto-expand token field when a rate limit or access forbidden error triggers
+  const [prevIsRateLimitError, setPrevIsRateLimitError] = useState(Boolean(isRateLimitError));
+  if (Boolean(isRateLimitError) !== prevIsRateLimitError) {
+    const nextRateLimit = Boolean(isRateLimitError);
+    setPrevIsRateLimitError(nextRateLimit);
+    if (nextRateLimit) {
       setShowRepoToken(true);
       setShowPrToken(true);
     }
-  }, [isRateLimitError]);
+  }
 
   const focusTokenField = () => {
     if (activeMode === 'repo') {
@@ -258,19 +253,6 @@ export function ProjectHub({
     });
   };
 
-  // Submit Local Workspace
-  const handleLocalSubmit = (e) => {
-    e.preventDefault();
-    setError(null);
-    const changedFiles = localFiles.trim()
-      ? localFiles.split(',').map((f) => f.trim()).filter(Boolean)
-      : undefined;
-    onOpenLocalWorkspace({
-      repoPath: localPath.trim() || undefined,
-      changedFiles,
-    });
-  };
-
   // Copy workflow YAML
   const handleCopyWorkflow = () => {
     navigator.clipboard.writeText(workflowYaml);
@@ -342,8 +324,9 @@ export function ProjectHub({
 
           {/* Left Column: Greeting & Mission */}
           <div className="lg:col-span-7 flex flex-col justify-center text-left relative z-10">
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-slate-900 dark:text-white mb-2 leading-tight">
-              Hi, {displayName} <span className="inline-block animate-wave">👋</span>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-slate-900 dark:text-white mb-2 leading-tight flex items-center gap-2.5 flex-wrap">
+              <span>Hi, {displayName}</span>
+              <GreetingMascot3D />
             </h1>
 
             <p className="text-base sm:text-lg font-bold text-slate-800 dark:text-slate-200 mb-2">
