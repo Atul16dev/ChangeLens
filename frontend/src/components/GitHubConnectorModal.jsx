@@ -22,6 +22,7 @@ import {
   postCommentToGitHubPR,
   getGitHubWorkflowTemplate,
 } from '../services/api.js';
+import { AstBlastLoaderOverlay } from './AstScannerLoader3D.jsx';
 
 function GitHubIcon({ className = 'w-5 h-5' }) {
   return (
@@ -200,10 +201,18 @@ export function GitHubConnectorModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200">
       <div
-        className="w-full max-w-2xl bg-white dark:bg-[#101726] border border-slate-200 dark:border-slate-700/80 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+        className="w-full max-w-2xl bg-white dark:bg-[#101726] border border-slate-200 dark:border-slate-700/80 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] relative"
         role="dialog"
         aria-modal="true"
       >
+        {loading && (
+          <AstBlastLoaderOverlay
+            badge="GITHUB PR BLAST LOADER"
+            message="Inspecting GitHub PR & Computing Blast Radius..."
+            subMessage="Fetching changed files & resolving multi-hop AST impact"
+            className="rounded-2xl"
+          />
+        )}
         {/* Modal Header */}
         <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700/80 flex items-center justify-between bg-white dark:bg-[#0c1220]">
           <div className="flex items-center gap-2.5">

@@ -7,7 +7,7 @@ import { HistoryDrawer } from '../components/HistoryDrawer.jsx';
 import { GitHubConnectorModal } from '../components/GitHubConnectorModal.jsx';
 import { RepoSyncBar } from '../components/RepoSyncBar.jsx';
 import { ProjectHub } from '../components/ProjectHub.jsx';
-import { AstScannerLoader3D } from '../components/AstScannerLoader3D.jsx';
+import { AstBlastLoaderOverlay } from '../components/AstScannerLoader3D.jsx';
 import {
   checkBackendHealth,
   runImpactAnalysis,
@@ -25,6 +25,7 @@ import { AlertCircle, ShieldAlert } from 'lucide-react';
 
 export function DashboardPage() {
   const [loading, setLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('Parsing ASTs & Computing AI Impact Review...');
   const [error, setError] = useState(null);
   const [backendStatus, setBackendStatus] = useState('offline');
 
@@ -89,6 +90,7 @@ export function DashboardPage() {
   // Load a previously saved analysis directly from MongoDB / cache
   const loadSavedAnalysis = useCallback(async (analysisId) => {
     setLoading(true);
+    setLoadingMessage('Loading Saved AST Graph & Impact Telemetry...');
     setError(null);
     try {
       setCurrentAnalysisId(analysisId);
@@ -126,6 +128,7 @@ export function DashboardPage() {
   // Trigger analysis pipeline
   const executeAnalysis = useCallback(async (options = {}) => {
     setLoading(true);
+    setLoadingMessage('Scanning ASTs & Computing Multi-Hop Blast Radius...');
     setError(null);
 
     try {
@@ -175,6 +178,7 @@ export function DashboardPage() {
         localStorage.setItem('changelens_active_tab', 'repo');
       } catch {}
       setLoading(true);
+      setLoadingMessage('Connecting to GitHub Repository & Fetching Commit History...');
       setError(null);
       setIsDemoMode(false);
       try {
@@ -182,6 +186,7 @@ export function DashboardPage() {
         const latestSha = data.currentSha;
 
         // Perform initial sync on latest push
+        setLoadingMessage('Scanning Repository ASTs & Calculating Blast Radius...');
         const syncResult = await syncGitHubRepositoryCommits({
           repoUrl,
           token,
@@ -199,6 +204,7 @@ export function DashboardPage() {
           repoUrl,
         });
 
+        setLoadingMessage('Building Interactive 2D / 3D Dependency Graph...');
         await loadSavedAnalysis(syncResult.analysisId);
         setIsProjectHubOpen(false);
         refreshRecentAnalyses();
@@ -220,6 +226,7 @@ export function DashboardPage() {
         localStorage.setItem('changelens_active_tab', 'pr');
       } catch {}
       setLoading(true);
+      setLoadingMessage('Analyzing Pull Request Diff & Computing Blast Radius...');
       setError(null);
       setIsDemoMode(false);
       setConnectedRepo(null);
@@ -242,6 +249,7 @@ export function DashboardPage() {
   const handleSyncAllPushes = useCallback(async () => {
     if (!connectedRepo) return;
     setLoading(true);
+    setLoadingMessage('Syncing Commits & Recalculating Cumulative Blast Radius...');
     setError(null);
     try {
       // Fetch fresh commits list to detect new pushes
@@ -284,6 +292,7 @@ export function DashboardPage() {
   const handleSyncLatestPush = useCallback(async () => {
     if (!connectedRepo) return;
     setLoading(true);
+    setLoadingMessage('Fetching Latest Commit & Updating Blast Radius...');
     setError(null);
     try {
       const commitsData = await getGitHubRepositoryCommits({
@@ -324,6 +333,7 @@ export function DashboardPage() {
     async (commitSha) => {
       if (!connectedRepo || !commitSha) return;
       setLoading(true);
+      setLoadingMessage('Analyzing Historical Commit Blast Radius...');
       setError(null);
       try {
         const syncResult = await syncGitHubRepositoryCommits({
@@ -403,6 +413,7 @@ export function DashboardPage() {
     async (filePath, changeType = 'modified') => {
       if (!currentAnalysisId || !filePath) return;
       setLoading(true);
+      setLoadingMessage(`Simulating Multi-Hop Blast Radius for ${filePath.split('/').pop()}...`);
       setError(null);
       try {
         const simResult = await simulateImpact(currentAnalysisId, {
@@ -483,160 +494,163 @@ export function DashboardPage() {
         activeTargetContext={activeTargetContext}
       />
 
-      {/* Connected Repository Push Sync Bar */}
-      {connectedRepo && (
-        <RepoSyncBar
-          repoInfo={connectedRepo.repo}
-          commits={connectedRepo.latestCommits}
-          lastSyncedSha={connectedRepo.lastSyncedSha}
-          currentSha={connectedRepo.currentSha}
-          loading={loading}
-          onSyncAllPushes={handleSyncAllPushes}
-          onSyncLatestPush={handleSyncLatestPush}
-          onSelectSpecificCommit={handleSelectSpecificCommit}
-          onDisconnect={handleDisconnectRepo}
-        />
-      )}
+      {/* Workspace & Hub Content Region (unified relative container for 3D Blast Loader) */}
+      <div className="flex-1 flex flex-col overflow-hidden relative">
+        {loading && (
+          <AstBlastLoaderOverlay
+            badge="3D AST BLAST LOADER"
+            message={loadingMessage}
+            className="!z-[55]"
+          />
+        )}
 
-      {/* Error Notification Banner (only shown directly in dashboard if Hub is closed) */}
-      {error && !isProjectHubOpen && (
-        <div className="bg-rose-950/95 border-b border-rose-500/60 px-6 py-3 flex flex-wrap items-center justify-between text-rose-200 text-xs backdrop-blur-md gap-3 shadow-lg">
-          <div className="flex items-center gap-2.5">
-            <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
-            <div>
-              <strong className="text-white">Analysis Error:</strong> {error}
+        {/* Connected Repository Push Sync Bar */}
+        {connectedRepo && (
+          <RepoSyncBar
+            repoInfo={connectedRepo.repo}
+            commits={connectedRepo.latestCommits}
+            lastSyncedSha={connectedRepo.lastSyncedSha}
+            currentSha={connectedRepo.currentSha}
+            loading={loading}
+            onSyncAllPushes={handleSyncAllPushes}
+            onSyncLatestPush={handleSyncLatestPush}
+            onSelectSpecificCommit={handleSelectSpecificCommit}
+            onDisconnect={handleDisconnectRepo}
+          />
+        )}
+
+        {/* Error Notification Banner (only shown directly in dashboard if Hub is closed) */}
+        {error && !isProjectHubOpen && (
+          <div className="bg-rose-950/95 border-b border-rose-500/60 px-6 py-3 flex flex-wrap items-center justify-between text-rose-200 text-xs backdrop-blur-md gap-3 shadow-lg">
+            <div className="flex items-center gap-2.5">
+              <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+              <div>
+                <strong className="text-white">Analysis Error:</strong> {error}
+                {error.toLowerCase().includes('rate limit') && (
+                  <div className="text-[11px] text-rose-300/80 mt-0.5">
+                    GitHub unauthenticated IP rate limit is 60 requests/hr. Supplying a Personal Access Token unlocks 5,000 requests/hr.
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
               {error.toLowerCase().includes('rate limit') && (
-                <div className="text-[11px] text-rose-300/80 mt-0.5">
-                  GitHub unauthenticated IP rate limit is 60 requests/hr. Supplying a Personal Access Token unlocks 5,000 requests/hr.
-                </div>
+                <a
+                  href="https://github.com/settings/tokens/new?description=ChangeLens&scopes=repo"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3 py-1 bg-rose-900/80 hover:bg-rose-800 text-white rounded-lg font-medium border border-rose-600/50 flex items-center gap-1 transition-colors"
+                >
+                  <span>Generate Free Token (30s)</span>
+                  <ExternalLink className="w-3 h-3" />
+                </a>
               )}
+              <button
+                onClick={() => {
+                  setIsProjectHubOpen(true);
+                }}
+                className="px-3 py-1 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg font-medium shadow-sm transition-colors cursor-pointer"
+              >
+                Enter Token in Hub
+              </button>
+              <button
+                onClick={() => setError(null)}
+                className="text-rose-400 hover:text-white font-bold ml-2 cursor-pointer text-sm"
+                title="Dismiss"
+              >
+                ✕
+              </button>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            {error.toLowerCase().includes('rate limit') && (
-              <a
-                href="https://github.com/settings/tokens/new?description=ChangeLens&scopes=repo"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-3 py-1 bg-rose-900/80 hover:bg-rose-800 text-white rounded-lg font-medium border border-rose-600/50 flex items-center gap-1 transition-colors"
+        )}
+
+        {/* Main Workspace OR Onboarding Project Hub */}
+        {isProjectHubOpen ? (
+          <ProjectHub
+            initialActiveMode={activeHubTab}
+            onActiveModeChange={(mode) => {
+              setActiveHubTab(mode);
+              try {
+                localStorage.setItem('changelens_active_tab', mode);
+              } catch {}
+            }}
+            onConnectGitHubRepo={handleConnectGitHubRepo}
+            onAnalyzeGitHubPR={handleAnalyzeGitHubPR}
+            onOpenLocalWorkspace={handleOpenLocalWorkspace}
+            onLaunchDemo={handleLaunchDemo}
+            recentAnalyses={recentAnalyses}
+            onLoadSavedAnalysis={async (id) => {
+              setIsDemoMode(false);
+              await loadSavedAnalysis(id);
+              setIsProjectHubOpen(false);
+            }}
+            loading={loading}
+            apiError={error}
+            onClearApiError={() => setError(null)}
+          />
+        ) : (
+          <div className="flex-1 flex overflow-hidden relative">
+            <main className="flex-1 h-full relative">
+              <GraphViewer
+                graphData={effectiveGraphData}
+                selectedNodeId={selectedNodeId}
+                onSelectNode={setSelectedNodeId}
+                isSimulating={isSimulating}
+                simulatedFile={simulationData?.simulatedFile}
+                simulatedChangeType={simulationData?.changeType}
+                onExitSimulation={handleExitSimulation}
               >
-                <span>Generate Free Token (30s)</span>
-                <ExternalLink className="w-3 h-3" />
-              </a>
-            )}
-            <button
-              onClick={() => {
-                setIsProjectHubOpen(true);
-              }}
-              className="px-3 py-1 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg font-medium shadow-sm transition-colors cursor-pointer"
-            >
-              Enter Token in Hub
-            </button>
-            <button
-              onClick={() => setError(null)}
-              className="text-rose-400 hover:text-white font-bold ml-2 cursor-pointer text-sm"
-              title="Dismiss"
-            >
-              ✕
-            </button>
-          </div>
-        </div>
-      )}
+                {/* Context-Aware AI Chatbot docked inside Graph Workspace (persists in fullscreen mode) */}
+                <ChatAssistant
+                  analysisId={currentAnalysisId}
+                  selectedNodeId={selectedNodeId}
+                  isSimulating={isSimulating}
+                  simulatedFile={simulationData?.simulatedFile}
+                />
+              </GraphViewer>
 
-      {/* Main Workspace OR Onboarding Project Hub */}
-      {isProjectHubOpen ? (
-        <ProjectHub
-          initialActiveMode={activeHubTab}
-          onActiveModeChange={(mode) => {
-            setActiveHubTab(mode);
-            try {
-              localStorage.setItem('changelens_active_tab', mode);
-            } catch {}
-          }}
-          onConnectGitHubRepo={handleConnectGitHubRepo}
-          onAnalyzeGitHubPR={handleAnalyzeGitHubPR}
-          onOpenLocalWorkspace={handleOpenLocalWorkspace}
-          onLaunchDemo={handleLaunchDemo}
-          recentAnalyses={recentAnalyses}
-          onLoadSavedAnalysis={async (id) => {
-            setIsDemoMode(false);
-            await loadSavedAnalysis(id);
-            setIsProjectHubOpen(false);
-          }}
-          loading={loading}
-          apiError={error}
-          onClearApiError={() => setError(null)}
-        />
-      ) : (
-        <div className="flex-1 flex overflow-hidden relative">
-          <main className="flex-1 h-full relative">
-            {loading && !effectiveGraphData && (
-              <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-white/85 dark:bg-slate-950/85 backdrop-blur-md transition-colors px-4 text-center">
-                <AstScannerLoader3D className="w-28 h-28 sm:w-32 sm:h-32 mb-2" />
-                <p className="text-sm text-slate-800 dark:text-slate-200 font-semibold">
-                  Parsing ASTs & Computing AI Impact Review...
-                </p>
-                <span className="text-[11px] font-mono text-cyan-700 dark:text-cyan-400 mt-1">
-                  Running deterministic multi-hop dependency scan
-                </span>
+              {/* Mobile / Tablet Impact Sidebar Toggle Button */}
+              <div className="lg:hidden absolute top-4 right-4 z-30 select-none">
+                <button
+                  type="button"
+                  onClick={() => setIsSidebarOpenMobile(true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-900/90 hover:bg-slate-800 text-cyan-300 border border-cyan-500/50 shadow-xl backdrop-blur-md text-xs font-semibold active:scale-95 transition-all"
+                  title="View Impact Findings & AI PR Review"
+                >
+                  <ShieldAlert className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>
+                    Findings ({effectiveImpactData?.summary?.totalImpactedFiles ?? 0})
+                  </span>
+                </button>
               </div>
-            )}
+            </main>
 
-            <GraphViewer
-              graphData={effectiveGraphData}
+            <ImpactSidebar
+              impactData={effectiveImpactData}
+              explanationData={effectiveExplanationData}
               selectedNodeId={selectedNodeId}
               onSelectNode={setSelectedNodeId}
               isSimulating={isSimulating}
               simulatedFile={simulationData?.simulatedFile}
               simulatedChangeType={simulationData?.changeType}
+              onSimulateNode={handleSimulateNode}
               onExitSimulation={handleExitSimulation}
-            >
-              {/* Context-Aware AI Chatbot docked inside Graph Workspace (persists in fullscreen mode) */}
-              <ChatAssistant
-                analysisId={currentAnalysisId}
-                selectedNodeId={selectedNodeId}
-                isSimulating={isSimulating}
-                simulatedFile={simulationData?.simulatedFile}
-              />
-            </GraphViewer>
-
-            {/* Mobile / Tablet Impact Sidebar Toggle Button */}
-            <div className="lg:hidden absolute top-4 right-4 z-30 select-none">
-              <button
-                type="button"
-                onClick={() => setIsSidebarOpenMobile(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-900/90 hover:bg-slate-800 text-cyan-300 border border-cyan-500/50 shadow-xl backdrop-blur-md text-xs font-semibold active:scale-95 transition-all"
-                title="View Impact Findings & AI PR Review"
-              >
-                <ShieldAlert className="w-3.5 h-3.5 text-cyan-400" />
-                <span>
-                  Findings ({effectiveImpactData?.summary?.totalImpactedFiles ?? 0})
-                </span>
-              </button>
-            </div>
-          </main>
-
-          <ImpactSidebar
-            impactData={effectiveImpactData}
-            explanationData={effectiveExplanationData}
-            selectedNodeId={selectedNodeId}
-            onSelectNode={setSelectedNodeId}
-            isSimulating={isSimulating}
-            simulatedFile={simulationData?.simulatedFile}
-            simulatedChangeType={simulationData?.changeType}
-            onSimulateNode={handleSimulateNode}
-            onExitSimulation={handleExitSimulation}
-            isMobileOpen={isSidebarOpenMobile}
-            onCloseMobile={() => setIsSidebarOpenMobile(false)}
-          />
-        </div>
-      )}
+              isMobileOpen={isSidebarOpenMobile}
+              onCloseMobile={() => setIsSidebarOpenMobile(false)}
+            />
+          </div>
+        )}
+      </div>
 
       {/* Slide-over Analysis History & Saved Reports Drawer */}
       <HistoryDrawer
         isOpen={isHistoryOpen}
         onClose={() => setIsHistoryOpen(false)}
-        onLoadAnalysis={loadSavedAnalysis}
+        onLoadAnalysis={async (id) => {
+          setIsDemoMode(false);
+          await loadSavedAnalysis(id);
+          setIsProjectHubOpen(false);
+        }}
         currentAnalysisId={currentAnalysisId}
       />
 
@@ -644,7 +658,11 @@ export function DashboardPage() {
       <GitHubConnectorModal
         isOpen={isGitHubOpen}
         onClose={() => setIsGitHubOpen(false)}
-        onAnalysisComplete={(analysisId) => loadSavedAnalysis(analysisId)}
+        onAnalysisComplete={async (analysisId) => {
+          setIsDemoMode(false);
+          await loadSavedAnalysis(analysisId);
+          setIsProjectHubOpen(false);
+        }}
         currentAnalysisId={currentAnalysisId}
       />
     </div>

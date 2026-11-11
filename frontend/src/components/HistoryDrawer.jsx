@@ -99,9 +99,9 @@ export function HistoryDrawer({ isOpen, onClose, onLoadAnalysis, currentAnalysis
 
   const handleSelect = async (analysisId) => {
     setLoadingId(analysisId);
+    onClose();
     try {
       await onLoadAnalysis(analysisId);
-      onClose();
     } finally {
       setLoadingId(null);
     }

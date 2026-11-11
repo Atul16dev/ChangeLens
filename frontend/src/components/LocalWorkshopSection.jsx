@@ -17,6 +17,7 @@ import {
   Laptop,
 } from 'lucide-react';
 import { checkBridgeStatus, getBridgeChanges, runBridgeScan } from '../services/api.js';
+import { AstBlastLoaderOverlay } from './AstScannerLoader3D.jsx';
 
 export function LocalWorkshopSection({ onComplete, onFocusGuide }) {
   // Read session code from URL query string if present (e.g. ?session=CL-7842)
@@ -234,7 +235,15 @@ export function LocalWorkshopSection({ onComplete, onFocusGuide }) {
   };
 
   return (
-    <div className="space-y-6 text-left animate-in fade-in duration-200">
+    <div className="space-y-6 text-left animate-in fade-in duration-200 relative rounded-2xl">
+      {isScanning && (
+        <AstBlastLoaderOverlay
+          badge="LOCAL AST BLAST LOADER"
+          message="Calculating Blast Radius on Your Laptop..."
+          subMessage="Parsing local workspace files via Tree-Sitter WASM engine"
+          className="rounded-2xl"
+        />
+      )}
       {/* ─── TOP HEADER ──────────────────────────────────────────────── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-5 border-b border-slate-800/80 gap-4">
         <div>

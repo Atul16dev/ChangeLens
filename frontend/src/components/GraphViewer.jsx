@@ -36,6 +36,7 @@ import {
 import { exportGraphToPng, exportGraphToSvg } from '../utils/export.js';
 import { useTheme } from '../context/ThemeContext.jsx';
 import { GraphGalaxy3D } from './GraphGalaxy3D.jsx';
+import { AstBlastLoaderOverlay } from './AstScannerLoader3D.jsx';
 
 function GraphViewerInternal({
   graphData,
@@ -657,6 +658,16 @@ function GraphViewerInternal({
             onToggleFullscreen={toggleFullscreen}
           />
         </div>
+      )}
+
+      {/* ELK.js Layout Computation 3D AST Loader */}
+      {isLayoutComputing && (
+        <AstBlastLoaderOverlay
+          badge="GRAPH LAYOUT ENGINE"
+          message="Positioning AST Dependency Graph..."
+          subMessage="Running deterministic ELK.js layered DAG spatial calculation"
+          className="!z-30"
+        />
       )}
 
       {/* Embedded overlays like ChatAssistant that persist in fullscreen mode */}
