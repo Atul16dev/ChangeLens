@@ -7,6 +7,7 @@ import { HistoryDrawer } from '../components/HistoryDrawer.jsx';
 import { GitHubConnectorModal } from '../components/GitHubConnectorModal.jsx';
 import { RepoSyncBar } from '../components/RepoSyncBar.jsx';
 import { ProjectHub } from '../components/ProjectHub.jsx';
+import { AstScannerLoader3D } from '../components/AstScannerLoader3D.jsx';
 import {
   checkBackendHealth,
   runImpactAnalysis,
@@ -20,7 +21,7 @@ import {
   analyzeGitHubPR,
   getAnalysisHistory,
 } from '../services/api.js';
-import { AlertCircle, RefreshCw, ShieldAlert } from 'lucide-react';
+import { AlertCircle, ShieldAlert } from 'lucide-react';
 
 export function DashboardPage() {
   const [loading, setLoading] = useState(false);
@@ -570,11 +571,14 @@ export function DashboardPage() {
         <div className="flex-1 flex overflow-hidden relative">
           <main className="flex-1 h-full relative">
             {loading && !effectiveGraphData && (
-              <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-slate-950/80 backdrop-blur-sm">
-                <RefreshCw className="w-8 h-8 text-cyan-400 animate-spin mb-3" />
-                <p className="text-sm text-slate-300 font-medium">
+              <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-white/85 dark:bg-slate-950/85 backdrop-blur-md transition-colors px-4 text-center">
+                <AstScannerLoader3D className="w-28 h-28 sm:w-32 sm:h-32 mb-2" />
+                <p className="text-sm text-slate-800 dark:text-slate-200 font-semibold">
                   Parsing ASTs & Computing AI Impact Review...
                 </p>
+                <span className="text-[11px] font-mono text-cyan-700 dark:text-cyan-400 mt-1">
+                  Running deterministic multi-hop dependency scan
+                </span>
               </div>
             )}
 

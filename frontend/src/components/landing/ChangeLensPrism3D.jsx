@@ -2,6 +2,12 @@ import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { useTheme } from '../../context/ThemeContext.jsx';
 import {
+  disposeThreeResources,
+  getOptimalPixelRatio,
+  getPrefersReducedMotion,
+  observeVisibility,
+} from '../../utils/threeHelpers.js';
+import {
   Sparkles,
   Move,
   Zap,
@@ -336,13 +342,19 @@ export function ChangeLensPrism3D() {
     camera.position.set(0, 0.25, aspect < 1.35 ? 10.8 : 9.1);
     camera.lookAt(0, 0, 0);
 
-    const renderer = new THREE.WebGLRenderer({
-      antialias: true,
-      alpha: true,
-      powerPreference: 'high-performance',
-    });
+    const reducedMotion = getPrefersReducedMotion();
+    let renderer;
+    try {
+      renderer = new THREE.WebGLRenderer({
+        antialias: width >= 640,
+        alpha: true,
+        powerPreference: 'high-performance',
+      });
+    } catch {
+      return;
+    }
     renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setPixelRatio(getOptimalPixelRatio(width));
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = isDark ? 1.25 : 1.15;
 
@@ -933,11 +945,16 @@ export function ChangeLensPrism3D() {
     const resizeObserver = new ResizeObserver(handleResize);
     resizeObserver.observe(container);
 
-    // --- 11. ANIMATION LOOP (60 FPS) ---
-    let animationFrameId;
+    // --- 11. ANIMATION LOOP (viewport-paused + reduced-motion friendly) ---
+    let animationFrameId = null;
+    let isVisible = true;
     const timer = new THREE.Timer();
 
     const animate = (timestamp) => {
+      if (!isVisible) {
+        animationFrameId = null;
+        return;
+      }
       animationFrameId = requestAnimationFrame(animate);
       timer.update(timestamp);
       const elapsedTime = timer.getElapsed();
@@ -1044,11 +1061,26 @@ export function ChangeLensPrism3D() {
       renderer.render(scene, camera);
     };
 
-    animate();
+    const stopVisibility = observeVisibility(container, (visible) => {
+      isVisible = visible;
+      if (visible && !reducedMotion && animationFrameId === null) {
+        animationFrameId = requestAnimationFrame(animate);
+      } else if (!visible && animationFrameId !== null) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+      }
+    });
+
+    if (reducedMotion) {
+      renderer.render(scene, camera);
+    } else if (isVisible) {
+      animationFrameId = requestAnimationFrame(animate);
+    }
 
     // --- CLEANUP ---
     return () => {
-      cancelAnimationFrame(animationFrameId);
+      if (animationFrameId !== null) cancelAnimationFrame(animationFrameId);
+      stopVisibility();
       timer.dispose();
       syncVisualsRef.current = null;
       card.removeEventListener('mouseenter', handleMouseEnter);
@@ -1056,22 +1088,7 @@ export function ChangeLensPrism3D() {
       card.removeEventListener('mouseleave', handleMouseLeave);
       container.removeEventListener('click', handleCanvasClick);
       resizeObserver.disconnect();
-
-      scene.traverse((obj) => {
-        if (obj.geometry) obj.geometry.dispose();
-        if (obj.material) {
-          const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
-          mats.forEach((m) => {
-            if (m.map) m.map.dispose();
-            m.dispose();
-          });
-        }
-      });
-
-      if (renderer.domElement && container.contains(renderer.domElement)) {
-        container.removeChild(renderer.domElement);
-      }
-      renderer.dispose();
+      disposeThreeResources(scene, renderer, null, container);
     };
   }, [isDark]);
 

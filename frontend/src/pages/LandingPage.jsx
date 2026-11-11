@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext.jsx';
 import { Navbar } from '../components/landing/Navbar.jsx';
 import { HeroSection } from '../components/landing/HeroSection.jsx';
 import { ProblemSection } from '../components/landing/ProblemSection.jsx';
+import { ChaosToOrderScroll3D } from '../components/landing/ChaosToOrderScroll3D.jsx';
 import { FeaturesGrid } from '../components/landing/FeaturesGrid.jsx';
 import { HowItWorksSection } from '../components/landing/HowItWorksSection.jsx';
 import { GlobalTelemetryGlobe3D } from '../components/landing/GlobalTelemetryGlobe3D.jsx';
@@ -46,6 +47,9 @@ export function LandingPage() {
 
         {/* Problem Section */}
         <ProblemSection />
+
+        {/* Scroll-Linked 3D AST Storytelling Morph */}
+        <ChaosToOrderScroll3D />
 
         {/* Features Capabilities Grid */}
         <FeaturesGrid />

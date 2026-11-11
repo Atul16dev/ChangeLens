@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { BrandLogo } from '../components/BrandLogo.jsx';
 import { ThemeToggle } from '../components/ThemeToggle.jsx';
+import { AuthCanvas3D } from '../components/AuthCanvas3D.jsx';
 
 export function RegisterPage() {
   const { register, isAuthenticated } = useAuth();
@@ -54,7 +55,7 @@ export function RegisterPage() {
   const handleGoogleSignup = () => { window.location.href = '/api/v1/auth/google'; };
 
   const Criterion = ({ met, label }) => (
-    <span className={`flex items-center gap-1 text-[11px] font-medium transition-colors ${met ? 'text-emerald-400' : 'text-slate-500'}`}>
+    <span className={`flex items-center gap-1 text-[11px] font-medium transition-colors ${met ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-500'}`}>
       {met
         ? <CheckCircle2 className="w-3 h-3 shrink-0" />
         : <XCircle className="w-3 h-3 shrink-0" />}
@@ -63,7 +64,7 @@ export function RegisterPage() {
   );
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#070b14] text-slate-900 dark:text-slate-100 font-sans flex flex-col items-center justify-center py-10 px-4 relative overflow-x-hidden">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#070b14] text-slate-900 dark:text-slate-100 font-sans flex items-center justify-center py-8 sm:py-10 px-4 sm:px-6 lg:px-8 relative overflow-x-hidden">
       {/* Top right theme toggle */}
       <div className="absolute top-4 right-4 z-20">
         <ThemeToggle size="sm" />
@@ -73,19 +74,22 @@ export function RegisterPage() {
       <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-indigo-600/10 blur-[140px] rounded-full pointer-events-none" />
       <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-cyan-600/5 blur-[120px] rounded-full pointer-events-none" />
 
-      {/* ── Brand header (centered, above card) ── */}
-      <div className="flex flex-col items-center gap-2 mb-6 relative z-10">
-        <BrandLogo size="lg" />
-        <h1 className="text-2xl font-bold tracking-tight text-center text-slate-900 dark:text-white">
-          Create your ChangeLens Account
-        </h1>
-        <p className="text-xs text-slate-600 dark:text-slate-400 text-center">
-          Ship with confidence using AST-powered Blast Radius Analysis
-        </p>
-      </div>
+      <div className="w-full max-w-lg lg:max-w-5xl grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center relative z-10">
+        {/* Left Column: Brand Header + Registration Card */}
+        <div className="lg:col-span-6 flex flex-col items-center lg:items-stretch">
+          {/* ── Brand header ── */}
+          <div className="flex flex-col items-center lg:items-start gap-2 mb-5 w-full">
+            <BrandLogo size="lg" />
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-center lg:text-left text-slate-900 dark:text-white">
+              Create your ChangeLens Account
+            </h1>
+            <p className="text-xs text-slate-600 dark:text-slate-400 text-center lg:text-left">
+              Ship with confidence using AST-powered Blast Radius Analysis
+            </p>
+          </div>
 
-      {/* ── Card ── */}
-      <div className="w-full max-w-lg bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-700/60 rounded-2xl px-7 py-6 backdrop-blur-xl shadow-xl dark:shadow-2xl shadow-slate-900/5 dark:shadow-black/40 relative z-10">
+          {/* ── Card ── */}
+          <div className="w-full bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-700/60 rounded-2xl px-5 sm:px-7 py-6 backdrop-blur-xl shadow-xl dark:shadow-2xl shadow-slate-900/5 dark:shadow-black/40 relative">
 
         {/* Error */}
         {error && (
@@ -213,6 +217,13 @@ export function RegisterPage() {
             Log in
           </Link>
         </p>
+          </div>
+        </div>
+
+        {/* Right Column: Interactive 3D AST Showcase */}
+        <div className="hidden lg:block lg:col-span-6 h-full">
+          <AuthCanvas3D variant="register" />
+        </div>
       </div>
     </div>
   );

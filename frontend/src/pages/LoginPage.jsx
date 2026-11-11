@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext.jsx';
 import { Mail, Lock, Eye, EyeOff, AlertCircle, ArrowRight, RefreshCw } from 'lucide-react';
 import { BrandLogo } from '../components/BrandLogo.jsx';
 import { ThemeToggle } from '../components/ThemeToggle.jsx';
+import { AuthCanvas3D } from '../components/AuthCanvas3D.jsx';
 
 export function LoginPage() {
   const { login, isAuthenticated } = useAuth();
@@ -67,24 +68,26 @@ export function LoginPage() {
       {/* Background radial gradient glow */}
       <div className="fixed top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[350px] bg-cyan-600/10 blur-[120px] rounded-full pointer-events-none" />
 
-      {/* Scrollable centering wrapper */}
-      <div className="min-h-screen flex flex-col items-center justify-start sm:justify-center px-4 py-8 sm:py-10 relative z-10">
+      {/* Responsive Split-Screen Wrapper */}
+      <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 py-8 sm:py-10 relative z-10">
+        <div className="w-full max-w-md lg:max-w-5xl grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center">
+          {/* Left Column: Auth Form */}
+          <div className="lg:col-span-6 flex flex-col items-center lg:items-stretch">
+            {/* Brand Header */}
+            <div className="flex flex-col items-center lg:items-start mb-5 w-full">
+              <div className="mb-3">
+                <BrandLogo size="lg" />
+              </div>
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-center lg:text-left bg-gradient-to-r from-slate-900 via-slate-700 to-slate-900 dark:from-white dark:via-slate-100 dark:to-slate-400 bg-clip-text text-transparent">
+                Welcome back to ChangeLens
+              </h1>
+              <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 text-center lg:text-left font-medium">
+                Deterministic Code Blast Radius & Impact Intelligence
+              </p>
+            </div>
 
-      {/* Brand Header */}
-      <div className="flex flex-col items-center mb-5 w-full max-w-md">
-        <div className="mb-3">
-          <BrandLogo size="lg" />
-        </div>
-        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-center bg-gradient-to-r from-slate-900 via-slate-700 to-slate-900 dark:from-white dark:via-slate-100 dark:to-slate-400 bg-clip-text text-transparent">
-          Welcome back to ChangeLens
-        </h1>
-        <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 text-center font-medium">
-          Deterministic Code Blast Radius & Impact Intelligence
-        </p>
-      </div>
-
-      {/* Login Card */}
-      <div className="w-full max-w-md bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 sm:p-7 backdrop-blur-xl shadow-xl dark:shadow-2xl">
+            {/* Login Card */}
+            <div className="w-full bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 sm:p-7 backdrop-blur-xl shadow-xl dark:shadow-2xl">
         {/* Error Alert */}
         {error && (
           <div className="mb-5 bg-rose-50 dark:bg-rose-950/80 border border-rose-200 dark:border-rose-500/40 rounded-xl p-3.5 flex items-start gap-3 text-rose-800 dark:text-rose-200 text-xs">
@@ -221,10 +224,14 @@ export function LoginPage() {
             Create an account
           </Link>
         </p>
-      </div>
+            </div>
+          </div>
 
-      {/* Bottom breathing room */}
-      <div className="h-4" />
+          {/* Right Column: Interactive 3D AST Showcase (Desktop/Large Tablet) */}
+          <div className="hidden lg:block lg:col-span-6 h-full">
+            <AuthCanvas3D variant="login" />
+          </div>
+        </div>
       </div>
     </div>
   );

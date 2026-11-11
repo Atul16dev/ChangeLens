@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { ScrollReveal } from './ScrollReveal.jsx';
 import { ChangeLensPrism3D } from './ChangeLensPrism3D.jsx';
+import { HeroShaderBackdrop3D } from './HeroShaderBackdrop3D.jsx';
 
 const DEMO_PRESETS = [
   {
@@ -75,25 +76,26 @@ export function HeroSection() {
 
   return (
     <section className="relative pt-6 pb-14 sm:pt-10 sm:pb-20 md:pt-14 md:pb-32 overflow-hidden">
-      {/* Background radial gradient mesh with continuous floating & pulsing */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[650px] pointer-events-none overflow-hidden">
-        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-cyan-600/15 blur-[140px] rounded-full animate-pulse-glow" />
-        <div className="absolute top-1/3 right-1/4 w-[480px] h-[480px] bg-indigo-600/15 blur-[130px] rounded-full animate-float-slow" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 w-[600px] h-[320px] bg-rose-600/10 blur-[150px] rounded-full animate-float-reverse" />
+      {/* Live WebGL GLSL Aurora Shader Wave + CSS ambient fallback */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-[1600px] h-[520px] sm:h-[680px] pointer-events-none overflow-hidden">
+        <HeroShaderBackdrop3D />
+        <div className="absolute top-1/4 left-1/4 w-[420px] sm:w-[500px] h-[420px] sm:h-[500px] bg-cyan-500/10 dark:bg-cyan-600/15 blur-[140px] rounded-full animate-pulse-glow" />
+        <div className="absolute top-1/3 right-1/4 w-[400px] sm:w-[480px] h-[400px] sm:h-[480px] bg-indigo-500/10 dark:bg-indigo-600/15 blur-[130px] rounded-full animate-float-slow" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 w-[520px] sm:w-[600px] h-[280px] sm:h-[320px] bg-sky-500/10 dark:bg-rose-600/10 blur-[150px] rounded-full animate-float-reverse" />
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Top Announcement Pill */}
         <ScrollReveal animation="fade-down" duration={650} className="flex justify-center mb-5 sm:mb-6">
-          <div className="inline-flex items-center gap-2 px-3 sm:px-3.5 py-1.5 rounded-full bg-slate-900/90 border border-slate-800 shadow-inner backdrop-blur-md hover:border-cyan-500/40 transition-colors cursor-pointer group">
+          <div className="inline-flex items-center gap-2 px-3 sm:px-3.5 py-1.5 rounded-full bg-white/90 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-inner backdrop-blur-md hover:border-cyan-500/50 transition-colors cursor-pointer group">
             <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"></span>
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-500 dark:bg-cyan-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-600 dark:bg-cyan-500"></span>
             </span>
-            <span className="text-[11px] sm:text-xs font-medium text-slate-300 group-hover:text-cyan-200 transition-colors">
+            <span className="text-[11px] sm:text-xs font-medium text-slate-700 dark:text-slate-300 group-hover:text-cyan-700 dark:group-hover:text-cyan-200 transition-colors">
               Deterministic AST Blast Radius Engine
             </span>
-            <span className="text-[9px] sm:text-[10px] uppercase tracking-wider font-bold px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+            <span className="text-[9px] sm:text-[10px] uppercase tracking-wider font-bold px-1.5 py-0.5 rounded bg-cyan-500/15 dark:bg-cyan-500/20 text-cyan-700 dark:text-cyan-300 border border-cyan-500/30">
               v1.0 Live
             </span>
           </div>
@@ -102,17 +104,17 @@ export function HeroSection() {
         {/* Hero Title & Supporting Text */}
         <div className="text-center max-w-4xl mx-auto space-y-4 sm:space-y-6">
           <ScrollReveal animation="fade-up" delay={100} duration={800}>
-            <h1 className="text-3xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight text-white leading-[1.15]">
+            <h1 className="text-3xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-[1.15]">
               Know What Your Code Changes{' '}
-              <span className="text-shimmer inline-block">
+              <span className="bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 dark:from-cyan-300 dark:via-sky-300 dark:to-indigo-400 bg-clip-text text-transparent inline-block">
                 Will Break.
               </span>
             </h1>
           </ScrollReveal>
 
           <ScrollReveal animation="fade-up" delay={200} duration={800}>
-            <p className="text-sm sm:text-lg md:text-xl text-slate-300 max-w-3xl mx-auto leading-relaxed">
-              Deterministic AST blast radius intelligence for your code changes. Connect via <strong className="text-white font-semibold">GitHub Repos</strong>, <strong className="text-white font-semibold">Pull Requests</strong>, or <strong className="text-white font-semibold">Local Offline Workspaces</strong> to visualize multi-hop impact, catch broken symbols, and consult an in-workspace AI copilot before merging.
+            <p className="text-sm sm:text-lg md:text-xl text-slate-600 dark:text-slate-300 max-w-3xl mx-auto leading-relaxed">
+              Deterministic AST blast radius intelligence for your code changes. Connect via <strong className="text-slate-900 dark:text-white font-semibold">GitHub Repos</strong>, <strong className="text-slate-900 dark:text-white font-semibold">Pull Requests</strong>, or <strong className="text-slate-900 dark:text-white font-semibold">Local Offline Workspaces</strong> to visualize multi-hop impact, catch broken symbols, and consult an in-workspace AI copilot before merging.
             </p>
           </ScrollReveal>
 
@@ -123,37 +125,37 @@ export function HeroSection() {
                 <>
                   <Link
                     to="/app"
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-500 via-indigo-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold text-sm sm:text-base px-6 sm:px-7 py-3 sm:py-3.5 rounded-xl shadow-lg shadow-cyan-500/25 active:scale-95 transition-all group"
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-600 via-indigo-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-semibold text-sm sm:text-base px-6 sm:px-7 py-3 sm:py-3.5 rounded-xl shadow-lg shadow-cyan-500/25 active:scale-95 transition-all group"
                   >
                     <span>Launch ChangeLens Workspace</span>
                     <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
                   </Link>
                   <a
                     href="#features"
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-slate-900/90 hover:bg-slate-800 text-slate-200 hover:text-white font-semibold text-sm sm:text-base px-5 sm:px-6 py-3 sm:py-3.5 rounded-xl border border-slate-800 hover:border-slate-700 transition-all shadow-sm"
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white/90 dark:bg-slate-900/90 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 hover:text-slate-950 dark:hover:text-white font-semibold text-sm sm:text-base px-5 sm:px-6 py-3 sm:py-3.5 rounded-xl border border-slate-300 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-700 transition-all shadow-sm"
                   >
                     <span>Explore Features</span>
-                    <Layers className="w-4 h-4 text-slate-400" />
+                    <Layers className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                   </a>
                 </>
               ) : (
                 <>
                   <Link
                     to="/register"
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-500 via-indigo-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold text-sm sm:text-base px-6 sm:px-7 py-3 sm:py-3.5 rounded-xl shadow-lg shadow-cyan-500/25 active:scale-95 transition-all group"
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-600 via-indigo-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-semibold text-sm sm:text-base px-6 sm:px-7 py-3 sm:py-3.5 rounded-xl shadow-lg shadow-cyan-500/25 active:scale-95 transition-all group"
                   >
                     <span>Get Started Free</span>
                     <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
                   </Link>
                   <Link
                     to="/login"
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-slate-900/90 hover:bg-slate-800 text-slate-200 hover:text-white font-semibold text-sm sm:text-base px-5 sm:px-6 py-3 sm:py-3.5 rounded-xl border border-slate-800 hover:border-slate-700 transition-all shadow-sm"
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white/90 dark:bg-slate-900/90 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 hover:text-slate-950 dark:hover:text-white font-semibold text-sm sm:text-base px-5 sm:px-6 py-3 sm:py-3.5 rounded-xl border border-slate-300 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-700 transition-all shadow-sm"
                   >
                     <span>Launch Workspace (Sign In)</span>
                   </Link>
                   <a
                     href="#features"
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 text-slate-400 hover:text-white text-xs sm:text-sm font-medium px-4 py-2 sm:py-3.5 transition-colors"
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white text-xs sm:text-sm font-medium px-4 py-2 sm:py-3.5 transition-colors"
                   >
                     <span>Explore Features</span>
                     <Layers className="w-3.5 h-3.5" />
@@ -165,18 +167,18 @@ export function HeroSection() {
 
           {/* Supported Languages Badges */}
           <ScrollReveal animation="fade-up" delay={400} duration={800}>
-            <div className="pt-3 sm:pt-6 flex items-center justify-center gap-2.5 sm:gap-6 flex-wrap text-[11px] sm:text-xs text-slate-400 font-medium">
-              <span className="flex items-center gap-1.5 hover:text-slate-200 transition-colors">
-                <span className="w-2 h-2 rounded-full bg-amber-400" /> JavaScript / TypeScript
+            <div className="pt-3 sm:pt-6 flex items-center justify-center gap-2.5 sm:gap-6 flex-wrap text-[11px] sm:text-xs text-slate-600 dark:text-slate-400 font-medium">
+              <span className="flex items-center gap-1.5 hover:text-slate-900 dark:hover:text-slate-200 transition-colors">
+                <span className="w-2 h-2 rounded-full bg-amber-500 dark:bg-amber-400" /> JavaScript / TypeScript
               </span>
-              <span className="flex items-center gap-1.5 hover:text-slate-200 transition-colors">
-                <span className="w-2 h-2 rounded-full bg-blue-400" /> Python 3 AST
+              <span className="flex items-center gap-1.5 hover:text-slate-900 dark:hover:text-slate-200 transition-colors">
+                <span className="w-2 h-2 rounded-full bg-blue-500 dark:bg-blue-400" /> Python 3 AST
               </span>
-              <span className="flex items-center gap-1.5 hover:text-slate-200 transition-colors">
-                <span className="w-2 h-2 rounded-full bg-cyan-400" /> Go Modules
+              <span className="flex items-center gap-1.5 hover:text-slate-900 dark:hover:text-slate-200 transition-colors">
+                <span className="w-2 h-2 rounded-full bg-cyan-600 dark:bg-cyan-400" /> Go Modules
               </span>
-              <span className="flex items-center gap-1.5 hover:text-slate-200 transition-colors">
-                <span className="w-2 h-2 rounded-full bg-emerald-400" /> Git Diff
+              <span className="flex items-center gap-1.5 hover:text-slate-900 dark:hover:text-slate-200 transition-colors">
+                <span className="w-2 h-2 rounded-full bg-emerald-600 dark:bg-emerald-400" /> Git Diff
               </span>
             </div>
           </ScrollReveal>

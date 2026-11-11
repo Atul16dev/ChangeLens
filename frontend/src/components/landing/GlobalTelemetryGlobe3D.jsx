@@ -2,6 +2,12 @@ import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { useTheme } from '../../context/ThemeContext.jsx';
 import {
+  disposeThreeResources,
+  getOptimalPixelRatio,
+  getPrefersReducedMotion,
+  observeVisibility,
+} from '../../utils/threeHelpers.js';
+import {
   Globe,
   Radio,
   Zap,
@@ -70,14 +76,20 @@ export function GlobalTelemetryGlobe3D() {
 
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
     camera.position.set(0, 0, 7.3);
+    const reducedMotion = getPrefersReducedMotion();
 
-    const renderer = new THREE.WebGLRenderer({
-      antialias: true,
-      alpha: true,
-      powerPreference: 'high-performance',
-    });
+    let renderer;
+    try {
+      renderer = new THREE.WebGLRenderer({
+        antialias: width >= 640,
+        alpha: true,
+        powerPreference: 'high-performance',
+      });
+    } catch {
+      return;
+    }
     renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setPixelRatio(getOptimalPixelRatio(width));
 
     // Ensure no stale canvas remains from previous renders or React StrictMode
     while (container.firstChild) {
@@ -315,23 +327,21 @@ export function GlobalTelemetryGlobe3D() {
 
       camera.aspect = newWidth / newHeight;
       camera.updateProjectionMatrix();
+      renderer.setPixelRatio(getOptimalPixelRatio(newWidth));
       renderer.setSize(newWidth, newHeight);
     };
 
     const resizeObserver = new ResizeObserver(handleResize);
     resizeObserver.observe(container);
 
-    // --- 8. ANIMATION LOOP ---
-    let animId;
+    // --- 8. ANIMATION LOOP (viewport-paused + reduced-motion friendly) ---
+    let animId = null;
+    let isVisible = true;
     const timer = new THREE.Timer();
 
-    const animate = (timestamp) => {
-      animId = requestAnimationFrame(animate);
-      timer.update(timestamp);
-      const elapsed = timer.getElapsed();
-
+    const renderFrame = (elapsed) => {
       // If user is not dragging, apply gentle idle rotation & inertia damping
-      if (!isPointerDown) {
+      if (!isPointerDown && !reducedMotion) {
         // Natural idle spinning around Y axis
         globeGroup.rotation.y += 0.0028;
 
@@ -359,11 +369,35 @@ export function GlobalTelemetryGlobe3D() {
       renderer.render(scene, camera);
     };
 
-    animate();
+    const animate = (timestamp) => {
+      if (!isVisible) {
+        animId = null;
+        return;
+      }
+      animId = requestAnimationFrame(animate);
+      timer.update(timestamp);
+      renderFrame(timer.getElapsed());
+    };
+
+    const stopVisibility = observeVisibility(container, (visible) => {
+      isVisible = visible;
+      if (visible && !reducedMotion && animId === null) {
+        animId = requestAnimationFrame(animate);
+      } else if (!visible && animId !== null) {
+        cancelAnimationFrame(animId);
+        animId = null;
+      }
+    });
+
+    renderFrame(0.5);
+    if (!reducedMotion && isVisible) {
+      animId = requestAnimationFrame(animate);
+    }
 
     // --- CLEANUP ---
     return () => {
-      cancelAnimationFrame(animId);
+      if (animId !== null) cancelAnimationFrame(animId);
+      stopVisibility();
       timer.dispose();
       card.removeEventListener('mouseenter', handleMouseEnter);
       card.removeEventListener('mouseleave', handleMouseLeave);
@@ -371,23 +405,7 @@ export function GlobalTelemetryGlobe3D() {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
       resizeObserver.disconnect();
-
-      // Deep recursive disposal of all geometries and materials across scene
-      scene.traverse((obj) => {
-        if (obj.geometry) obj.geometry.dispose();
-        if (obj.material) {
-          if (Array.isArray(obj.material)) {
-            obj.material.forEach((m) => m.dispose());
-          } else {
-            obj.material.dispose();
-          }
-        }
-      });
-
-      if (renderer.domElement && container.contains(renderer.domElement)) {
-        container.removeChild(renderer.domElement);
-      }
-      renderer.dispose();
+      disposeThreeResources(scene, renderer, null, container);
     };
   }, [isDark]);
 

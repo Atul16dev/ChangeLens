@@ -1,6 +1,16 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import * as THREE from 'three';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 import { useTheme } from '../context/ThemeContext.jsx';
+import {
+  disposeThreeResources,
+  getOptimalPixelRatio,
+  getPrefersReducedMotion,
+  observeVisibility,
+} from '../utils/threeHelpers.js';
 import {
   Sparkles,
   RotateCw,
@@ -127,6 +137,22 @@ function getNodeGeometry(tier, radius) {
   }
 }
 
+function createDarkSpaceTexture() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 512;
+  canvas.height = 512;
+  const ctx = canvas.getContext('2d');
+  const grad = ctx.createRadialGradient(256, 180, 10, 256, 256, 360);
+  grad.addColorStop(0, '#152136');
+  grad.addColorStop(0.6, '#0d1527');
+  grad.addColorStop(1, '#080d19');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 512, 512);
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
 // ─── HELPER: NODE THEME ───────────────────────────────────────────────────────
 function getNodeTheme(node, isSimulating, simulatedFile, simulatedChangeType, isDark) {
   const isDeleted =
@@ -174,6 +200,28 @@ export function GraphGalaxy3D({
   const [searchQuery, setSearchQuery] = useState('');
   const [isIsolated, setIsIsolated] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
+
+  // Live refs so hot animation loop reads hover/selection/search/autoRotate without rebuilding the scene
+  const hoveredIdRef = useRef(null);
+  const selectedIdRef = useRef(null);
+  const searchQueryRef = useRef('');
+  const autoRotateRef = useRef(false);
+
+  useEffect(() => {
+    hoveredIdRef.current = hoveredNode?.id || null;
+  }, [hoveredNode]);
+
+  useEffect(() => {
+    selectedIdRef.current = activeSelectedNode?.id || null;
+  }, [activeSelectedNode]);
+
+  useEffect(() => {
+    searchQueryRef.current = searchQuery;
+  }, [searchQuery]);
+
+  useEffect(() => {
+    autoRotateRef.current = autoRotate;
+  }, [autoRotate]);
 
   // Sync external selection prop
   useEffect(() => {
@@ -234,6 +282,14 @@ export function GraphGalaxy3D({
 
     const W = container.clientWidth || 900;
     const H = container.clientHeight || 650;
+    const reducedMotion = getPrefersReducedMotion();
+    const isMobile = W < 768;
+
+    let darkSpaceTex = null;
+    if (isDark) {
+      darkSpaceTex = createDarkSpaceTexture();
+      scene.background = darkSpaceTex;
+    }
 
     const camera = new THREE.PerspectiveCamera(42, W / H, 0.1, 1200);
     const DEFAULT_CAM = new THREE.Vector3(0, 12, 55);
@@ -241,15 +297,36 @@ export function GraphGalaxy3D({
     camera.position.copy(DEFAULT_CAM);
     camera.lookAt(cameraTarget);
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
+    let renderer;
+    try {
+      renderer = new THREE.WebGLRenderer({ antialias: !isMobile, alpha: !isDark, powerPreference: 'high-performance' });
+    } catch {
+      return;
+    }
     renderer.setSize(W, H);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setPixelRatio(getOptimalPixelRatio(W));
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = isDark ? 1.3 : 1.1;
+    renderer.toneMappingExposure = isDark ? 1.15 : 1.08;
 
     // Clean mount
     while (container.firstChild) container.removeChild(container.firstChild);
     container.appendChild(renderer.domElement);
+
+    // Selective Post-Processing Bloom (Dark Mode only, preserves crisp high-contrast Light Mode)
+    let composer = null;
+    if (isDark && !reducedMotion) {
+      try {
+        composer = new EffectComposer(renderer);
+        composer.setPixelRatio(getOptimalPixelRatio(W));
+        composer.setSize(W, H);
+        composer.addPass(new RenderPass(scene, camera));
+        const bloomPass = new UnrealBloomPass(new THREE.Vector2(W, H), 0.34, 0.5, 0.72);
+        composer.addPass(bloomPass);
+        composer.addPass(new OutputPass());
+      } catch {
+        composer = null;
+      }
+    }
 
     // ── Lighting ──────────────────────────────────────────────────────────────
     scene.add(new THREE.AmbientLight(isDark ? 0x1e293b : 0xffffff, isDark ? 1.8 : 2.5));
@@ -266,7 +343,7 @@ export function GraphGalaxy3D({
     const graphGroup = new THREE.Group();
     scene.add(graphGroup);
 
-    // Subtle reference grid (high contrast slate lines in light mode)
+    // Subtle reference grid + concentric architectural tier rings
     const grid = new THREE.GridHelper(200, 60,
       isDark ? 0x1e293b : 0x7e92ab,
       isDark ? 0x0f172a : 0xa4b4c7
@@ -274,10 +351,26 @@ export function GraphGalaxy3D({
     grid.position.y = -14;
     scene.add(grid);
 
-    // Ambient particle field
+    const floorRingRadii = [14, 28, 44];
+    floorRingRadii.forEach((rad, idx) => {
+      const rGeo = new THREE.RingGeometry(rad, rad + 0.14, 72);
+      const rMat = new THREE.MeshBasicMaterial({
+        color: isDark ? (idx === 0 ? 0x0284c7 : 0x334155) : (idx === 0 ? 0x0369a1 : 0x64748b),
+        side: THREE.DoubleSide,
+        transparent: true,
+        opacity: isDark ? 0.28 - idx * 0.05 : 0.34 - idx * 0.06,
+      });
+      const ring = new THREE.Mesh(rGeo, rMat);
+      ring.rotation.x = -Math.PI / 2;
+      ring.position.y = -13.94;
+      scene.add(ring);
+    });
+
+    // Ambient particle field (scaled cleanly for mobile/desktop)
+    const ptCount = isMobile ? 140 : 280;
     const ptGeo = new THREE.BufferGeometry();
-    const ptPos = new Float32Array(300 * 3);
-    for (let i = 0; i < 300; i++) {
+    const ptPos = new Float32Array(ptCount * 3);
+    for (let i = 0; i < ptCount; i++) {
       ptPos[i * 3 + 0] = (Math.random() - 0.5) * 160;
       ptPos[i * 3 + 1] = (Math.random() - 0.5) * 100;
       ptPos[i * 3 + 2] = (Math.random() - 0.5) * 120;
@@ -367,11 +460,65 @@ export function GraphGalaxy3D({
       });
     }
 
+    // ── Architectural Z-Tier Layer Frames (spatial depth visualizers) ──────────
+    if (has2DPos && visibleNodes.length > 0) {
+      const zLayers = [
+        { z: SPREAD_Z * 0.9, color: isDark ? 0xf59e0b : 0xd97706 },
+        { z: SPREAD_Z * 0.38, color: isDark ? 0x38bdf8 : 0x0284c7 },
+        { z: -SPREAD_Z * 0.22, color: isDark ? 0x818cf8 : 0x4f46e5 },
+      ];
+      zLayers.forEach((layer) => {
+        const frameBox = new THREE.PlaneGeometry(SPREAD_X * 0.92, SPREAD_Y * 0.85);
+        const frameEdges = new THREE.EdgesGeometry(frameBox);
+        frameBox.dispose();
+        const frameMat = new THREE.LineBasicMaterial({
+          color: layer.color,
+          transparent: true,
+          opacity: isDark ? 0.14 : 0.2,
+        });
+        const frameWire = new THREE.LineSegments(frameEdges, frameMat);
+        frameWire.position.set(0, 0, layer.z);
+        graphGroup.add(frameWire);
+      });
+    }
+
+    // ── Simulation BFS Hop Depth Map (for sequential wave pulses) ─────────────
+    const hopDepthById = new Map();
+    if (isSimulating && simulatedFile) {
+      hopDepthById.set(simulatedFile, 0);
+      const adj = new Map();
+      visibleEdges.forEach((e) => {
+        if (!adj.has(e.source)) adj.set(e.source, []);
+        if (!adj.has(e.target)) adj.set(e.target, []);
+        adj.get(e.source).push(e.target);
+        adj.get(e.target).push(e.source);
+      });
+      const qIds = [simulatedFile];
+      while (qIds.length > 0) {
+        const curr = qIds.shift();
+        const d = hopDepthById.get(curr);
+        (adj.get(curr) || []).forEach((nxt) => {
+          if (!hopDepthById.has(nxt)) {
+            hopDepthById.set(nxt, d + 1);
+            qIds.push(nxt);
+          }
+        });
+      }
+    }
+
+    // ── Shared Geometry Pool (cuts GPU buffers 10x+ on large repos) ───────────
+    const geoCache = new Map();
+    const getCachedNodeGeo = (tier, radius) => {
+      const key = `${tier}:${radius}`;
+      if (!geoCache.has(key)) geoCache.set(key, getNodeGeometry(tier, radius));
+      return geoCache.get(key);
+    };
+
     // ── Build Node Meshes ─────────────────────────────────────────────────────
     visibleNodes.forEach((node) => {
       const pos = posMap.get(node.id) || new THREE.Vector3(0, 0, 0);
       const theme = getNodeTheme(node, isSimulating, simulatedFile, simulatedChangeType, isDark);
-      const geo = getNodeGeometry(theme.tier, theme.radius);
+      const geo = getCachedNodeGeo(theme.tier, theme.radius);
       const mat = new THREE.MeshStandardMaterial({
         color: theme.color,
         emissive: theme.glow,
@@ -435,6 +582,30 @@ export function GraphGalaxy3D({
       });
     };
 
+    // ── Simulation Epicenter Shockwave Rings ──────────────────────────────────
+    const simShockwaves = [];
+    if (isSimulating && simulatedFile && posMap.has(simulatedFile)) {
+      const epiPos = posMap.get(simulatedFile);
+      const shockColor = isDark ? 0xf43f5e : 0xdc2626;
+      for (let i = 0; i < 2; i++) {
+        const sGeo = new THREE.RingGeometry(0.9, 1.12, 42);
+        const sMat = new THREE.MeshBasicMaterial({
+          color: shockColor,
+          side: THREE.DoubleSide,
+          transparent: true,
+          opacity: 0.7,
+        });
+        const sRing = new THREE.Mesh(sGeo, sMat);
+        sRing.position.copy(epiPos);
+        graphGroup.add(sRing);
+        simShockwaves.push({ mesh: sRing, mat: sMat, phaseOffset: i * 0.5, epiPos });
+      }
+    }
+
+    const sharedArrowGeo = new THREE.ConeGeometry(0.16, 0.45, 10);
+    const sharedPhotonGeo = new THREE.SphereGeometry(0.11, 10, 10);
+    const sharedWavePulseGeo = new THREE.SphereGeometry(0.22, 12, 12);
+
     visibleEdges.forEach((edge) => {
       const p1 = posMap.get(edge.source);
       const p2 = posMap.get(edge.target);
@@ -448,7 +619,7 @@ export function GraphGalaxy3D({
       const curve = new THREE.QuadraticBezierCurve3(p1, mid, p2);
       const pts = curve.getPoints(32);
       const lGeo = new THREE.BufferGeometry().setFromPoints(pts);
-      const edgeColor = isImpact ? 0x06b6d4 : isDark ? 0x334155 : 0x475569;
+      const edgeColor = isImpact ? (isDark ? 0x06b6d4 : 0x0284c7) : isDark ? 0x334155 : 0x475569;
       const lMat = new THREE.LineBasicMaterial({
         color: edgeColor,
         transparent: true,
@@ -458,25 +629,50 @@ export function GraphGalaxy3D({
       const lineMesh = new THREE.Line(lGeo, lMat);
       graphGroup.add(lineMesh);
 
-      // Directional arrowhead cone
-      const aGeo = new THREE.ConeGeometry(0.16, 0.45, 10);
+      // Directional arrowhead cone (shared geometry)
       const aMat = new THREE.MeshBasicMaterial({ color: edgeColor, transparent: true, opacity: isImpact ? 0.9 : 0.5 });
-      const arrow = new THREE.Mesh(aGeo, aMat);
+      const arrow = new THREE.Mesh(sharedArrowGeo, aMat);
       const t = curve.getTangentAt(0.58).normalize();
       arrow.position.copy(curve.getPointAt(0.58));
       arrow.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), t);
       graphGroup.add(arrow);
 
-      // Animated photon for impact edges
+      // Animated photon for impact edges (shared geometry)
       let photon = null;
       if (isImpact) {
-        const pGeo = new THREE.SphereGeometry(0.11, 10, 10);
-        const pMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
-        photon = new THREE.Mesh(pGeo, pMat);
+        const pMat = new THREE.MeshBasicMaterial({ color: isDark ? 0x38bdf8 : 0x0284c7 });
+        photon = new THREE.Mesh(sharedPhotonGeo, pMat);
         graphGroup.add(photon);
       }
 
-      edgeObjs.push({ edge, source: edge.source, target: edge.target, curve, lineMesh, arrow, photon, isImpact, speed: 0.003 + Math.random() * 0.002, progress: Math.random() });
+      // Sequential Hop-by-Hop Blast Surge Pulse during What-If Simulation
+      const d1 = hopDepthById.has(edge.source) ? hopDepthById.get(edge.source) : 99;
+      const d2 = hopDepthById.has(edge.target) ? hopDepthById.get(edge.target) : 99;
+      const edgeHop = Math.min(d1, d2);
+      const waveReverse = d2 < d1;
+      let simPulse = null;
+      if (isSimulating && edgeHop < 8 && (isImpact || edgeHop <= 2)) {
+        const spColor = edgeHop === 0 ? (isDark ? 0xf43f5e : 0xdc2626) : (isDark ? 0xfbbf24 : 0xd97706);
+        const spMat = new THREE.MeshBasicMaterial({ color: spColor, transparent: true, opacity: 0.95 });
+        simPulse = new THREE.Mesh(sharedWavePulseGeo, spMat);
+        graphGroup.add(simPulse);
+      }
+
+      edgeObjs.push({
+        edge,
+        source: edge.source,
+        target: edge.target,
+        curve,
+        lineMesh,
+        arrow,
+        photon,
+        simPulse,
+        edgeHop,
+        waveReverse,
+        isImpact,
+        speed: 0.003 + Math.random() * 0.002,
+        progress: Math.random(),
+      });
     });
 
     // ── Spherical Camera Controller ───────────────────────────────────────────
@@ -604,9 +800,34 @@ export function GraphGalaxy3D({
     const onWheel = (e) => { e.preventDefault(); sphDelta.r += e.deltaY * 0.018; };
     const onCtx = (e) => e.preventDefault();
 
+    // Mobile / tablet single-touch drag-to-orbit support
+    let touchLast = null;
+    const onTouchStart = (e) => {
+      if (e.touches.length === 1 && e.target === renderer.domElement) {
+        touchLast = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        isDown = true;
+      }
+    };
+    const onTouchMove = (e) => {
+      if (e.touches.length === 1 && touchLast) {
+        const dx = e.touches[0].clientX - touchLast.x;
+        const dy = e.touches[0].clientY - touchLast.y;
+        touchLast = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        sphDelta.theta -= dx * 0.005;
+        sphDelta.phi -= dy * 0.005;
+      }
+    };
+    const onTouchEnd = () => {
+      touchLast = null;
+      isDown = false;
+    };
+
     container.addEventListener('mousedown', onDown);
     window.addEventListener('mousemove', onMove);
     window.addEventListener('mouseup', onUp);
+    container.addEventListener('touchstart', onTouchStart, { passive: true });
+    container.addEventListener('touchmove', onTouchMove, { passive: true });
+    container.addEventListener('touchend', onTouchEnd, { passive: true });
     container.addEventListener('dblclick', onDblClick);
     container.addEventListener('wheel', onWheel, { passive: false });
     container.addEventListener('contextmenu', onCtx);
@@ -616,7 +837,13 @@ export function GraphGalaxy3D({
       if (!nW || !nH) return;
       camera.aspect = nW / nH;
       camera.updateProjectionMatrix();
+      const dpr = getOptimalPixelRatio(nW);
+      renderer.setPixelRatio(dpr);
       renderer.setSize(nW, nH);
+      if (composer) {
+        composer.setPixelRatio(dpr);
+        composer.setSize(nW, nH);
+      }
     });
     obs.observe(container);
 
@@ -685,13 +912,17 @@ export function GraphGalaxy3D({
       });
     };
 
-    // ── Animation Loop ────────────────────────────────────────────────────────
-    let animId;
+    // ── Animation Loop (viewport-aware & reduced-motion friendly) ──────────────
+    let animId = null;
+    let isVisible = true;
     const timer = new THREE.Timer();
-    // Reusable Vector3 to avoid GC pressure in hot loop
     const _v3 = new THREE.Vector3();
 
     const animate = (timestamp) => {
+      if (!isVisible) {
+        animId = null;
+        return;
+      }
       animId = requestAnimationFrame(animate);
       timer.update(timestamp);
       const t = timer.getElapsed();
@@ -706,7 +937,7 @@ export function GraphGalaxy3D({
           sph.setFromVector3(camera.position.clone().sub(cameraTarget));
         }
       } else {
-        if (autoRotate && !isDown) sphDelta.theta += 0.0018;
+        if (autoRotateRef.current && !isDown && !reducedMotion) sphDelta.theta += 0.0018;
         sph.theta += sphDelta.theta;
         sph.phi += sphDelta.phi;
         sph.radius += sphDelta.r;
@@ -719,27 +950,44 @@ export function GraphGalaxy3D({
         camera.lookAt(cameraTarget);
       }
 
-      // Photon packets
+      // Simulation epicenter shockwaves
+      simShockwaves.forEach((sw) => {
+        sw.mesh.lookAt(camera.position);
+        const phase = (t * 0.55 + sw.phaseOffset) % 1;
+        const sScale = 1.0 + phase * 3.8;
+        sw.mesh.scale.set(sScale, sScale, sScale);
+        sw.mat.opacity = (1 - phase) * (isDark ? 0.75 : 0.85);
+      });
+
+      // Photon packets + sequential hop-by-hop simulation wave pulses
       edgeObjs.forEach((eo) => {
         if (eo.photon && eo.curve) {
           eo.progress = (eo.progress + eo.speed) % 1;
           eo.photon.position.copy(eo.curve.getPointAt(eo.progress));
         }
+        if (eo.simPulse && eo.curve) {
+          const cycle = (t * 0.48 - eo.edgeHop * 0.24 + 10) % 1;
+          const u = eo.waveReverse ? 1 - cycle : cycle;
+          eo.simPulse.position.copy(eo.curve.getPointAt(u));
+          const pulseScale = 0.8 + Math.sin(cycle * Math.PI) * 0.65;
+          eo.simPulse.scale.setScalar(pulseScale);
+        }
       });
 
-      // Determine active focus node
-      const activeId = activeSelectedNode?.id || hoveredNode?.id;
-      const q = searchQuery.trim().toLowerCase();
+      // Determine active focus node from live refs
+      const currentSelectedId = selectedIdRef.current;
+      const currentHoveredId = hoveredIdRef.current;
+      const activeId = currentSelectedId || currentHoveredId;
+      const q = (searchQueryRef.current || '').trim().toLowerCase();
 
       // Per-node visual update
       meshMap.forEach((ent, id) => {
-        const isSelected = id === activeSelectedNode?.id;
-        const isHovered = id === hoveredNode?.id;
+        const isSelected = id === currentSelectedId;
+        const isHovered = id === currentHoveredId;
         const isConnected = activeId && visibleEdges.some((e) => (e.source === activeId && e.target === id) || (e.target === activeId && e.source === id));
         const matchesSearch = q ? id.toLowerCase().includes(q) : true;
 
         // Target scale
-        const baseR = ent.theme.radius;
         let targetUniform = 1.0;
         if (isSelected) targetUniform = 1.5;
         else if (isHovered) targetUniform = 1.3;
@@ -756,9 +1004,9 @@ export function GraphGalaxy3D({
 
         // Emissive boost for selected / hovered
         if (isSelected || isHovered) {
-          ent.mesh.material.emissiveIntensity = isDark ? 1.2 : 0.9;
+          ent.mesh.material.emissiveIntensity = isDark ? 1.25 : 0.85;
         } else {
-          ent.mesh.material.emissiveIntensity = isDark ? 0.55 : 0.35;
+          ent.mesh.material.emissiveIntensity = isDark ? 0.55 : 0.32;
         }
 
         // Halo billboard + pulse
@@ -767,7 +1015,6 @@ export function GraphGalaxy3D({
           const pulse = (Math.sin(t * 3.2 + id.length) + 1) * 0.5;
           const hs = 1.0 + (isSelected ? 0.45 : isHovered ? 0.25 : 0.12) * pulse;
           ent.halo.scale.set(hs, hs, hs);
-          // For selected node: make halo brighter and cyan
           if (isSelected) {
             ent.halo.material.color.setHex(0x38bdf8);
             ent.halo.material.opacity = 0.90;
@@ -777,8 +1024,8 @@ export function GraphGalaxy3D({
           }
         }
 
-        // Slow spin for root/critical nodes (makes them eye-catching)
-        if (ent.theme.tier === 'root' || ent.theme.tier === 'critical') {
+        // Slow spin for root/critical nodes
+        if (!reducedMotion && (ent.theme.tier === 'root' || ent.theme.tier === 'critical')) {
           ent.mesh.rotation.y = t * 0.6;
           ent.mesh.rotation.x = t * 0.3;
         }
@@ -797,41 +1044,56 @@ export function GraphGalaxy3D({
             if (eo.arrow) eo.arrow.material.opacity = 0.07;
           }
         } else {
-          eo.lineMesh.material.opacity = eo.isImpact ? (isDark ? 0.75 : 0.80) : (isDark ? 0.22 : 0.30);
-          eo.lineMesh.material.color.setHex(eo.isImpact ? 0x06b6d4 : isDark ? 0x334155 : 0x94a3b8);
+          eo.lineMesh.material.opacity = eo.isImpact ? (isDark ? 0.75 : 0.82) : (isDark ? 0.22 : 0.36);
+          eo.lineMesh.material.color.setHex(eo.isImpact ? (isDark ? 0x06b6d4 : 0x0284c7) : isDark ? 0x334155 : 0x475569);
           if (eo.arrow) { eo.arrow.material.opacity = eo.isImpact ? 0.9 : 0.5; }
         }
       });
 
-      renderer.render(scene, camera);
+      if (composer) {
+        composer.render();
+      } else {
+        renderer.render(scene, camera);
+      }
       drawGizmo();
     };
 
-    animate();
+    const stopVisibility = observeVisibility(container, (visible) => {
+      isVisible = visible;
+      if (visible && animId === null) {
+        animId = requestAnimationFrame(animate);
+      } else if (!visible && animId !== null) {
+        cancelAnimationFrame(animId);
+        animId = null;
+      }
+    });
+
+    animId = requestAnimationFrame(animate);
 
     // ── Cleanup ───────────────────────────────────────────────────────────────
     return () => {
-      cancelAnimationFrame(animId);
+      if (animId !== null) cancelAnimationFrame(animId);
+      stopVisibility();
       timer.dispose();
       container.removeEventListener('mousedown', onDown);
       window.removeEventListener('mousemove', onMove);
       window.removeEventListener('mouseup', onUp);
+      container.removeEventListener('touchstart', onTouchStart);
+      container.removeEventListener('touchmove', onTouchMove);
+      container.removeEventListener('touchend', onTouchEnd);
       container.removeEventListener('dblclick', onDblClick);
       container.removeEventListener('wheel', onWheel);
       container.removeEventListener('contextmenu', onCtx);
       obs.disconnect();
 
-      scene.traverse((o) => {
-        if (o.geometry) o.geometry.dispose();
-        if (o.material) {
-          const mats = Array.isArray(o.material) ? o.material : [o.material];
-          mats.forEach((m) => { if (m.map) m.map.dispose(); m.dispose(); });
-        }
-      });
-      if (renderer.domElement && container.contains(renderer.domElement)) container.removeChild(renderer.domElement);
-      renderer.dispose();
+      if (darkSpaceTex) darkSpaceTex.dispose();
+      geoCache.forEach((g) => g.dispose());
+      sharedArrowGeo.dispose();
+      sharedPhotonGeo.dispose();
+      sharedWavePulseGeo.dispose();
+      disposeThreeResources(scene, renderer, composer, container);
     };
-  }, [visibleNodes, visibleEdges, isDark, isSimulating, simulatedFile, simulatedChangeType, autoRotate]);
+  }, [visibleNodes, visibleEdges, isDark, isSimulating, simulatedFile, simulatedChangeType]);
 
   // ── Search submit ──────────────────────────────────────────────────────────
   const handleSearch = (e) => {
