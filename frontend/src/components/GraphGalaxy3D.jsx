@@ -133,7 +133,7 @@ function getNodeGeometry(tier, radius) {
     case 'impacted':
       return new THREE.CylinderGeometry(radius * 0.75, radius, radius * 1.6, 8);
     default:
-      return new THREE.SphereGeometry(radius, 16, 12);
+      return new THREE.SphereGeometry(radius, 22, 16);
   }
 }
 
@@ -329,8 +329,8 @@ export function GraphGalaxy3D({
     }
 
     // ── Lighting ──────────────────────────────────────────────────────────────
-    scene.add(new THREE.AmbientLight(isDark ? 0x1e293b : 0xffffff, isDark ? 1.8 : 2.5));
-    const keyLight = new THREE.DirectionalLight(0x38bdf8, isDark ? 3.0 : 2.0);
+    scene.add(new THREE.AmbientLight(isDark ? 0x334155 : 0xffffff, isDark ? 1.65 : 2.35));
+    const keyLight = new THREE.DirectionalLight(0xf0f9ff, isDark ? 2.8 : 2.1);
     keyLight.position.set(25, 40, 30);
     scene.add(keyLight);
     const fillLight = new THREE.DirectionalLight(0xa78bfa, isDark ? 2.0 : 1.2);
@@ -519,12 +519,22 @@ export function GraphGalaxy3D({
       const pos = posMap.get(node.id) || new THREE.Vector3(0, 0, 0);
       const theme = getNodeTheme(node, isSimulating, simulatedFile, simulatedChangeType, isDark);
       const geo = getCachedNodeGeo(theme.tier, theme.radius);
-      const mat = new THREE.MeshStandardMaterial({
+      const isHeroTier =
+        theme.tier === 'root' ||
+        theme.tier === 'critical' ||
+        theme.tier === 'high' ||
+        theme.tier === 'medium';
+      const mat = new THREE.MeshPhysicalMaterial({
         color: theme.color,
         emissive: theme.glow,
-        emissiveIntensity: isDark ? 0.55 : 0.35,
-        roughness: 0.22,
-        metalness: 0.6,
+        emissiveIntensity: isDark ? 0.44 : 0.24,
+        roughness: isHeroTier ? 0.12 : 0.18,
+        metalness: isDark ? 0.36 : 0.25,
+        clearcoat: 1.0,
+        clearcoatRoughness: 0.08,
+        iridescence: isHeroTier ? 0.85 : 0.45,
+        iridescenceIOR: 1.38,
+        specularIntensity: 1.0,
       });
       const mesh = new THREE.Mesh(geo, mat);
       mesh.position.copy(pos);
@@ -1002,11 +1012,11 @@ export function GraphGalaxy3D({
         ent.mesh.material.opacity = dimmed ? 0.22 : 1.0;
         if (ent.label) ent.label.material.opacity = dimmed ? 0.15 : 0.95;
 
-        // Emissive boost for selected / hovered
+        // Emissive boost for selected / hovered (preserve clearcoat sheen at rest)
         if (isSelected || isHovered) {
-          ent.mesh.material.emissiveIntensity = isDark ? 1.25 : 0.85;
+          ent.mesh.material.emissiveIntensity = isDark ? 1.18 : 0.82;
         } else {
-          ent.mesh.material.emissiveIntensity = isDark ? 0.55 : 0.32;
+          ent.mesh.material.emissiveIntensity = isDark ? 0.44 : 0.24;
         }
 
         // Halo billboard + pulse

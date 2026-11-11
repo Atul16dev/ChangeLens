@@ -121,6 +121,8 @@ export function disposeThreeResources(scene, renderer, composer = null, containe
           if (m.emissiveMap) m.emissiveMap.dispose();
           if (m.alphaMap) m.alphaMap.dispose();
           if (m.roughnessMap) m.roughnessMap.dispose();
+          if (m.bumpMap) m.bumpMap.dispose();
+          if (m.normalMap) m.normalMap.dispose();
           m.dispose();
         });
       }

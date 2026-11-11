@@ -2,9 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { Mail, Lock, Eye, EyeOff, AlertCircle, ArrowRight, RefreshCw } from 'lucide-react';
-import { BrandLogo } from '../components/BrandLogo.jsx';
-import { ThemeToggle } from '../components/ThemeToggle.jsx';
-import { AuthCanvas3D } from '../components/AuthCanvas3D.jsx';
+import { AuthSplitLayout } from '../components/AuthSplitLayout.jsx';
 
 export function LoginPage() {
   const { login, isAuthenticated } = useAuth();
@@ -59,180 +57,147 @@ export function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans relative overflow-x-hidden">
-      {/* Top right theme toggle */}
-      <div className="absolute top-4 right-4 z-20">
-        <ThemeToggle size="sm" />
-      </div>
-
-      {/* Background radial gradient glow */}
-      <div className="fixed top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[350px] bg-cyan-600/10 blur-[120px] rounded-full pointer-events-none" />
-
-      {/* Responsive Split-Screen Wrapper */}
-      <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 py-8 sm:py-10 relative z-10">
-        <div className="w-full max-w-md lg:max-w-5xl grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center">
-          {/* Left Column: Auth Form */}
-          <div className="lg:col-span-6 flex flex-col items-center lg:items-stretch">
-            {/* Brand Header */}
-            <div className="flex flex-col items-center lg:items-start mb-5 w-full">
-              <div className="mb-3">
-                <BrandLogo size="lg" />
-              </div>
-              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-center lg:text-left bg-gradient-to-r from-slate-900 via-slate-700 to-slate-900 dark:from-white dark:via-slate-100 dark:to-slate-400 bg-clip-text text-transparent">
-                Welcome back to ChangeLens
-              </h1>
-              <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 text-center lg:text-left font-medium">
-                Deterministic Code Blast Radius & Impact Intelligence
-              </p>
-            </div>
-
-            {/* Login Card */}
-            <div className="w-full bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 sm:p-7 backdrop-blur-xl shadow-xl dark:shadow-2xl">
-        {/* Error Alert */}
-        {error && (
-          <div className="mb-5 bg-rose-50 dark:bg-rose-950/80 border border-rose-200 dark:border-rose-500/40 rounded-xl p-3.5 flex items-start gap-3 text-rose-800 dark:text-rose-200 text-xs">
-            <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <p className="font-medium">{error}</p>
-              {unverifiedEmail && (
-                <button
-                  type="button"
-                  onClick={() => navigate(`/verify-email?email=${encodeURIComponent(unverifiedEmail)}`)}
-                  className="mt-2 text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 font-semibold underline flex items-center gap-1"
-                >
-                  Verify your email now <ArrowRight className="w-3 h-3" />
-                </button>
-              )}
-            </div>
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Email field */}
-          <div>
-            <label className="block text-xs font-semibold text-slate-800 dark:text-slate-300 mb-1.5" htmlFor="email">
-              Work Email
-            </label>
-            <div className="relative">
-              <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="dev@company.com"
-                required
-                autoFocus
-                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl pl-10 pr-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/40 transition-all font-mono"
-              />
-            </div>
-          </div>
-
-          {/* Password field */}
-          <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <label className="block text-xs font-semibold text-slate-800 dark:text-slate-300" htmlFor="password">
-                Password
-              </label>
-              <Link
-                to="/forgot-password"
-                className="text-xs text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 transition-colors font-medium"
-              >
-                Forgot password?
-              </Link>
-            </div>
-            <div className="relative">
-              <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-              <input
-                id="password"
-                type={showPassword ? 'text' : 'password'}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••••••"
-                required
-                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl pl-10 pr-10 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/40 transition-all font-mono"
-              />
+    <AuthSplitLayout
+      variant="login"
+      title="Welcome back to ChangeLens"
+      subtitle="Deterministic Code Blast Radius & Impact Intelligence"
+    >
+      {/* Error Alert */}
+      {error && (
+        <div className="mb-5 bg-rose-50 dark:bg-rose-950/80 border border-rose-200 dark:border-rose-500/40 rounded-xl p-3.5 flex items-start gap-3 text-rose-800 dark:text-rose-200 text-xs">
+          <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <p className="font-medium">{error}</p>
+            {unverifiedEmail && (
               <button
                 type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 transition-colors"
-                title={showPassword ? 'Hide password' : 'Show password'}
+                onClick={() => navigate(`/verify-email?email=${encodeURIComponent(unverifiedEmail)}`)}
+                className="mt-2 text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 font-semibold underline flex items-center gap-1"
               >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                Verify your email now <ArrowRight className="w-3 h-3" />
               </button>
-            </div>
-          </div>
-
-          {/* Sign in Button */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full mt-2 bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white font-semibold text-sm py-2.5 rounded-xl shadow-lg shadow-cyan-500/20 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 cursor-pointer"
-          >
-            {loading ? (
-              <>
-                <RefreshCw className="w-4 h-4 animate-spin" />
-                <span>Signing in...</span>
-              </>
-            ) : (
-              <span>Sign In to ChangeLens</span>
             )}
-          </button>
-        </form>
-
-        {/* Divider */}
-        <div className="relative my-6">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-slate-200 dark:border-slate-800" />
           </div>
-          <div className="relative flex justify-center text-[11px] uppercase tracking-wider">
-            <span className="bg-white dark:bg-slate-900 px-3 text-slate-500 font-medium">Or continue with</span>
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Email field */}
+        <div>
+          <label className="block text-xs font-semibold text-slate-800 dark:text-slate-300 mb-1.5" htmlFor="email">
+            Work Email
+          </label>
+          <div className="relative">
+            <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="dev@company.com"
+              required
+              autoFocus
+              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl pl-10 pr-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/40 transition-all font-mono"
+            />
           </div>
         </div>
 
-        {/* Continue with Google */}
+        {/* Password field */}
+        <div>
+          <div className="flex items-center justify-between mb-1.5">
+            <label className="block text-xs font-semibold text-slate-800 dark:text-slate-300" htmlFor="password">
+              Password
+            </label>
+            <Link
+              to="/forgot-password"
+              className="text-xs text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 transition-colors font-medium"
+            >
+              Forgot password?
+            </Link>
+          </div>
+          <div className="relative">
+            <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <input
+              id="password"
+              type={showPassword ? 'text' : 'password'}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••••••"
+              required
+              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl pl-10 pr-10 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/40 transition-all font-mono"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 transition-colors"
+              title={showPassword ? 'Hide password' : 'Show password'}
+            >
+              {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            </button>
+          </div>
+        </div>
+
+        {/* Sign in Button */}
         <button
-          type="button"
-          onClick={handleGoogleLogin}
-          className="w-full bg-slate-50 hover:bg-slate-100 dark:bg-slate-950 dark:hover:bg-slate-800/80 border border-slate-300 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-700 text-slate-800 dark:text-slate-200 text-xs font-semibold py-2.5 px-4 rounded-xl transition-all flex items-center justify-center gap-2.5 shadow-sm cursor-pointer"
+          type="submit"
+          disabled={loading}
+          className="w-full mt-2 bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white font-semibold text-sm py-2.5 rounded-xl shadow-lg shadow-cyan-500/20 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 cursor-pointer"
         >
-          <svg className="w-4 h-4" viewBox="0 0 24 24">
-            <path
-              fill="#4285F4"
-              d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.66v3.05h3.87c2.27-2.09 3.675-5.17 3.675-9.15z"
-            />
-            <path
-              fill="#34A853"
-              d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.87-3.05c-1.08.72-2.45 1.16-4.06 1.16-3.13 0-5.78-2.11-6.73-4.96H1.28v3.16C3.26 21.31 7.34 24 12 24z"
-            />
-            <path
-              fill="#FBBC05"
-              d="M5.27 14.24c-.25-.72-.38-1.49-.38-2.24s.13-1.52.38-2.24V6.6H1.28A11.96 11.96 0 000 12c0 1.92.45 3.74 1.28 5.4l3.99-3.16z"
-            />
-            <path
-              fill="#EA4335"
-              d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.26 2.69 1.28 6.6l3.99 3.16c.95-2.85 3.6-4.96 6.73-4.96z"
-            />
-          </svg>
-          <span>Continue with Google</span>
+          {loading ? (
+            <>
+              <RefreshCw className="w-4 h-4 animate-spin" />
+              <span>Signing in...</span>
+            </>
+          ) : (
+            <span>Sign In to ChangeLens</span>
+          )}
         </button>
+      </form>
 
-        {/* Footer Link */}
-        <p className="mt-5 text-center text-xs text-slate-600 dark:text-slate-400">
-          Don't have an account?{' '}
-          <Link to="/register" className="text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 font-semibold transition-colors">
-            Create an account
-          </Link>
-        </p>
-            </div>
-          </div>
-
-          {/* Right Column: Interactive 3D AST Showcase (Desktop/Large Tablet) */}
-          <div className="hidden lg:block lg:col-span-6 h-full">
-            <AuthCanvas3D variant="login" />
-          </div>
+      {/* Divider */}
+      <div className="relative my-5">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-slate-200 dark:border-slate-800" />
+        </div>
+        <div className="relative flex justify-center text-[11px] uppercase tracking-wider">
+          <span className="bg-white dark:bg-slate-900 px-3 text-slate-500 font-medium">Or continue with</span>
         </div>
       </div>
-    </div>
+
+      {/* Continue with Google */}
+      <button
+        type="button"
+        onClick={handleGoogleLogin}
+        className="w-full bg-slate-50 hover:bg-slate-100 dark:bg-slate-950 dark:hover:bg-slate-800/80 border border-slate-300 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-700 text-slate-800 dark:text-slate-200 text-xs font-semibold py-2.5 px-4 rounded-xl transition-all flex items-center justify-center gap-2.5 shadow-sm cursor-pointer"
+      >
+        <svg className="w-4 h-4" viewBox="0 0 24 24">
+          <path
+            fill="#4285F4"
+            d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.66v3.05h3.87c2.27-2.09 3.675-5.17 3.675-9.15z"
+          />
+          <path
+            fill="#34A853"
+            d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.87-3.05c-1.08.72-2.45 1.16-4.06 1.16-3.13 0-5.78-2.11-6.73-4.96H1.28v3.16C3.26 21.31 7.34 24 12 24z"
+          />
+          <path
+            fill="#FBBC05"
+            d="M5.27 14.24c-.25-.72-.38-1.49-.38-2.24s.13-1.52.38-2.24V6.6H1.28A11.96 11.96 0 000 12c0 1.92.45 3.74 1.28 5.4l3.99-3.16z"
+          />
+          <path
+            fill="#EA4335"
+            d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.26 2.69 1.28 6.6l3.99 3.16c.95-2.85 3.6-4.96 6.73-4.96z"
+          />
+        </svg>
+        <span>Continue with Google</span>
+      </button>
+
+      {/* Footer Link */}
+      <p className="mt-5 text-center text-xs text-slate-600 dark:text-slate-400">
+        Don't have an account?{' '}
+        <Link to="/register" className="text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 font-semibold transition-colors">
+          Create an account
+        </Link>
+      </p>
+    </AuthSplitLayout>
   );
 }

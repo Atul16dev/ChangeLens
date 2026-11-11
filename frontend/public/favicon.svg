@@ -1,45 +1,45 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none">
   <defs>
-    <linearGradient id="bgGrad" x1="6" y1="4" x2="58" y2="60" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#0f172a" />
-      <stop offset="55%" stop-color="#172554" />
-      <stop offset="100%" stop-color="#1e1b4b" />
+    <linearGradient id="bgGrad" x1="4" y1="4" x2="60" y2="60" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#1d4ed8" />
+      <stop offset="45%" stop-color="#1e1b4b" />
+      <stop offset="100%" stop-color="#0b1328" />
     </linearGradient>
-    <linearGradient id="lensGrad" x1="16" y1="16" x2="48" y2="48" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#e0f2fe" />
-      <stop offset="50%" stop-color="#38bdf8" />
-      <stop offset="100%" stop-color="#6366f1" />
+    <linearGradient id="ringGrad" x1="10" y1="12" x2="46" y2="52" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="65%" stop-color="#e0f2fe" />
+      <stop offset="100%" stop-color="#7dd3fc" />
     </linearGradient>
-    <linearGradient id="prismGrad" x1="22" y1="20" x2="42" y2="44" gradientUnits="userSpaceOnUse">
+    <linearGradient id="prismGrad" x1="27" y1="21" x2="35" y2="43" gradientUnits="userSpaceOnUse">
       <stop offset="0%" stop-color="#a5f3fc" />
-      <stop offset="55%" stop-color="#06b6d4" />
-      <stop offset="100%" stop-color="#4f46e5" />
+      <stop offset="100%" stop-color="#22d3ee" />
     </linearGradient>
+    <radialGradient id="impactGrad" cx="35%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#fde047" />
+      <stop offset="55%" stop-color="#fb7185" />
+      <stop offset="100%" stop-color="#e11d48" />
+    </radialGradient>
   </defs>
 
-  <!-- Rounded Jewel Sapphire Capsule -->
+  <!-- Rounded Sapphire Brand Badge -->
   <rect x="2" y="2" width="60" height="60" rx="16" fill="url(#bgGrad)" stroke="#38bdf8" stroke-opacity="0.45" stroke-width="2" />
 
-  <!-- Tilted AST Dependency Orbit -->
-  <ellipse cx="32" cy="32" rx="23" ry="9" transform="rotate(-28 32 32)" stroke="#7dd3fc" stroke-opacity="0.72" stroke-width="2.2" />
-
-  <!-- Precision Optical Lens Aperture Bezel -->
-  <circle cx="32" cy="32" r="16" stroke="url(#lensGrad)" stroke-width="3.8" />
-
-  <!-- 4 Engineered Calibration Ticks -->
-  <rect x="30.2" y="13" width="3.6" height="5.5" rx="1.2" fill="#e0f2fe" />
-  <rect x="30.2" y="45.5" width="3.6" height="5.5" rx="1.2" fill="#e0f2fe" />
-  <rect x="13" y="30.2" width="5.5" height="3.6" rx="1.2" fill="#e0f2fe" />
-  <rect x="45.5" y="30.2" width="5.5" height="3.6" rx="1.2" fill="#e0f2fe" />
-
-  <!-- Central Faceted Octahedron Blast Prism -->
-  <polygon points="32,20 42,32 32,44 22,32" fill="url(#prismGrad)" stroke="#e0f2fe" stroke-width="1.6" stroke-linejoin="round" />
-  <polygon points="32,20 42,32 32,32" fill="#ffffff" fill-opacity="0.28" />
-  <line x1="22" y1="32" x2="42" y2="32" stroke="#e0f2fe" stroke-opacity="0.7" stroke-width="1.2" />
-  <line x1="32" y1="20" x2="32" y2="44" stroke="#e0f2fe" stroke-opacity="0.7" stroke-width="1.2" />
-
-  <!-- Orbiting Impact Node (Amber-Rose) & Target Node (Cyan) -->
-  <circle cx="50.5" cy="21.5" r="4.4" fill="#fb7185" stroke="#0f172a" stroke-width="1.4" />
-  <circle cx="50.5" cy="21.5" r="2" fill="#fbbf24" />
-  <circle cx="13.5" cy="42.5" r="3.8" fill="#22d3ee" stroke="#0f172a" stroke-width="1.4" />
+  <!-- Centered Static Brand Mark -->
+  <g transform="translate(8, 8) scale(0.75)">
+    <path
+      d="M 46.2 18.3 A 20.5 20.5 0 1 0 46.2 45.7"
+      stroke="url(#ringGrad)"
+      stroke-width="6.2"
+      stroke-linecap="round"
+    />
+    <polygon points="27,21.5 27,42.5 19,32" fill="#ffffff" />
+    <polygon points="27,21.5 35,32 27,42.5" fill="url(#prismGrad)" />
+    <path
+      d="M 38.4 24.1 A 13.5 13.5 0 0 1 38.4 39.9"
+      stroke="#67e8f9"
+      stroke-width="3.8"
+      stroke-linecap="round"
+    />
+    <circle cx="51.5" cy="32" r="4.5" fill="url(#impactGrad)" />
+  </g>
 </svg>

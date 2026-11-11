@@ -33,6 +33,7 @@ import { useAuth } from '../context/AuthContext.jsx';
 import { BrandLogo } from './BrandLogo.jsx';
 import { ConnectionGuideModal } from './ConnectionGuideModal.jsx';
 import { LocalWorkshopSection } from './LocalWorkshopSection.jsx';
+import { ProjectHubBackdrop3D } from './ProjectHubBackdrop3D.jsx';
 import {
   inspectGitHubPR,
   getGitHubWorkflowTemplate,
@@ -335,10 +336,9 @@ export function ProjectHub({
         </div>
 
         {/* HERO BANNER: Split Layout with Engaging Title on Left & Visual DAG Architecture Graphic on Right */}
-        <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-6 items-center mb-8 bg-white dark:bg-gradient-to-br dark:from-[#131d2e] dark:via-[#101726] dark:to-[#0c1322] p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-700/80 shadow-md dark:shadow-2xl dark:ring-1 dark:ring-white/5 relative overflow-hidden hub-hero-banner">
-          {/* Subtle background glow - hidden in light mode so no color gradient sits over the text */}
-          <div className="absolute top-0 right-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none -z-0 dark:opacity-100 opacity-0" />
-          <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none -z-0 dark:opacity-100 opacity-0" />
+        <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-6 items-center mb-8 bg-white dark:bg-[#030508] p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800/90 shadow-md dark:shadow-2xl dark:ring-1 dark:ring-white/10 relative overflow-hidden hub-hero-banner">
+          {/* Interactive 3D Wave of Colors & Sparkling Slow-Mo Hover-Drag Galaxy Particles */}
+          <ProjectHubBackdrop3D />
 
           {/* Left Column: Greeting & Mission */}
           <div className="lg:col-span-7 flex flex-col justify-center text-left relative z-10">
@@ -356,15 +356,15 @@ export function ProjectHub({
 
             {/* Quick telemetry chips */}
             <div className="flex items-center gap-2.5 flex-wrap">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-100 dark:bg-[#162035] border border-slate-300 dark:border-slate-600/70 text-slate-800 dark:text-slate-200 text-xs font-mono font-medium shadow-sm">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-100/90 dark:bg-[#0b101b]/90 border border-slate-300 dark:border-slate-700/80 text-slate-800 dark:text-slate-200 text-xs font-mono font-medium shadow-sm">
                 <Zap className="w-3.5 h-3.5 text-yellow-600 dark:text-yellow-400" />
                 Zero Heavy Clones
               </span>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-100 dark:bg-[#162035] border border-slate-300 dark:border-slate-600/70 text-slate-800 dark:text-slate-200 text-xs font-mono font-medium shadow-sm">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-100/90 dark:bg-[#0b101b]/90 border border-slate-300 dark:border-slate-700/80 text-slate-800 dark:text-slate-200 text-xs font-mono font-medium shadow-sm">
                 <GitBranch className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />
                 Cumulative Push Diff
               </span>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-100 dark:bg-[#162035] border border-slate-300 dark:border-slate-600/70 text-slate-800 dark:text-slate-200 text-xs font-mono font-medium shadow-sm">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-100/90 dark:bg-[#0b101b]/90 border border-slate-300 dark:border-slate-700/80 text-slate-800 dark:text-slate-200 text-xs font-mono font-medium shadow-sm">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                 Broken Symbol Detection
               </span>
@@ -373,7 +373,7 @@ export function ProjectHub({
 
           {/* Right Column: Visual DAG Blast Radius Architecture Graphic */}
           <div className="lg:col-span-5 flex flex-col items-center justify-center relative z-10">
-            <div className="w-full bg-white dark:bg-[#0d1424] border border-slate-200 dark:border-cyan-500/40 rounded-2xl p-4 shadow-md dark:shadow-xl ring-1 ring-cyan-500/10 relative overflow-hidden font-mono text-xs hub-dag-preview">
+            <div className="w-full bg-white dark:bg-[#090d16]/90 border border-slate-200 dark:border-cyan-500/40 rounded-2xl p-4 shadow-md dark:shadow-xl ring-1 ring-cyan-500/10 relative overflow-hidden font-mono text-xs hub-dag-preview">
               <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-200 dark:border-slate-700/80 text-[11px] text-slate-700 dark:text-slate-300">
                 <span className="flex items-center gap-1.5 text-cyan-700 dark:text-cyan-400 font-bold">
                   <Activity className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />
