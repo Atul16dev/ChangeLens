@@ -161,7 +161,7 @@ export function ProfileModal({ isOpen, onClose }) {
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200 overflow-y-auto"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200 overflow-y-auto"
       onClick={onClose}
     >
       <div
@@ -175,7 +175,7 @@ export function ProfileModal({ isOpen, onClose }) {
         }}
       >
         {/* Modal Header */}
-        <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700/80 flex items-center justify-between bg-white dark:bg-[#0c1220] shrink-0">
+        <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-200 dark:border-slate-700/80 flex items-center justify-between bg-white dark:bg-[#0c1220] shrink-0">
           <div className="flex items-center gap-2">
             <User className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
             <h3 id="profile-modal-title" className="text-base font-bold text-slate-900 dark:text-white tracking-tight">
@@ -193,9 +193,9 @@ export function ProfileModal({ isOpen, onClose }) {
         </div>
 
         {/* Modal Body */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-5 overflow-y-auto">
+        <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4 sm:space-y-5 overflow-y-auto">
           {/* Circular Profile Avatar Header with Photo Upload Option */}
-          <div className="flex items-center gap-4 p-4 rounded-xl bg-slate-50 dark:bg-[#0e1626] border border-slate-200 dark:border-slate-700/80 shadow-sm">
+          <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl bg-slate-50 dark:bg-[#0e1626] border border-slate-200 dark:border-slate-700/80 shadow-sm">
             <div className="relative group shrink-0">
               {/* Circular Avatar Container */}
               <div className="w-20 h-20 rounded-full border-2 border-indigo-500/40 shadow-md shadow-indigo-950/50 overflow-hidden bg-slate-100 dark:bg-slate-900 flex items-center justify-center relative">

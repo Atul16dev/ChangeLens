@@ -24,7 +24,7 @@ export function AuthSplitLayout({ variant = 'login', title, subtitle, children }
       </div>
 
       {/* Left Half (Desktop) / Below-Card Showcase (Mobile/Tablet): Full-Bleed Edge-to-Edge 3D AST Canvas */}
-      <div className="order-2 lg:order-1 relative min-h-[380px] sm:min-h-[420px] lg:min-h-screen w-full overflow-hidden border-t lg:border-t-0 lg:border-r border-slate-200/80 dark:border-slate-800/80">
+      <div className="order-2 lg:order-1 relative min-h-[300px] xs:min-h-[350px] sm:min-h-[420px] lg:min-h-screen w-full overflow-hidden border-t lg:border-t-0 lg:border-r border-slate-200/80 dark:border-slate-800/80">
         <AuthCanvas3D variant={variant} />
       </div>
 

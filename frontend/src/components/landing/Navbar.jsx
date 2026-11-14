@@ -151,15 +151,19 @@ export function Navbar() {
           </div>
 
           {/* Mobile & Tablet Toggle Button & Actions */}
-          <div className="flex lg:hidden items-center gap-2">
-            <ThemeToggle size="sm" />
+          <div className="flex lg:hidden items-center gap-1.5 sm:gap-2 shrink-0">
+            {/* Show ThemeToggle in header bar only when not cramped by auth items, or on sm+ screens */}
+            <div className={isAuthenticated ? 'hidden sm:block' : 'block'}>
+              <ThemeToggle size="sm" />
+            </div>
             {isAuthenticated && (
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1 sm:gap-1.5">
                 <Link
                   to="/app"
-                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-cyan-600 hover:bg-cyan-500 text-white shadow-sm whitespace-nowrap"
+                  className="inline-flex items-center gap-1 px-2 sm:px-2.5 py-1 rounded-lg text-xs font-semibold bg-cyan-600 hover:bg-cyan-500 text-white shadow-sm whitespace-nowrap min-h-[36px]"
                 >
-                  <span>Workspace</span>
+                  <LayoutDashboard className="w-3.5 h-3.5" />
+                  <span className="hidden xs:inline">Workspace</span>
                 </Link>
                 <UserProfileMenu compact={true} />
               </div>
@@ -167,7 +171,7 @@ export function Navbar() {
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-1.5 text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 rounded-lg focus:outline-none transition-colors"
+              className="p-2 text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 rounded-lg focus:outline-none transition-colors min-h-[40px] min-w-[40px] flex items-center justify-center cursor-pointer"
               aria-label="Toggle navigation menu"
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -183,28 +187,28 @@ export function Navbar() {
             <a
               href="#problem"
               onClick={(e) => scrollToSection(e, 'problem')}
-              className="px-3 py-2 rounded-lg text-sm font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors"
+              className="px-3 py-2.5 min-h-[44px] flex items-center rounded-lg text-sm font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors"
             >
               The Problem
             </a>
             <a
               href="#features"
               onClick={(e) => scrollToSection(e, 'features')}
-              className="px-3 py-2 rounded-lg text-sm font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors"
+              className="px-3 py-2.5 min-h-[44px] flex items-center rounded-lg text-sm font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors"
             >
               Features
             </a>
             <a
               href="#how-it-works"
               onClick={(e) => scrollToSection(e, 'how-it-works')}
-              className="px-3 py-2 rounded-lg text-sm font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors"
+              className="px-3 py-2.5 min-h-[44px] flex items-center rounded-lg text-sm font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors"
             >
               How It Works
             </a>
             <a
               href="#global-telemetry"
               onClick={(e) => scrollToSection(e, 'global-telemetry')}
-              className="px-3 py-2 rounded-lg text-sm font-semibold text-cyan-600 dark:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-cyan-950/40 transition-colors flex items-center justify-between"
+              className="px-3 py-2.5 min-h-[44px] rounded-lg text-sm font-semibold text-cyan-600 dark:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-cyan-950/40 transition-colors flex items-center justify-between"
             >
               <span>3D Global Telemetry Globe</span>
               <span className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse" />
@@ -212,29 +216,29 @@ export function Navbar() {
             <a
               href="#preview"
               onClick={(e) => scrollToSection(e, 'preview')}
-              className="px-3 py-2 rounded-lg text-sm font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors"
+              className="px-3 py-2.5 min-h-[44px] flex items-center rounded-lg text-sm font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors"
             >
               Live Preview
             </a>
             <a
               href="#why-changelens"
               onClick={(e) => scrollToSection(e, 'why-changelens')}
-              className="px-3 py-2 rounded-lg text-sm font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors"
+              className="px-3 py-2.5 min-h-[44px] flex items-center rounded-lg text-sm font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors"
             >
               Why ChangeLens
             </a>
           </nav>
 
           <div className="pt-3 border-t border-slate-200 dark:border-slate-800/80 flex flex-col gap-2">
-            <div className="flex items-center justify-between py-1 px-1">
-              <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">Theme</span>
+            <div className="flex items-center justify-between py-1.5 px-2 rounded-lg bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
+              <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">Appearance Theme</span>
               <ThemeToggle showLabel={true} size="sm" />
             </div>
             {isAuthenticated ? (
               <Link
                 to="/app"
                 onClick={() => setMobileMenuOpen(false)}
-                className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold text-sm px-4 py-2.5 rounded-lg shadow-md transition-all text-center"
+                className="w-full min-h-[44px] flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold text-sm px-4 py-2.5 rounded-xl shadow-md transition-all text-center"
               >
                 <LayoutDashboard className="w-4 h-4" />
                 <span>Launch Workspace</span>
@@ -244,14 +248,14 @@ export function Navbar() {
                 <Link
                   to="/login"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="w-full text-center text-sm font-semibold text-slate-800 dark:text-slate-200 hover:text-slate-950 dark:hover:text-white px-4 py-2.5 rounded-lg bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 transition-colors"
+                  className="w-full min-h-[44px] flex items-center justify-center text-center text-sm font-semibold text-slate-800 dark:text-slate-200 hover:text-slate-950 dark:hover:text-white px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 transition-colors"
                 >
                   Sign In
                 </Link>
                 <Link
                   to="/register"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="w-full flex items-center justify-center gap-1.5 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold text-sm px-4 py-2.5 rounded-lg shadow-md transition-all text-center"
+                  className="w-full min-h-[44px] flex items-center justify-center gap-1.5 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold text-sm px-4 py-2.5 rounded-xl shadow-md transition-all text-center"
                 >
                   <span>Get Started Free</span>
                   <ArrowRight className="w-4 h-4" />

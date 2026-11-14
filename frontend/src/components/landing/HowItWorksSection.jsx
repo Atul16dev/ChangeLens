@@ -166,9 +166,9 @@ export function HowItWorksSection() {
                       <p className="text-[11px] text-slate-300 mt-0.5 leading-relaxed">
                         {stepItem.description}
                       </p>
-                      <div className="mt-1.5 flex items-center gap-1.5 font-mono text-[10px] text-cyan-300 bg-[#0a0f1d] px-2 py-0.5 rounded border border-slate-700/80 w-fit">
+                      <div className="mt-1.5 flex items-center gap-1.5 font-mono text-[10px] text-cyan-300 bg-[#0a0f1d] px-2 py-0.5 rounded border border-slate-700/80 w-fit max-w-full">
                         <Terminal className="w-3 h-3 shrink-0" />
-                        <span className="truncate max-w-[240px]">{stepItem.detail}</span>
+                        <span className="truncate max-w-[190px] xs:max-w-[240px]">{stepItem.detail}</span>
                       </div>
                     </div>
                   </div>

@@ -76,16 +76,16 @@ export function Header({
   return (
     <header className="bg-white dark:bg-[#0e1422]/95 border-b border-slate-200 dark:border-slate-700/80 backdrop-blur-md sticky top-0 z-40 shrink-0 shadow-sm dark:shadow-none">
       {/* ROW 1: Branding, Status & Top Action Tools (GitHub PR, History, Profile) */}
-      <div className="px-5 py-2.5 flex items-center justify-between gap-4">
+      <div className="px-3 sm:px-5 py-2 sm:py-2.5 flex items-center justify-between gap-2 sm:gap-4">
         {/* Left: Brand Identity & Status */}
-        <div className="flex items-center gap-3 min-w-0">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <Link
             to="/"
-            className="flex items-center gap-2.5 group focus:outline-none shrink-0"
+            className="flex items-center gap-2 group focus:outline-none shrink-0"
             title="ChangeLens Home"
           >
             <BrandLogo size="sm" />
-            <span className="text-base font-bold tracking-tight text-slate-900 dark:text-white">
+            <span className="text-sm sm:text-base font-bold tracking-tight text-slate-900 dark:text-white">
               ChangeLens
             </span>
           </Link>
@@ -97,24 +97,25 @@ export function Header({
           <div className="h-4 w-px bg-slate-200 dark:bg-slate-800 hidden md:block shrink-0" />
 
           {/* Engine Status & What-If Banner */}
-          <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400 min-w-0">
+          <div className="flex items-center gap-1.5 sm:gap-2 text-xs text-slate-600 dark:text-slate-400 min-w-0">
             <span
               className={`inline-flex items-center gap-1.5 text-[11px] font-medium shrink-0 ${
                 backendStatus === 'online' ? 'text-emerald-700 dark:text-emerald-400' : 'text-amber-700 dark:text-amber-400'
               }`}
+              title={backendStatus === 'online' ? 'Engine Ready' : 'Connecting to AST engine...'}
             >
               <span
                 className={`w-1.5 h-1.5 rounded-full ${
                   backendStatus === 'online' ? 'bg-emerald-500 animate-ping' : 'bg-amber-500'
                 }`}
               />
-              <span>{backendStatus === 'online' ? 'Engine Ready' : 'Connecting...'}</span>
+              <span className="hidden xs:inline">{backendStatus === 'online' ? 'Engine Ready' : 'Connecting...'}</span>
             </span>
 
             {isSimulating && (
-              <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-purple-900 dark:text-purple-300 bg-purple-100 dark:bg-purple-950/70 border border-purple-300 dark:border-purple-500/40 px-2 py-0.5 rounded-full shadow-sm shrink-0">
+              <span className="inline-flex items-center gap-1.5 text-[10px] sm:text-[11px] font-semibold text-purple-900 dark:text-purple-300 bg-purple-100 dark:bg-purple-950/70 border border-purple-300 dark:border-purple-500/40 px-2 py-0.5 rounded-full shadow-sm shrink-0">
                 <Zap className="w-3 h-3 text-amber-500 dark:text-amber-400 animate-pulse" />
-                <span className="truncate max-w-[140px]">
+                <span className="truncate max-w-[100px] sm:max-w-[140px]">
                   What-If: {simulatedFile?.split('/').pop()}
                 </span>
                 {onExitSimulation && (
@@ -133,13 +134,13 @@ export function Header({
         </div>
 
         {/* Right: Actions (Connect Repo, GitHub PR, History, Profile) */}
-        <div className="flex items-center gap-2.5 shrink-0">
+        <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
           {/* Project Hub / Back to Workshop Button */}
           {onOpenProjectHub && (
             <button
               type="button"
               onClick={onOpenProjectHub}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all shadow-sm active:scale-95 cursor-pointer ${
+              className={`inline-flex items-center justify-center gap-1.5 px-2.5 sm:px-3 py-1.5 min-h-[36px] rounded-lg text-xs font-semibold transition-all shadow-sm active:scale-95 cursor-pointer ${
                 activeHubTab === 'local'
                   ? 'bg-amber-100 dark:bg-amber-950/70 hover:bg-amber-200 dark:hover:bg-amber-900/80 text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-800/60'
                   : activeHubTab === 'pr'
@@ -161,7 +162,7 @@ export function Header({
                     : 'text-cyan-600 dark:text-cyan-400'
                 }`}
               />
-              <span>
+              <span className="hidden md:inline">
                 {!isProjectHubOpen
                   ? activeHubTab === 'local'
                     ? 'Local Workshop'
@@ -169,6 +170,9 @@ export function Header({
                     ? 'GitHub PR'
                     : 'Connect Repo'
                   : 'Project Hub'}
+              </span>
+              <span className="md:hidden hidden xs:inline">
+                {!isProjectHubOpen ? 'Workshop' : 'Hub'}
               </span>
             </button>
           )}
@@ -180,7 +184,7 @@ export function Header({
           <button
             type="button"
             onClick={onOpenHistory}
-            className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-[#182338] dark:hover:bg-[#1f2d48] text-slate-800 dark:text-slate-200 hover:text-slate-950 dark:hover:text-white border border-slate-300 dark:border-slate-600/80 transition-all shadow-sm active:scale-95 cursor-pointer"
+            className="inline-flex items-center justify-center gap-1.5 px-2.5 sm:px-3 py-1.5 min-h-[36px] rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-[#182338] dark:hover:bg-[#1f2d48] text-slate-800 dark:text-slate-200 hover:text-slate-950 dark:hover:text-white border border-slate-300 dark:border-slate-600/80 transition-all shadow-sm active:scale-95 cursor-pointer"
             title="Open Analysis History & Saved Reports"
           >
             <History className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
@@ -198,10 +202,10 @@ export function Header({
 
       {/* ROW 2: Active Analysis Breadcrumb & Actions (Only visible in Graph View, NOT in Project Hub) */}
       {!isProjectHubOpen && (
-        <div className="border-t border-slate-200 dark:border-slate-700/80 bg-white dark:bg-[#0c1220]/90 backdrop-blur-md px-5 py-2 flex items-center justify-between gap-4 overflow-x-auto scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-800 scrollbar-track-transparent">
+        <div className="border-t border-slate-200 dark:border-slate-700/80 bg-white dark:bg-[#0c1220]/90 backdrop-blur-md px-3 sm:px-5 py-1.5 sm:py-2 flex items-center gap-2 sm:gap-3 overflow-x-auto no-scrollbar">
           {/* Left: Active Analysis Context Breadcrumb & Actions */}
-          <div className="flex items-center gap-2.5 min-w-0">
-            <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider shrink-0">
+          <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
+            <span className="text-[10px] sm:text-[11px] font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider shrink-0 hidden xs:inline">
               Active Context:
             </span>
 
@@ -209,27 +213,27 @@ export function Header({
               /* Inline Quick-Adjust Form right beside Active Context */
               <form onSubmit={handleSubmit} className="flex items-center gap-2 flex-wrap min-w-0">
                 {/* Folder / Workspace Path Input */}
-                <div className="relative flex items-center">
+                <div className="relative flex items-center w-full xs:w-auto">
                   <Folder className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400 absolute left-2.5 pointer-events-none" />
                   <input
                     type="text"
                     value={repoPath}
                     onChange={(e) => setRepoPath(e.target.value)}
                     placeholder="Workspace / Folder path..."
-                    className="pl-8 pr-2.5 py-1 text-xs bg-slate-50 dark:bg-[#0e1627] border border-slate-300 dark:border-slate-700/80 hover:border-slate-400 dark:hover:border-slate-600 focus:border-cyan-500 rounded-md text-slate-900 dark:text-slate-200 placeholder:text-slate-400 font-mono focus:outline-none focus:ring-1 focus:ring-cyan-500/50 w-44 sm:w-56 md:w-64 transition-all shadow-inner"
+                    className="pl-8 pr-2.5 py-1 text-xs bg-slate-50 dark:bg-[#0e1627] border border-slate-300 dark:border-slate-700/80 hover:border-slate-400 dark:hover:border-slate-600 focus:border-cyan-500 rounded-md text-slate-900 dark:text-slate-200 placeholder:text-slate-400 font-mono focus:outline-none focus:ring-1 focus:ring-cyan-500/50 w-full xs:w-44 sm:w-56 md:w-64 transition-all shadow-inner"
                     title="Enter workspace or folder path (e.g. D:/MyProject or leave empty for active workspace)"
                   />
                 </div>
 
                 {/* Changed Files Input */}
-                <div className="relative flex items-center">
+                <div className="relative flex items-center w-full xs:w-auto">
                   <GitPullRequest className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 absolute left-2.5 pointer-events-none" />
                   <input
                     type="text"
                     value={changedFile}
                     onChange={(e) => setChangedFile(e.target.value)}
                     placeholder="Changed files (e.g. auth.js, user.js) or blank for git"
-                    className="pl-8 pr-2.5 py-1 text-xs bg-slate-50 dark:bg-[#0e1627] border border-slate-300 dark:border-slate-700/80 hover:border-slate-400 dark:hover:border-slate-600 focus:border-amber-500 rounded-md text-slate-900 dark:text-slate-200 placeholder:text-slate-400 font-mono focus:outline-none focus:ring-1 focus:ring-amber-500/50 w-48 sm:w-60 md:w-72 transition-all shadow-inner"
+                    className="pl-8 pr-2.5 py-1 text-xs bg-slate-50 dark:bg-[#0e1627] border border-slate-300 dark:border-slate-700/80 hover:border-slate-400 dark:hover:border-slate-600 focus:border-amber-500 rounded-md text-slate-900 dark:text-slate-200 placeholder:text-slate-400 font-mono focus:outline-none focus:ring-1 focus:ring-amber-500/50 w-full xs:w-48 sm:w-60 md:w-72 transition-all shadow-inner"
                     title="Comma-separated files or leave empty to auto-detect git changes"
                   />
                 </div>
@@ -274,9 +278,9 @@ export function Header({
             ) : (
               <>
                 {/* Target Folder / Repository Pill */}
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-50 dark:bg-[#0e1627] border border-slate-200 dark:border-slate-700/80 text-slate-800 dark:text-slate-200 font-mono text-xs shrink-0 shadow-sm">
+                <div className="inline-flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-md bg-slate-50 dark:bg-[#0e1627] border border-slate-200 dark:border-slate-700/80 text-slate-800 dark:text-slate-200 font-mono text-xs shrink-0 shadow-sm">
                   <Folder className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400 shrink-0" />
-                  <span className="truncate max-w-[200px]" title={activeTargetContext?.repoPath || 'Active Workspace'}>
+                  <span className="truncate max-w-[120px] sm:max-w-[200px]" title={activeTargetContext?.repoPath || 'Active Workspace'}>
                     {activeTargetContext?.repoPath
                       ? activeTargetContext.repoPath.split(/[/\\]/).filter(Boolean).pop()
                       : 'Local Workspace'}
@@ -284,10 +288,10 @@ export function Header({
                 </div>
 
                 {/* Changed Files Pill */}
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-50 dark:bg-[#0e1627] border border-slate-200 dark:border-slate-700/80 text-slate-800 dark:text-slate-200 font-mono text-xs shrink-0 shadow-sm">
+                <div className="inline-flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-md bg-slate-50 dark:bg-[#0e1627] border border-slate-200 dark:border-slate-700/80 text-slate-800 dark:text-slate-200 font-mono text-xs shrink-0 shadow-sm">
                   <GitPullRequest className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
                   <span
-                    className="truncate max-w-[260px]"
+                    className="truncate max-w-[130px] sm:max-w-[260px]"
                     title={
                       Array.isArray(activeTargetContext?.changedFiles) && activeTargetContext.changedFiles.length > 0
                         ? activeTargetContext.changedFiles.join(', ')
@@ -306,11 +310,11 @@ export function Header({
                     type="button"
                     onClick={onRefresh}
                     disabled={loading}
-                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-cyan-100 hover:bg-cyan-200 dark:bg-cyan-950/90 dark:hover:bg-cyan-900 text-cyan-900 dark:text-cyan-200 hover:text-cyan-950 dark:hover:text-white border border-cyan-300 dark:border-cyan-700/70 transition-all font-medium text-xs shadow-sm active:scale-95 disabled:opacity-50 cursor-pointer shrink-0"
+                    className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-md bg-cyan-100 hover:bg-cyan-200 dark:bg-cyan-950/90 dark:hover:bg-cyan-900 text-cyan-900 dark:text-cyan-200 hover:text-cyan-950 dark:hover:text-white border border-cyan-300 dark:border-cyan-700/70 transition-all font-medium text-xs shadow-sm active:scale-95 disabled:opacity-50 cursor-pointer shrink-0"
                     title="Re-run blast radius analysis"
                   >
                     <RefreshCw className={`w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400 ${loading ? 'animate-spin' : ''}`} />
-                    <span>{loading ? 'Re-analyzing...' : 'Re-run'}</span>
+                    <span className="hidden xs:inline">{loading ? 'Re-analyzing...' : 'Re-run'}</span>
                   </button>
                 )}
 
@@ -322,23 +326,29 @@ export function Header({
                   title="Directly adjust files, folder, and depth right here"
                 >
                   <Sliders className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />
-                  <span>Adjust Files & Depth</span>
+                  <span className="hidden sm:inline">Adjust Files & Depth</span>
+                  <span className="sm:hidden">Adjust</span>
                 </button>
               </>
             )}
           </div>
 
+          {/* Divider between tools and environment badge on mobile */}
+          <div className="h-4 w-px bg-slate-300 dark:bg-slate-700/80 shrink-0 sm:hidden" />
+
           {/* Right: Environment Mode Badge */}
-          <div className="flex items-center gap-2 shrink-0 ml-auto">
+          <div className="flex items-center gap-2 shrink-0 sm:ml-auto">
             {isDemoMode ? (
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-emerald-100 dark:bg-emerald-950/70 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-500/40 shadow-sm">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span>Demo Playground (mern-sample)</span>
+                <span className="hidden sm:inline">Demo Playground (mern-sample)</span>
+                <span className="sm:hidden">Demo</span>
               </span>
             ) : (
               <span className="inline-flex items-center gap-1.5 text-[11px] text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-[#0e1627] px-2.5 py-1 rounded-md border border-slate-200 dark:border-slate-700/80">
                 <Zap className="w-3 h-3 text-cyan-600 dark:text-cyan-400" />
-                <span>AST Blast Radius Engine</span>
+                <span className="hidden sm:inline">AST Blast Radius Engine</span>
+                <span className="sm:hidden">AST Engine</span>
               </span>
             )}
           </div>

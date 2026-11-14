@@ -21,7 +21,7 @@ import {
   analyzeGitHubPR,
   getAnalysisHistory,
 } from '../services/api.js';
-import { AlertCircle, ShieldAlert } from 'lucide-react';
+import { AlertCircle, ShieldAlert, Network } from 'lucide-react';
 
 export function DashboardPage() {
   const [loading, setLoading] = useState(false);
@@ -35,7 +35,8 @@ export function DashboardPage() {
   const [explanationData, setExplanationData] = useState(null);
   const [selectedNodeId, setSelectedNodeId] = useState(null);
 
-  // Mobile / Tablet Responsive Impact Sidebar State
+  // Mobile / Tablet Responsive Impact Sidebar State & Primary View Switcher
+  const [mobileViewTab, setMobileViewTab] = useState('graph'); // 'graph' | 'findings'
   const [isSidebarOpenMobile, setIsSidebarOpenMobile] = useState(false);
 
   // History Drawer state
@@ -44,8 +45,18 @@ export function DashboardPage() {
   // GitHub Connector Modal state
   const [isGitHubOpen, setIsGitHubOpen] = useState(false);
 
-  // Project Hub state (Full-screen onboarding & project chooser - default on login!)
-  const [isProjectHubOpen, setIsProjectHubOpen] = useState(true);
+  // Project Hub state (Full-screen onboarding & project chooser - default on login if no ?analysisId in URL)
+  const [isProjectHubOpen, setIsProjectHubOpen] = useState(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('analysisId')) {
+          return false;
+        }
+      } catch {}
+    }
+    return true;
+  });
 
   // Active Project Hub Tab state ('repo' | 'pr' | 'local' | 'demo') - remembers tab across view transitions
   const [activeHubTab, setActiveHubTab] = useState(() => {
@@ -87,6 +98,35 @@ export function DashboardPage() {
     }
   }, []);
 
+  // Synchronize active analysisId with browser URL query parameter without triggering full reload
+  const updateUrlAnalysisId = useCallback((analysisId, isDemo = false) => {
+    if (typeof window === 'undefined') return;
+    try {
+      const url = new URL(window.location.href);
+      if (analysisId) {
+        localStorage.setItem('changelens_last_analysis_id', analysisId);
+        if (url.searchParams.get('analysisId') !== analysisId) {
+          url.searchParams.set('analysisId', analysisId);
+        }
+        if (isDemo) {
+          url.searchParams.set('demo', 'true');
+        } else {
+          url.searchParams.delete('demo');
+        }
+        window.history.replaceState(null, '', url.pathname + url.search);
+      } else {
+        localStorage.removeItem('changelens_last_analysis_id');
+        if (url.searchParams.has('analysisId') || url.searchParams.has('demo')) {
+          url.searchParams.delete('analysisId');
+          url.searchParams.delete('demo');
+          window.history.replaceState(null, '', url.pathname + (url.search || ''));
+        }
+      }
+    } catch (err) {
+      console.warn('Failed to update URL analysisId:', err);
+    }
+  }, []);
+
   // Load a previously saved analysis directly from MongoDB / cache
   const loadSavedAnalysis = useCallback(async (analysisId, { manageLoading = true, onSuccess = null } = {}) => {
     if (manageLoading) {
@@ -115,6 +155,13 @@ export function DashboardPage() {
 
       const targetDir = impactRes?.summary?.targetDir || '';
       const targetChangedFiles = impactRes?.summary?.changedFiles || [];
+      const isDemo =
+        targetDir.includes('mern-sample') ||
+        (typeof window !== 'undefined' &&
+          new URLSearchParams(window.location.search).get('demo') === 'true');
+      setIsDemoMode(isDemo);
+      updateUrlAnalysisId(analysisId, isDemo);
+
       setActiveTargetContext({
         repoPath: targetDir,
         changedFiles: Array.isArray(targetChangedFiles) ? targetChangedFiles : [],
@@ -130,16 +177,19 @@ export function DashboardPage() {
         setLoading(false);
       }
     }
-  }, []);
+  }, [updateUrlAnalysisId]);
 
   const handleOpenSavedReport = useCallback(
     async (id) => {
       setIsDemoMode(false);
       await loadSavedAnalysis(id, {
-        onSuccess: () => setIsProjectHubOpen(false),
+        onSuccess: () => {
+          setIsProjectHubOpen(false);
+          updateUrlAnalysisId(id, false);
+        },
       });
     },
-    [loadSavedAnalysis]
+    [loadSavedAnalysis, updateUrlAnalysisId]
   );
 
   // Trigger analysis pipeline
@@ -153,6 +203,7 @@ export function DashboardPage() {
       const analysisResult = await runImpactAnalysis(options);
       const { analysisId } = analysisResult;
       setCurrentAnalysisId(analysisId);
+      updateUrlAnalysisId(analysisId, isDemoMode);
 
       // 2. Fetch graph, impact findings, and AI PR explanation in parallel
       const [graphRes, impactRes, explanationRes] = await Promise.all([
@@ -188,7 +239,7 @@ export function DashboardPage() {
     } finally {
       setLoading(false);
     }
-  }, [refreshRecentAnalyses]);
+  }, [refreshRecentAnalyses, updateUrlAnalysisId, isDemoMode]);
 
   // Connect a GitHub repository and run baseline audit
   const handleConnectGitHubRepo = useCallback(
@@ -380,8 +431,13 @@ export function DashboardPage() {
 
   const handleDisconnectRepo = useCallback(() => {
     setConnectedRepo(null);
+    setCurrentAnalysisId(null);
+    updateUrlAnalysisId(null);
+    setGraphData(null);
+    setImpactData(null);
+    setExplanationData(null);
     setIsProjectHubOpen(true);
-  }, []);
+  }, [updateUrlAnalysisId]);
 
   const handleOpenLocalWorkspace = useCallback(
     async ({ repoPath, changedFiles, scanResult } = {}) => {
@@ -398,7 +454,9 @@ export function DashboardPage() {
       });
 
       if (scanResult && scanResult.graph) {
-        setCurrentAnalysisId(scanResult.analysisId || `analysis_${Date.now()}`);
+        const id = scanResult.analysisId || `analysis_${Date.now()}`;
+        setCurrentAnalysisId(id);
+        updateUrlAnalysisId(id, false);
         setGraphData(scanResult.graph);
         setImpactData(scanResult.impactAnalysis?.summary || scanResult.summary);
         setExplanationData(scanResult.impactAnalysis?.explanation || null);
@@ -416,7 +474,7 @@ export function DashboardPage() {
         { onSuccess: () => setIsProjectHubOpen(false) }
       );
     },
-    [executeAnalysis, refreshRecentAnalyses]
+    [executeAnalysis, refreshRecentAnalyses, updateUrlAnalysisId]
   );
 
   const handleLaunchDemo = useCallback(async () => {
@@ -472,20 +530,56 @@ export function DashboardPage() {
   const effectiveImpactData = simulationData ? simulationData.impactAnalysis : impactData;
   const effectiveExplanationData = simulationData ? simulationData.explanation : explanationData;
 
-  // Check health on mount (DO NOT auto-run demo analysis)
+  // Check health on mount and auto-restore analysis if ?analysisId= is present in URL
   useEffect(() => {
+    let isCancelled = false;
+
     async function init() {
       try {
         await checkBackendHealth();
-        setBackendStatus('online');
-        refreshRecentAnalyses();
+        if (!isCancelled) {
+          setBackendStatus('online');
+          refreshRecentAnalyses();
+        }
       } catch (err) {
         console.warn('Backend not responding yet:', err.message);
-        setBackendStatus('offline');
+        if (!isCancelled) setBackendStatus('offline');
+      }
+
+      // Check URL query parameters for ?analysisId=...
+      if (typeof window !== 'undefined') {
+        try {
+          const params = new URLSearchParams(window.location.search);
+          const urlAnalysisId = params.get('analysisId');
+
+          if (urlAnalysisId) {
+            const success = await loadSavedAnalysis(urlAnalysisId, {
+              manageLoading: true,
+              onSuccess: () => {
+                if (!isCancelled) {
+                  setIsProjectHubOpen(false);
+                }
+              },
+            });
+
+            // If analysis was not found (e.g. invalid or expired ID), fall back gracefully to Project Hub
+            if (!success && !isCancelled) {
+              updateUrlAnalysisId(null);
+              setIsProjectHubOpen(true);
+            }
+          }
+        } catch (err) {
+          console.warn('Error restoring analysis from URL:', err);
+        }
       }
     }
+
     init();
-  }, [refreshRecentAnalyses]);
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [loadSavedAnalysis, refreshRecentAnalyses, updateUrlAnalysisId]);
 
   // Auto-refresh Recent Analyses whenever returning to or opening the Project Hub
   useEffect(() => {
@@ -495,7 +589,7 @@ export function DashboardPage() {
   }, [isProjectHubOpen, refreshRecentAnalyses]);
 
   return (
-    <div className="flex flex-col h-screen w-screen bg-white dark:bg-[#0b0f19] text-slate-900 dark:text-slate-100 overflow-hidden font-sans">
+    <div className="flex flex-col h-screen h-[100dvh] w-full max-w-full bg-white dark:bg-[#0b0f19] text-slate-900 dark:text-slate-100 overflow-hidden font-sans">
       {/* Top Navigation Bar with Authentication Awareness */}
       <Header
         onAnalyze={executeAnalysis}
@@ -613,33 +707,36 @@ export function DashboardPage() {
             onClearApiError={() => setError(null)}
           />
         ) : (
-          <div className="flex-1 flex overflow-hidden relative">
-            <main className="flex-1 h-full relative">
-              <GraphViewer
-                graphData={effectiveGraphData}
-                selectedNodeId={selectedNodeId}
-                onSelectNode={setSelectedNodeId}
-                isSimulating={isSimulating}
-                simulatedFile={simulationData?.simulatedFile}
-                simulatedChangeType={simulationData?.changeType}
-                onExitSimulation={handleExitSimulation}
-              >
-                {/* Context-Aware AI Chatbot docked inside Graph Workspace (persists in fullscreen mode) */}
-                <ChatAssistant
-                  analysisId={currentAnalysisId}
-                  selectedNodeId={selectedNodeId}
-                  isSimulating={isSimulating}
-                  simulatedFile={simulationData?.simulatedFile}
-                />
-              </GraphViewer>
-
-              {/* Mobile / Tablet Impact Sidebar Toggle Button */}
-              <div className="lg:hidden absolute top-4 right-4 z-30 select-none">
+          <div className="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
+            {/* Primary Mobile Navigation Switcher: [ 🌐 Graph ] [ 🛡️ Findings (N) ] (Visible on < lg, hidden on lg+) */}
+            <div className="lg:hidden shrink-0 px-3 py-1.5 bg-slate-100/95 dark:bg-[#0c1220]/95 border-b border-slate-200 dark:border-slate-800/80 backdrop-blur-md flex items-center justify-center z-30">
+              <div className="grid grid-cols-2 p-1 bg-slate-200/80 dark:bg-[#080d19] rounded-xl border border-slate-300 dark:border-slate-800 w-full max-w-sm shadow-inner">
                 <button
                   type="button"
-                  onClick={() => setIsSidebarOpenMobile(true)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-900/90 hover:bg-slate-800 text-cyan-300 border border-cyan-500/50 shadow-xl backdrop-blur-md text-xs font-semibold active:scale-95 transition-all"
-                  title="View Impact Findings & AI PR Review"
+                  onClick={() => {
+                    setMobileViewTab('graph');
+                    setIsSidebarOpenMobile(false);
+                  }}
+                  className={`py-1.5 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                    mobileViewTab === 'graph'
+                      ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                >
+                  <Network className="w-3.5 h-3.5" />
+                  <span>Graph</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileViewTab('findings');
+                    setIsSidebarOpenMobile(true);
+                  }}
+                  className={`py-1.5 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                    mobileViewTab === 'findings'
+                      ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  }`}
                 >
                   <ShieldAlert className="w-3.5 h-3.5 text-cyan-400" />
                   <span>
@@ -647,21 +744,57 @@ export function DashboardPage() {
                   </span>
                 </button>
               </div>
-            </main>
+            </div>
 
-            <ImpactSidebar
-              impactData={effectiveImpactData}
-              explanationData={effectiveExplanationData}
-              selectedNodeId={selectedNodeId}
-              onSelectNode={setSelectedNodeId}
-              isSimulating={isSimulating}
-              simulatedFile={simulationData?.simulatedFile}
-              simulatedChangeType={simulationData?.changeType}
-              onSimulateNode={handleSimulateNode}
-              onExitSimulation={handleExitSimulation}
-              isMobileOpen={isSidebarOpenMobile}
-              onCloseMobile={() => setIsSidebarOpenMobile(false)}
-            />
+            <div className="flex-1 flex overflow-hidden relative">
+              <main
+                className={`flex-1 h-full relative min-w-0 min-h-0 w-full overflow-hidden ${
+                  mobileViewTab === 'findings' ? 'hidden lg:block' : 'block'
+                }`}
+              >
+                <GraphViewer
+                  graphData={effectiveGraphData}
+                  selectedNodeId={selectedNodeId}
+                  onSelectNode={setSelectedNodeId}
+                  isSimulating={isSimulating}
+                  simulatedFile={simulationData?.simulatedFile}
+                  simulatedChangeType={simulationData?.changeType}
+                  onExitSimulation={handleExitSimulation}
+                >
+                  {/* Context-Aware AI Chatbot docked inside Graph Workspace (persists in fullscreen mode) */}
+                  <ChatAssistant
+                    analysisId={currentAnalysisId}
+                    selectedNodeId={selectedNodeId}
+                    isSimulating={isSimulating}
+                    simulatedFile={simulationData?.simulatedFile}
+                  />
+                </GraphViewer>
+              </main>
+
+              <div
+                className={`h-full min-w-0 ${
+                  mobileViewTab === 'graph' ? 'hidden lg:flex' : 'flex w-full'
+                }`}
+              >
+                <ImpactSidebar
+                  impactData={effectiveImpactData}
+                  explanationData={effectiveExplanationData}
+                  selectedNodeId={selectedNodeId}
+                  onSelectNode={setSelectedNodeId}
+                  isSimulating={isSimulating}
+                  simulatedFile={simulationData?.simulatedFile}
+                  simulatedChangeType={simulationData?.changeType}
+                  onSimulateNode={handleSimulateNode}
+                  onExitSimulation={handleExitSimulation}
+                  isMobileOpen={isSidebarOpenMobile}
+                  onCloseMobile={() => {
+                    setMobileViewTab('graph');
+                    setIsSidebarOpenMobile(false);
+                  }}
+                  isFullMobileView={mobileViewTab === 'findings'}
+                />
+              </div>
+            </div>
           </div>
         )}
       </div>

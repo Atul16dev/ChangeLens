@@ -318,7 +318,7 @@ export function ProjectHub({
         </div>
 
         {/* HERO BANNER: Split Layout with Engaging Title on Left & Visual DAG Architecture Graphic on Right */}
-        <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-6 items-center mb-8 bg-white dark:bg-[#030508] p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800/90 shadow-md dark:shadow-2xl dark:ring-1 dark:ring-white/10 relative overflow-hidden hub-hero-banner">
+        <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-6 items-center mb-6 sm:mb-8 bg-white dark:bg-[#030508] p-4 sm:p-6 lg:p-8 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800/90 shadow-md dark:shadow-2xl dark:ring-1 dark:ring-white/10 relative overflow-hidden hub-hero-banner">
           {/* Interactive 3D Wave of Colors & Sparkling Slow-Mo Hover-Drag Galaxy Particles */}
           <ProjectHubBackdrop3D />
 
@@ -357,12 +357,12 @@ export function ProjectHub({
           {/* Right Column: Visual DAG Blast Radius Architecture Graphic */}
           <div className="lg:col-span-5 flex flex-col items-center justify-center relative z-10">
             <div className="w-full bg-white dark:bg-[#090d16]/90 border border-slate-200 dark:border-cyan-500/40 rounded-2xl p-4 shadow-md dark:shadow-xl ring-1 ring-cyan-500/10 relative overflow-hidden font-mono text-xs hub-dag-preview">
-              <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-200 dark:border-slate-700/80 text-[11px] text-slate-700 dark:text-slate-300">
-                <span className="flex items-center gap-1.5 text-cyan-700 dark:text-cyan-400 font-bold">
-                  <Activity className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />
-                  Live AST Blast Radius Preview
+              <div className="flex items-center justify-between flex-wrap gap-1.5 pb-3 mb-3 border-b border-slate-200 dark:border-slate-700/80 text-[11px] text-slate-700 dark:text-slate-300">
+                <span className="flex items-center gap-1.5 text-cyan-700 dark:cyan-400 font-bold">
+                  <Activity className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400 shrink-0" />
+                  <span>Live AST Blast Radius Preview</span>
                 </span>
-                <span className="px-2 py-0.5 rounded bg-rose-100 dark:bg-rose-500/20 text-rose-800 dark:text-rose-300 border border-rose-300 dark:border-rose-500/40 font-bold">
+                <span className="px-2 py-0.5 rounded bg-rose-100 dark:bg-rose-500/20 text-rose-800 dark:text-rose-300 border border-rose-300 dark:border-rose-500/40 font-bold shrink-0">
                   HIGH RISK (3 TIERS)
                 </span>
               </div>
@@ -370,15 +370,15 @@ export function ProjectHub({
               {/* Visual Node Flow */}
               <div className="space-y-2">
                 {/* Node 1: Root Change */}
-                <div className="p-2.5 rounded-xl bg-white dark:bg-[#141d2f] border border-rose-200 dark:border-rose-500/60 flex items-center justify-between shadow-sm hub-dag-node">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
-                    <div>
-                      <div className="text-slate-900 dark:text-white font-bold">server/models/user.js</div>
-                      <div className="text-[10px] text-rose-700 dark:text-rose-300 font-medium">Modified: `findUserById` signature changed</div>
+                <div className="p-2.5 rounded-xl bg-white dark:bg-[#141d2f] border border-rose-200 dark:border-rose-500/60 flex items-center justify-between gap-2 shadow-sm hub-dag-node">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping shrink-0" />
+                    <div className="min-w-0">
+                      <div className="text-slate-900 dark:text-white font-bold truncate">server/models/user.js</div>
+                      <div className="text-[10px] text-rose-700 dark:text-rose-300 font-medium truncate">Modified: `findUserById` signature changed</div>
                     </div>
                   </div>
-                  <span className="text-[10px] bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300 px-2 py-0.5 rounded border border-rose-300 dark:border-rose-700 font-bold">
+                  <span className="text-[10px] bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300 px-2 py-0.5 rounded border border-rose-300 dark:border-rose-700 font-bold shrink-0 whitespace-nowrap">
                     +18 / -4 lines
                   </span>
                 </div>
@@ -389,15 +389,15 @@ export function ProjectHub({
                 </div>
 
                 {/* Node 2: Direct Consumer */}
-                <div className="p-2.5 rounded-xl bg-white dark:bg-[#141d2f] border border-amber-200 dark:border-amber-500/60 flex items-center justify-between shadow-sm hub-dag-node">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-amber-500" />
-                    <div>
-                      <div className="text-slate-900 dark:text-white font-bold">server/controllers/userController.js</div>
-                      <div className="text-[10px] text-amber-800 dark:text-amber-300 font-medium">Impacted: `getUserProfile` caller</div>
+                <div className="p-2.5 rounded-xl bg-white dark:bg-[#141d2f] border border-amber-200 dark:border-amber-500/60 flex items-center justify-between gap-2 shadow-sm hub-dag-node">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0" />
+                    <div className="min-w-0">
+                      <div className="text-slate-900 dark:text-white font-bold truncate">server/controllers/userController.js</div>
+                      <div className="text-[10px] text-amber-800 dark:text-amber-300 font-medium truncate">Impacted: `getUserProfile` caller</div>
                     </div>
                   </div>
-                  <span className="text-[10px] bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 px-2 py-0.5 rounded border border-amber-300 dark:border-amber-700 font-bold">
+                  <span className="text-[10px] bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 px-2 py-0.5 rounded border border-amber-300 dark:border-amber-700 font-bold shrink-0 whitespace-nowrap">
                     Tier 1 Consumer
                   </span>
                 </div>
@@ -408,15 +408,15 @@ export function ProjectHub({
                 </div>
 
                 {/* Node 3: Endpoint */}
-                <div className="p-2.5 rounded-xl bg-white dark:bg-[#141d2f] border border-cyan-200 dark:border-cyan-500/60 flex items-center justify-between shadow-sm hub-dag-node">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-cyan-500" />
-                    <div>
-                      <div className="text-slate-900 dark:text-white font-bold">server/routes/userRoutes.js</div>
-                      <div className="text-[10px] text-cyan-800 dark:text-cyan-300 font-medium">Exposed API: `GET /api/v1/users/:id`</div>
+                <div className="p-2.5 rounded-xl bg-white dark:bg-[#141d2f] border border-cyan-200 dark:border-cyan-500/60 flex items-center justify-between gap-2 shadow-sm hub-dag-node">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="w-2 h-2 rounded-full bg-cyan-500 shrink-0" />
+                    <div className="min-w-0">
+                      <div className="text-slate-900 dark:text-white font-bold truncate">server/routes/userRoutes.js</div>
+                      <div className="text-[10px] text-cyan-800 dark:text-cyan-300 font-medium truncate">Exposed API: `GET /api/v1/users/:id`</div>
                     </div>
                   </div>
-                  <span className="text-[10px] bg-cyan-100 dark:bg-cyan-950 text-cyan-800 dark:text-cyan-300 px-2 py-0.5 rounded border border-cyan-300 dark:border-cyan-700 font-bold">
+                  <span className="text-[10px] bg-cyan-100 dark:bg-cyan-950 text-cyan-800 dark:text-cyan-300 px-2 py-0.5 rounded border border-cyan-300 dark:border-cyan-700 font-bold shrink-0 whitespace-nowrap">
                     Tier 2 Route
                   </span>
                 </div>
@@ -638,7 +638,7 @@ export function ProjectHub({
         </div>
 
         {/* ACTIVE INTEGRATION WORKSPACE CONTAINER */}
-        <div className="w-full bg-white dark:bg-[#101726] rounded-3xl border border-slate-200 dark:border-slate-700/80 p-6 sm:p-8 shadow-xl dark:shadow-2xl dark:ring-1 dark:ring-white/5 relative hub-workspace-box">
+        <div className="w-full bg-white dark:bg-[#101726] rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-700/80 p-4 sm:p-6 lg:p-8 shadow-xl dark:shadow-2xl dark:ring-1 dark:ring-white/5 relative hub-workspace-box">
           {/* ========================================================================= */}
           {/* MODE 1: GITHUB REPOSITORY (Continuous Push Sync)                          */}
           {/* ========================================================================= */}
@@ -664,7 +664,7 @@ export function ProjectHub({
                 <button
                   type="button"
                   onClick={() => openGuide('repo')}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-cyan-50 dark:bg-cyan-950/80 hover:bg-cyan-100 dark:hover:bg-cyan-900 border border-cyan-300 dark:border-cyan-500/40 text-cyan-900 dark:text-cyan-200 font-bold text-xs transition-all shadow-sm shrink-0 cursor-pointer group hub-guide-btn"
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-cyan-50 dark:bg-cyan-950/80 hover:bg-cyan-100 dark:hover:bg-cyan-900 border border-cyan-300 dark:border-cyan-500/40 text-cyan-900 dark:text-cyan-200 font-bold text-xs transition-all shadow-sm w-full sm:w-auto shrink-0 cursor-pointer group hub-guide-btn"
                 >
                   <BookOpen className="w-4 h-4 text-cyan-600 dark:text-cyan-400 group-hover:scale-110 transition-transform" />
                   <span>Steps to Connect GitHub Repository</span>
@@ -835,7 +835,7 @@ export function ProjectHub({
                     else if (prSubTab === 'ci') openGuide('ci');
                     else openGuide('comment');
                   }}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/70 hover:bg-indigo-100 dark:hover:bg-indigo-900/70 border border-indigo-200 dark:border-indigo-800/60 hover:border-indigo-400 text-indigo-900 dark:text-indigo-300 font-bold text-xs transition-all shadow-sm shrink-0 cursor-pointer group"
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/70 hover:bg-indigo-100 dark:hover:bg-indigo-900/70 border border-indigo-200 dark:border-indigo-800/60 hover:border-indigo-400 text-indigo-900 dark:text-indigo-300 font-bold text-xs transition-all shadow-sm w-full sm:w-auto shrink-0 cursor-pointer group"
                 >
                   <BookOpen className="w-4 h-4 text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform" />
                   <span>
@@ -847,7 +847,7 @@ export function ProjectHub({
               </div>
 
               {/* Sub-tab Ribbon */}
-              <div className="flex items-center gap-2 mt-6 p-1 bg-slate-100 dark:bg-slate-950/80 rounded-xl border border-slate-200 dark:border-slate-800 w-fit">
+              <div className="flex items-center gap-2 mt-6 p-1 bg-slate-100 dark:bg-slate-950/80 rounded-xl border border-slate-200 dark:border-slate-800 max-w-full overflow-x-auto no-scrollbar w-fit">
                 <button
                   type="button"
                   onClick={() => setPrSubTab('analyze')}

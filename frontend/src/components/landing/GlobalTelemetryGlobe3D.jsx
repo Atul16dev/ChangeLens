@@ -75,7 +75,13 @@ export function GlobalTelemetryGlobe3D() {
     const height = container.clientHeight || 420;
 
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
-    camera.position.set(0, 0, 7.3);
+    const updateCameraDistance = (w, h) => {
+      const aspect = w / Math.max(h, 1);
+      camera.aspect = aspect;
+      camera.position.z = aspect < 0.85 ? 8.6 : aspect < 1.2 ? 7.8 : 7.3;
+      camera.updateProjectionMatrix();
+    };
+    updateCameraDistance(width, height);
     const reducedMotion = getPrefersReducedMotion();
 
     let renderer;
@@ -312,11 +318,44 @@ export function GlobalTelemetryGlobe3D() {
       setIsDragging(false);
     };
 
+    // Mobile touch interaction handlers (smooth drag rotation with pan-y preservation)
+    const handleTouchStart = (e) => {
+      if (e.touches && e.touches.length === 1) {
+        isPointerDown = true;
+        setIsDragging(true);
+        prevMousePos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      }
+    };
+
+    const handleTouchMove = (e) => {
+      if (!isPointerDown || !e.touches || e.touches.length !== 1) return;
+      const deltaX = e.touches[0].clientX - prevMousePos.x;
+      const deltaY = e.touches[0].clientY - prevMousePos.y;
+
+      rotationVelocity.y = deltaX * 0.005;
+      rotationVelocity.x = deltaY * 0.005;
+
+      globeGroup.rotation.y += rotationVelocity.y;
+      globeGroup.rotation.x += rotationVelocity.x;
+
+      prevMousePos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    };
+
+    const handleTouchEnd = () => {
+      isPointerDown = false;
+      setIsDragging(false);
+    };
+
     card.addEventListener('mouseenter', handleMouseEnter);
     card.addEventListener('mouseleave', handleMouseLeave);
     card.addEventListener('mousedown', handleMouseDown);
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('mouseup', handleMouseUp);
+
+    container.addEventListener('touchstart', handleTouchStart, { passive: true });
+    window.addEventListener('touchmove', handleTouchMove, { passive: true });
+    window.addEventListener('touchend', handleTouchEnd, { passive: true });
+    window.addEventListener('touchcancel', handleTouchEnd, { passive: true });
 
     // --- 7. RESIZE OBSERVER ---
     const handleResize = () => {
@@ -325,8 +364,7 @@ export function GlobalTelemetryGlobe3D() {
       const newHeight = container.clientHeight;
       if (newWidth === 0 || newHeight === 0) return;
 
-      camera.aspect = newWidth / newHeight;
-      camera.updateProjectionMatrix();
+      updateCameraDistance(newWidth, newHeight);
       renderer.setPixelRatio(getOptimalPixelRatio(newWidth));
       renderer.setSize(newWidth, newHeight);
     };
@@ -404,6 +442,10 @@ export function GlobalTelemetryGlobe3D() {
       card.removeEventListener('mousedown', handleMouseDown);
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
+      container.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchend', handleTouchEnd);
+      window.removeEventListener('touchcancel', handleTouchEnd);
       resizeObserver.disconnect();
       disposeThreeResources(scene, renderer, null, container);
     };
@@ -461,7 +503,8 @@ export function GlobalTelemetryGlobe3D() {
         <div className="lg:col-span-8 relative">
           <div
             ref={containerRef}
-            className={`w-full h-[360px] sm:h-[460px] lg:h-[500px] relative rounded-2xl overflow-hidden flex items-center justify-center bg-gradient-to-b from-slate-100/70 via-sky-50/40 to-slate-100/80 dark:from-slate-950/60 dark:via-[#09101f]/80 dark:to-slate-950/70 border border-slate-200/90 dark:border-slate-800/80 shadow-inner ${
+            style={{ touchAction: 'pan-y' }}
+            className={`w-full h-[300px] xs:h-[360px] sm:h-[460px] lg:h-[500px] relative rounded-2xl overflow-hidden flex items-center justify-center bg-gradient-to-b from-slate-100/70 via-sky-50/40 to-slate-100/80 dark:from-slate-950/60 dark:via-[#09101f]/80 dark:to-slate-950/70 border border-slate-200/90 dark:border-slate-800/80 shadow-inner ${
               isDragging ? 'cursor-grabbing' : 'cursor-grab'
             }`}
           />

@@ -199,7 +199,7 @@ export function GitHubConnectorModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200">
       <div
         className="w-full max-w-2xl bg-white dark:bg-[#101726] border border-slate-200 dark:border-slate-700/80 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] relative"
         role="dialog"
@@ -214,13 +214,13 @@ export function GitHubConnectorModal({
           />
         )}
         {/* Modal Header */}
-        <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700/80 flex items-center justify-between bg-white dark:bg-[#0c1220]">
+        <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-200 dark:border-slate-700/80 flex items-center justify-between bg-white dark:bg-[#0c1220]">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-800 dark:text-slate-100">
               <GitHubIcon className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+              <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
                 <span>GitHub Pull Request Connector</span>
                 <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-cyan-100 dark:bg-cyan-500/20 text-cyan-800 dark:text-cyan-300 border border-cyan-300 dark:border-cyan-500/30">
                   Live Sync
@@ -242,7 +242,7 @@ export function GitHubConnectorModal({
         </div>
 
         {/* Navigation Tabs */}
-        <div className="flex items-center gap-1 px-6 pt-3 border-b border-slate-200 dark:border-slate-700/80 bg-slate-50 dark:bg-[#0c1220]/60 text-xs">
+        <div className="flex items-center gap-1 px-3 sm:px-6 pt-2 sm:pt-3 border-b border-slate-200 dark:border-slate-700/80 bg-slate-50 dark:bg-[#0c1220]/60 text-xs overflow-x-auto no-scrollbar">
           <button
             type="button"
             onClick={() => setActiveTab('analyze')}
@@ -284,7 +284,7 @@ export function GitHubConnectorModal({
         </div>
 
         {/* Modal Body */}
-        <div className="p-6 overflow-y-auto space-y-5 flex-1">
+        <div className="p-4 sm:p-6 overflow-y-auto space-y-5 flex-1">
           {/* TAB 1: Analyze PR */}
           {activeTab === 'analyze' && (
             <div className="space-y-4">

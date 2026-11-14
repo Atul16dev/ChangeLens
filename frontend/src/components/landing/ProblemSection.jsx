@@ -275,15 +275,15 @@ export function ProblemSection() {
                 <span>Cascading Blast Path:</span>
                 <span className="text-rose-400 font-medium">Silent Regression</span>
               </div>
-              <div className="grid grid-cols-4 gap-1.5 text-center font-mono text-[10px]">
+              <div className="grid grid-cols-2 xs:grid-cols-4 gap-1.5 text-center font-mono text-[10px]">
                 <div className="p-1 rounded bg-slate-900 border border-slate-800 text-cyan-400 truncate">
-                  user.js
+                  1. user.js
                 </div>
                 <div className="p-1 rounded bg-slate-900 border border-slate-800 text-indigo-400 truncate">
-                  auth.js
+                  2. auth.js
                 </div>
                 <div className="p-1 rounded bg-slate-900 border border-slate-800 text-amber-400 truncate">
-                  session.js
+                  3. session.js
                 </div>
                 <div className="p-1 rounded bg-rose-950/60 border border-rose-500/50 text-rose-300 font-bold truncate">
                   💥 500 Outage

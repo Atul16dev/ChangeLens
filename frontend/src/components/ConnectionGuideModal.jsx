@@ -256,7 +256,7 @@ export function ConnectionGuideModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md transition-all animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-950/80 backdrop-blur-md transition-all animate-in fade-in duration-200"
       onClick={onClose}
     >
       <div
@@ -266,7 +266,7 @@ export function ConnectionGuideModal({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Top Header */}
-        <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800/80 bg-slate-50 dark:bg-slate-950/60 flex items-center justify-between">
+        <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-200 dark:border-slate-800/80 bg-slate-50 dark:bg-slate-950/60 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div
               className={`w-8 h-8 rounded-lg flex items-center justify-center shadow-inner ${theme.iconBox}`}
@@ -313,9 +313,9 @@ export function ConnectionGuideModal({
         </div>
 
         {/* Modal Main Content Area */}
-        <div className="p-6 overflow-y-auto space-y-6">
+        <div className="p-4 sm:p-6 overflow-y-auto space-y-4 sm:space-y-6">
           {/* Step Detail Card */}
-          <div className="bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800/90 rounded-xl p-5 shadow-inner">
+          <div className="bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800/90 rounded-xl p-3.5 sm:p-5 shadow-inner">
             <div className="flex items-start gap-3.5">
               <div
                 className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs shrink-0 ${theme.stepCircle}`}
@@ -410,7 +410,7 @@ export function ConnectionGuideModal({
         </div>
 
         {/* Modal Footer Controls */}
-        <div className="px-6 py-3.5 border-t border-slate-200 dark:border-slate-800/80 bg-slate-50 dark:bg-slate-950/60 flex items-center justify-between">
+        <div className="px-4 sm:px-6 py-3 sm:py-3.5 border-t border-slate-200 dark:border-slate-800/80 bg-slate-50 dark:bg-slate-950/60 flex items-center justify-between">
           <button
             type="button"
             onClick={() => setActiveStep((prev) => Math.max(0, prev - 1))}

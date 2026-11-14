@@ -11,6 +11,7 @@ import {
   X,
   Code,
   ArrowRight,
+  ArrowLeft,
   Sparkles,
   Copy,
   Check,
@@ -28,6 +29,8 @@ import {
   Search,
   LayoutGrid,
   List,
+  Maximize2,
+  Minimize2,
 } from 'lucide-react';
 import { downloadText, downloadJson, printOrSavePDF } from '../utils/export.js';
 
@@ -47,12 +50,14 @@ export function ImpactSidebar({
   onExitSimulation,
   isMobileOpen = false,
   onCloseMobile,
+  isFullMobileView = false,
 }) {
   const [activeMainTab, setActiveMainTab] = useState('findings'); // 'findings' | 'ai_review'
   const [activeFilterTab, setActiveFilterTab] = useState('all'); // 'all' | 'critical' | 'direct' | 'transitive'
   const [copied, setCopied] = useState(false);
   const [findingSearchQuery, setFindingSearchQuery] = useState('');
   const [viewLayout, setViewLayout] = useState('auto'); // 'auto' | 'grid' | 'list'
+  const [isCardsExpanded, setIsCardsExpanded] = useState(false);
 
   // Resizable sidebar state with localStorage persistence
   const [sidebarWidth, setSidebarWidth] = useState(() => {
@@ -305,8 +310,8 @@ export function ImpactSidebar({
         <div className="fixed inset-0 z-[60] cursor-col-resize select-none pointer-events-auto" />
       )}
 
-      {/* Mobile Drawer Backdrop */}
-      {isMobileOpen && (
+      {/* Mobile Drawer Backdrop (ONLY for slide-over drawer mode, NEVER for full-width mobile view) */}
+      {!isFullMobileView && isMobileOpen && (
         <div
           onClick={onCloseMobile}
           className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 lg:hidden animate-in fade-in duration-200"
@@ -319,10 +324,18 @@ export function ImpactSidebar({
         style={{
           width: isDesktop ? `${sidebarWidth}px` : undefined,
         }}
-        className={`fixed top-0 right-0 bottom-0 z-50 w-full sm:w-[420px] lg:static lg:z-auto h-full bg-white dark:bg-[#0e1422] border-l border-slate-200 dark:border-slate-700/80 flex flex-col backdrop-blur-xl shrink-0 select-none shadow-2xl relative ${
+        className={`${
+          isFullMobileView
+            ? 'w-full relative inset-auto z-10'
+            : 'fixed inset-y-0 right-0 z-[60] w-full sm:w-[420px] lg:relative lg:inset-auto lg:z-auto'
+        } h-full bg-white dark:bg-[#0e1422] border-l border-slate-200 dark:border-slate-700/80 flex flex-col shrink-0 select-none shadow-2xl ${
           isDragging ? 'transition-none select-none' : 'transition-[width,transform] duration-200 ease-out'
         } ${
-          isMobileOpen ? 'translate-x-0 shadow-2xl' : 'translate-x-full lg:translate-x-0'
+          isFullMobileView
+            ? 'translate-x-0'
+            : isMobileOpen
+            ? 'translate-x-0 shadow-2xl'
+            : 'translate-x-full lg:translate-x-0'
         }`}
       >
         {/* Left Edge Resizable Drag Handle (Desktop Only) */}
@@ -494,36 +507,26 @@ export function ImpactSidebar({
               )}
             </button>
           )}
-
-          {onCloseMobile && (
-            <button
-              type="button"
-              onClick={onCloseMobile}
-              className="lg:hidden p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
-              title="Close sidebar"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          )}
         </div>
 
       {/* TAB 1: AST FINDINGS VIEW */}
       {activeMainTab === 'findings' && (
         <>
           {/* Metrics Banner */}
-          <div className="p-4 border-b border-slate-200 dark:border-slate-700/80 bg-slate-50 dark:bg-[#0d1322]">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <ShieldAlert className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
-                Blast Radius Impact
-              </h2>
-              <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-white dark:bg-[#162035] text-cyan-800 dark:text-cyan-300 border border-slate-200 dark:border-slate-700 font-semibold shadow-sm">
-                {summary.totalImpactedFiles} Files Impacted
-              </span>
-            </div>
+          {!isCardsExpanded && (
+            <div className="p-4 border-b border-slate-200 dark:border-slate-700/80 bg-slate-50 dark:bg-[#0d1322] animate-in fade-in duration-200">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  <ShieldAlert className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
+                  Blast Radius Impact
+                </h2>
+                <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-white dark:bg-[#162035] text-cyan-800 dark:text-cyan-300 border border-slate-200 dark:border-slate-700 font-semibold shadow-sm">
+                  {summary.totalImpactedFiles} Files Impacted
+                </span>
+              </div>
 
-            {/* 4 Stat Cards – Responsive grid (4 cols when wide, 2 cols when narrow) */}
-            <div className={`grid gap-2 ${sidebarWidth >= 600 ? 'grid-cols-4' : 'grid-cols-2'}`}>
+            {/* 4 Stat Cards – Responsive grid (4 cols when wide / tablet, 2 cols when narrow phone) */}
+            <div className={`grid gap-2 grid-cols-2 ${sidebarWidth >= 600 || isFullMobileView ? 'sm:grid-cols-4' : ''}`}>
               <div
                 onClick={() => setActiveFilterTab(activeFilterTab === 'critical' ? 'all' : 'critical')}
                 className={`p-2.5 rounded-xl border cursor-pointer transition-all ${
@@ -710,6 +713,7 @@ export function ImpactSidebar({
               </div>
             )}
           </div>
+        )}
 
           {/* Quick Search for 120+ Findings */}
           <div className="px-3.5 py-1.5 bg-slate-100/80 dark:bg-[#0a0e1a] border-b border-slate-200 dark:border-slate-700/80 flex items-center gap-2">
@@ -741,8 +745,8 @@ export function ImpactSidebar({
           </div>
 
           {/* Filter Bar */}
-          <div className="px-4 py-2 bg-slate-50 dark:bg-[#0c1220] border-b border-slate-200 dark:border-slate-700/80 flex items-center justify-between text-xs text-slate-700 dark:text-slate-300">
-            <div className="flex items-center gap-2">
+          <div className="px-4 py-2 bg-slate-50 dark:bg-[#0c1220] border-b border-slate-200 dark:border-slate-700/80 flex items-center justify-between text-xs text-slate-700 dark:text-slate-300 gap-1.5 flex-wrap">
+            <div className="flex items-center gap-2 shrink-0">
               <span>
                 Showing <strong className="text-slate-900 dark:text-white font-semibold">{filteredFindings.length}</strong> findings
               </span>
@@ -754,7 +758,31 @@ export function ImpactSidebar({
                 <Download className="w-3 h-3" />
               </button>
             </div>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 shrink-0">
+              {/* Expand Cards Toggle for Full Screen Height */}
+              <button
+                type="button"
+                onClick={() => setIsCardsExpanded((prev) => !prev)}
+                className={`px-2 py-0.5 rounded-lg text-[11px] font-semibold flex items-center gap-1 transition-all cursor-pointer border ${
+                  isCardsExpanded
+                    ? 'bg-cyan-600 text-white border-cyan-500 shadow-sm'
+                    : 'bg-white dark:bg-[#151f33] text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800'
+                }`}
+                title={isCardsExpanded ? 'Restore 4 stat boxes' : 'Expand findings cards to cover full screen height'}
+              >
+                {isCardsExpanded ? (
+                  <>
+                    <Minimize2 className="w-3 h-3 text-white" />
+                    <span>Stats</span>
+                  </>
+                ) : (
+                  <>
+                    <Maximize2 className="w-3 h-3 text-cyan-600 dark:text-cyan-400" />
+                    <span>Expand</span>
+                  </>
+                )}
+              </button>
+
               {/* Grid / List Layout Switcher when sidebar is wide */}
               {sidebarWidth >= 600 && (
                 <div className="flex items-center bg-slate-200/80 dark:bg-slate-800 p-0.5 rounded-lg mr-1 border border-slate-300 dark:border-slate-700">
@@ -896,9 +924,9 @@ export function ImpactSidebar({
                         )}
 
                         {finding.symbolImpact?.impactedSymbols?.length > 0 && (
-                          <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-indigo-950/80 text-indigo-300 border border-indigo-700/60 flex items-center gap-1">
-                            <Zap className="w-2.5 h-2.5 text-indigo-400" />
-                            Symbols: {finding.symbolImpact.impactedSymbols.join(', ')}
+                          <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-indigo-950/80 text-indigo-300 border border-indigo-700/60 flex items-center gap-1 break-all">
+                            <Zap className="w-2.5 h-2.5 text-indigo-400 shrink-0" />
+                            <span>Symbols: {finding.symbolImpact.impactedSymbols.join(', ')}</span>
                           </span>
                         )}
                       </div>
@@ -909,7 +937,7 @@ export function ImpactSidebar({
                     </div>
 
                     <div className="flex items-center justify-between gap-2 mb-1.5">
-                      <div className="font-mono text-xs font-semibold text-slate-100 truncate" title={file}>
+                      <div className="font-mono text-xs font-semibold text-slate-900 dark:text-slate-100 break-all" title={file}>
                         {file}
                       </div>
                       {onSimulateNode && file !== simulatedFile && (
@@ -927,7 +955,7 @@ export function ImpactSidebar({
                       )}
                     </div>
 
-                    <p className="text-xs text-slate-300 mb-2 leading-relaxed">
+                    <p className="text-xs text-slate-600 dark:text-slate-300 mb-2 leading-relaxed break-words">
                       {explanation}
                     </p>
 

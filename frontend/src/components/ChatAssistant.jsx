@@ -680,11 +680,11 @@ export function ChatAssistant({ analysisId, selectedNodeId, isSimulating, simula
 
   return (
     <>
-      {/* Floating Trigger Button (Always Fixed in Workspace) */}
-      <div className="absolute bottom-4 right-4 z-40 select-none">
+      {/* Floating Trigger Button (Always Fixed in Workspace with Safe Area) */}
+      <div className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 z-40 select-none pb-[env(safe-area-inset-bottom)] pr-[env(safe-area-inset-right)]">
         <button
           onClick={() => setIsOpen((prev) => !prev)}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-full text-white font-semibold text-xs shadow-xl active:scale-95 transition-all cursor-pointer border whitespace-nowrap ${
+          className={`flex items-center gap-1.5 sm:gap-2 px-2.5 py-1.5 sm:px-3.5 sm:py-2 rounded-full text-white font-semibold text-xs shadow-xl active:scale-95 transition-all cursor-pointer border whitespace-nowrap ${
             isOpen
               ? 'bg-slate-800/90 border-cyan-500/60 shadow-cyan-500/20 text-cyan-300 ring-2 ring-cyan-500/30'
               : 'bg-gradient-to-r from-purple-600 via-indigo-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 shadow-purple-600/30 hover:shadow-cyan-500/40 hover:scale-105 border-white/20'
@@ -695,7 +695,8 @@ export function ChatAssistant({ analysisId, selectedNodeId, isSimulating, simula
             <Sparkles className="w-3.5 h-3.5 text-amber-300 animate-spin-slow" />
             <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
           </div>
-          <span>{isOpen ? 'ChangeLens AI (Open)' : 'Ask ChangeLens AI'}</span>
+          <span className="hidden sm:inline">{isOpen ? 'ChangeLens AI (Open)' : 'Ask ChangeLens AI'}</span>
+          <span className="sm:hidden">{isOpen ? 'AI (Open)' : 'Ask AI'}</span>
         </button>
       </div>
 
@@ -712,9 +713,9 @@ export function ChatAssistant({ analysisId, selectedNodeId, isSimulating, simula
                   position: 'fixed',
                   left: '8px',
                   right: '8px',
-                  top: '56px',
+                  top: '52px',
                   bottom: '12px',
-                  zIndex: 50,
+                  zIndex: 70,
                 }
               : isMaximized
               ? {
@@ -740,7 +741,7 @@ export function ChatAssistant({ analysisId, selectedNodeId, isSimulating, simula
                   willChange: 'transform, width, height',
                 }
           }
-          className="bg-white dark:bg-[#101726]/98 border border-slate-200 dark:border-slate-700/90 rounded-2xl shadow-2xl backdrop-blur-xl flex flex-col overflow-hidden ring-1 ring-cyan-500/20"
+          className="bg-white dark:bg-[#101726]/95 border border-slate-200 dark:border-slate-700/90 rounded-2xl shadow-2xl backdrop-blur-xl flex flex-col overflow-hidden ring-1 ring-cyan-500/20"
         >
           {/* Edge and Corner Resize Handles (Desktop Only & Non-Maximized Only) */}
           {!isMobile && !isMaximized && (
@@ -819,16 +820,16 @@ export function ChatAssistant({ analysisId, selectedNodeId, isSimulating, simula
               <div>
                 <div className="flex items-center gap-1.5">
                   <span className="font-bold text-xs text-slate-900 dark:text-white">ChangeLens AI</span>
-                  <h3 className="text-xs font-bold text-white tracking-tight">ChangeLens Copilot</h3>
+                  <h3 className="text-xs font-bold text-slate-700 dark:text-white tracking-tight">ChangeLens Copilot</h3>
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
                 </div>
-                <p className="text-[10px] text-slate-400">Context-Aware AST Assistant</p>
+                <p className="text-[10px] text-slate-500 dark:text-slate-400">Context-Aware AST Assistant</p>
               </div>
             </div>
 
             {/* Draggable hint icon */}
-            <div className="hidden sm:flex items-center gap-1.5 text-slate-500 hover:text-slate-300 px-2 py-0.5 rounded-md bg-slate-900/60 border border-slate-800 text-[10px] font-mono pointer-events-none">
-              <Move className="w-2.5 h-2.5 text-cyan-400" />
+            <div className="hidden sm:flex items-center gap-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 text-[10px] font-mono pointer-events-none">
+              <Move className="w-2.5 h-2.5 text-cyan-600 dark:text-cyan-400" />
               <span>{isMaximized ? 'Maximized' : 'Drag to move'}</span>
             </div>
 
@@ -843,7 +844,7 @@ export function ChatAssistant({ analysisId, selectedNodeId, isSimulating, simula
                   e.stopPropagation();
                 }}
                 title={isMaximized ? 'Restore Size' : 'Maximize Window'}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-cyan-300 hover:bg-slate-800 transition-colors"
+                className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-cyan-600 dark:hover:text-cyan-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
               >
                 {isMaximized ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
               </button>
@@ -863,7 +864,7 @@ export function ChatAssistant({ analysisId, selectedNodeId, isSimulating, simula
                 }}
                 onDoubleClick={(e) => e.stopPropagation()}
                 title="Clear Conversation"
-                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
+                className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
               </button>
@@ -876,7 +877,7 @@ export function ChatAssistant({ analysisId, selectedNodeId, isSimulating, simula
                 }}
                 onDoubleClick={(e) => e.stopPropagation()}
                 title="Close Assistant"
-                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+                className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -885,14 +886,14 @@ export function ChatAssistant({ analysisId, selectedNodeId, isSimulating, simula
 
           {/* Active Graph Selection Indicator */}
           {selectedNodeId && (
-            <div className="px-3.5 py-1.5 bg-cyan-950/40 border-b border-cyan-800/40 text-[11px] text-cyan-300 flex items-center justify-between shrink-0">
+            <div className="px-3.5 py-1.5 bg-cyan-50 dark:bg-cyan-950/40 border-b border-cyan-200 dark:border-cyan-800/40 text-[11px] text-cyan-700 dark:text-cyan-300 flex items-center justify-between shrink-0">
               <span className="flex items-center gap-1.5 truncate">
-                <FileCode className="w-3 h-3 text-cyan-400 shrink-0" />
+                <FileCode className="w-3 h-3 text-cyan-600 dark:text-cyan-400 shrink-0" />
                 <span className="truncate">
                   Selected Node: <strong className="font-mono">{selectedNodeId}</strong>
                 </span>
               </span>
-              <span className="text-[10px] text-cyan-400/80 font-mono">In Scope</span>
+              <span className="text-[10px] text-cyan-600/80 dark:text-cyan-400/80 font-mono">In Scope</span>
             </div>
           )}
 
@@ -904,8 +905,8 @@ export function ChatAssistant({ analysisId, selectedNodeId, isSimulating, simula
                 className={`flex gap-2.5 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 {msg.role === 'assistant' && (
-                  <div className="w-6 h-6 rounded-md bg-purple-600/30 border border-purple-500/40 flex items-center justify-center shrink-0 mt-0.5">
-                    <Bot className="w-3.5 h-3.5 text-purple-300" />
+                  <div className="w-6 h-6 rounded-md bg-purple-100 dark:bg-purple-600/30 border border-purple-300 dark:border-purple-500/40 flex items-center justify-center shrink-0 mt-0.5">
+                    <Bot className="w-3.5 h-3.5 text-purple-600 dark:text-purple-300" />
                   </div>
                 )}
 

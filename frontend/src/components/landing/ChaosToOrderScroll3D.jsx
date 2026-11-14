@@ -479,7 +479,8 @@ export function ChaosToOrderScroll3D() {
             <div className="relative rounded-2xl bg-gradient-to-br from-slate-100 via-sky-50/60 to-indigo-50/70 dark:from-[#0a101d] dark:via-[#0d1526] dark:to-[#090e1a] border border-slate-200 dark:border-slate-800 shadow-lg dark:shadow-2xl overflow-hidden">
               <div
                 ref={canvasHostRef}
-                className="w-full h-[300px] sm:h-[380px] lg:h-[430px]"
+                style={{ touchAction: 'pan-y' }}
+                className="w-full h-[280px] xs:h-[320px] sm:h-[380px] lg:h-[430px]"
               />
 
               {/* Top-left Phase Indicator */}

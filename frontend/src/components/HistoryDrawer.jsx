@@ -118,7 +118,7 @@ export function HistoryDrawer({ isOpen, onClose, onLoadAnalysis, currentAnalysis
     <div className="fixed inset-0 z-50 overflow-hidden bg-slate-950/70 backdrop-blur-sm transition-opacity">
       <div className="absolute inset-0" onClick={onClose} />
 
-      <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
+      <div className="fixed inset-y-0 right-0 max-w-full flex sm:pl-10 pl-0">
         <aside
           role="dialog"
           aria-modal="true"
@@ -126,7 +126,7 @@ export function HistoryDrawer({ isOpen, onClose, onLoadAnalysis, currentAnalysis
           className="w-screen max-w-xl bg-white dark:bg-[#101726] border-l border-slate-200 dark:border-slate-700/80 shadow-2xl flex flex-col relative z-10"
         >
           {/* Header */}
-          <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700/80 bg-white dark:bg-[#0c1220]/95 backdrop-blur-md flex items-center justify-between gap-4">
+          <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-200 dark:border-slate-700/80 bg-white dark:bg-[#0c1220]/95 backdrop-blur-md flex items-center justify-between gap-3 sm:gap-4">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-lg bg-cyan-100 dark:bg-cyan-500/10 border border-cyan-200 dark:border-cyan-500/20 flex items-center justify-center text-cyan-700 dark:text-cyan-400">
                 <History className="w-5 h-5" />
@@ -172,7 +172,7 @@ export function HistoryDrawer({ isOpen, onClose, onLoadAnalysis, currentAnalysis
           </div>
 
           {/* 30-Day Auto-Deletion Policy Notice Banner */}
-          <div className="px-5 py-3 bg-indigo-50 dark:bg-gradient-to-r dark:from-indigo-950/80 dark:via-[#131d2e] dark:to-indigo-950/50 border-b border-indigo-200 dark:border-indigo-700/40 flex items-start gap-3">
+          <div className="px-4 sm:px-5 py-2.5 sm:py-3 bg-indigo-50 dark:bg-gradient-to-r dark:from-indigo-950/80 dark:via-[#131d2e] dark:to-indigo-950/50 border-b border-indigo-200 dark:border-indigo-700/40 flex items-start gap-2.5 sm:gap-3">
             <div className="p-1 rounded-md bg-indigo-100 dark:bg-indigo-500/15 border border-indigo-200 dark:border-indigo-500/25 text-indigo-700 dark:text-indigo-400 shrink-0 mt-0.5">
               <Clock className="w-4 h-4" />
             </div>

@@ -200,6 +200,7 @@ export function GraphGalaxy3D({
   const [searchQuery, setSearchQuery] = useState('');
   const [isIsolated, setIsIsolated] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
+  const [showMobileLegend, setShowMobileLegend] = useState(false);
 
   // Live refs so hot animation loop reads hover/selection/search/autoRotate without rebuilding the scene
   const hoveredIdRef = useRef(null);
@@ -277,8 +278,8 @@ export function GraphGalaxy3D({
 
     // ── Scene Setup ──────────────────────────────────────────────────────────
     const scene = new THREE.Scene();
-    // Matches 2D graph background gradient tone seamlessly
-    scene.fog = new THREE.FogExp2(isDark ? 0x080d19 : 0xb5c2d3, 0.003);
+    // Matches 2D graph background gradient tone seamlessly (subtle fog preserves distant nodes on extreme zoom-out)
+    scene.fog = new THREE.FogExp2(isDark ? 0x080d19 : 0xb5c2d3, 0.0008);
 
     const W = container.clientWidth || 900;
     const H = container.clientHeight || 650;
@@ -291,7 +292,7 @@ export function GraphGalaxy3D({
       scene.background = darkSpaceTex;
     }
 
-    const camera = new THREE.PerspectiveCamera(42, W / H, 0.1, 1200);
+    const camera = new THREE.PerspectiveCamera(42, W / H, 0.1, 2500);
     const DEFAULT_CAM = new THREE.Vector3(0, 12, 55);
     const cameraTarget = new THREE.Vector3(0, 0, 0);
     camera.position.copy(DEFAULT_CAM);
@@ -807,29 +808,86 @@ export function GraphGalaxy3D({
       }
     };
 
-    const onWheel = (e) => { e.preventDefault(); sphDelta.r += e.deltaY * 0.018; };
+    const onWheel = (e) => {
+      e.preventDefault();
+      sphDelta.r += e.deltaY * Math.max(0.016, sph.radius * 0.0006);
+    };
     const onCtx = (e) => e.preventDefault();
 
-    // Mobile / tablet single-touch drag-to-orbit support
+    // Mobile / tablet touch interactions: orbit, two-finger pinch-to-zoom, tap-to-select
     let touchLast = null;
+    let initialPinchDist = null;
+    let touchStartTime = 0;
+    let touchStartPos = { x: 0, y: 0 };
+    let hasMovedSignificantly = false;
+
     const onTouchStart = (e) => {
-      if (e.touches.length === 1 && e.target === renderer.domElement) {
+      if (e.target !== renderer.domElement) return;
+
+      if (e.touches.length === 1) {
         touchLast = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        touchStartPos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        touchStartTime = Date.now();
+        hasMovedSignificantly = false;
         isDown = true;
+      } else if (e.touches.length === 2) {
+        initialPinchDist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        touchLast = null;
       }
     };
+
     const onTouchMove = (e) => {
       if (e.touches.length === 1 && touchLast) {
         const dx = e.touches[0].clientX - touchLast.x;
         const dy = e.touches[0].clientY - touchLast.y;
+        if (Math.hypot(dx, dy) > 8) {
+          hasMovedSignificantly = true;
+        }
         touchLast = { x: e.touches[0].clientX, y: e.touches[0].clientY };
         sphDelta.theta -= dx * 0.005;
         sphDelta.phi -= dy * 0.005;
+      } else if (e.touches.length === 2 && initialPinchDist !== null) {
+        const currentPinchDist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        const pinchDelta = initialPinchDist - currentPinchDist;
+        sphDelta.r += pinchDelta * Math.max(0.06, sph.radius * 0.0018);
+        initialPinchDist = currentPinchDist;
       }
     };
-    const onTouchEnd = () => {
-      touchLast = null;
-      isDown = false;
+
+    const onTouchEnd = (e) => {
+      // Tap detection (quick touch without significant movement)
+      if (!hasMovedSignificantly && Date.now() - touchStartTime < 350 && touchStartPos) {
+        const rect = container.getBoundingClientRect();
+        ptr.x = ((touchStartPos.x - rect.left) / rect.width) * 2 - 1;
+        ptr.y = -((touchStartPos.y - rect.top) / rect.height) * 2 + 1;
+        ray.setFromCamera(ptr, camera);
+        const hits = ray.intersectObjects(hitMeshes);
+        if (hits.length > 0) {
+          const clicked = hits[0].object.userData?.node;
+          if (clicked) {
+            setActiveSelectedNode(clicked);
+            if (onSelectNode) onSelectNode(clicked.id);
+          }
+        } else {
+          setActiveSelectedNode(null);
+          if (onSelectNode) onSelectNode(null);
+        }
+      }
+
+      if (e.touches.length === 0) {
+        touchLast = null;
+        initialPinchDist = null;
+        isDown = false;
+      } else if (e.touches.length === 1) {
+        touchLast = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        initialPinchDist = null;
+      }
     };
 
     container.addEventListener('mousedown', onDown);
@@ -879,8 +937,8 @@ export function GraphGalaxy3D({
       const dir = camera.position.clone().sub(cameraTarget).normalize();
       tween(p.clone().add(dir.multiplyScalar(14)), p);
     };
-    camRef.current.zoomIn = () => { sphDelta.r -= 5; };
-    camRef.current.zoomOut = () => { sphDelta.r += 5; };
+    camRef.current.zoomIn = () => { sphDelta.r -= Math.max(5, sph.radius * 0.16); };
+    camRef.current.zoomOut = () => { sphDelta.r += Math.max(6, sph.radius * 0.20); };
     camRef.current.resetLayout = () => {
       defMap.forEach((orig, id) => {
         posMap.set(id, orig.clone());
@@ -952,7 +1010,7 @@ export function GraphGalaxy3D({
         sph.phi += sphDelta.phi;
         sph.radius += sphDelta.r;
         sph.phi = THREE.MathUtils.clamp(sph.phi, 0.08, Math.PI - 0.08);
-        sph.radius = THREE.MathUtils.clamp(sph.radius, 8, 90);
+        sph.radius = THREE.MathUtils.clamp(sph.radius, 3.5, 480);
         sphDelta.theta *= 0.90;
         sphDelta.phi *= 0.90;
         sphDelta.r *= 0.88;
@@ -1133,10 +1191,10 @@ export function GraphGalaxy3D({
       <div className={`absolute bottom-1/3 right-1/4 w-[400px] h-[400px] rounded-full blur-[160px] pointer-events-none ${isDark ? 'bg-violet-500/10' : 'bg-slate-500/20'}`} />
 
       {/* WebGL Canvas */}
-      <div ref={containerRef} className="w-full h-full absolute inset-0 cursor-grab active:cursor-grabbing" />
+      <div ref={containerRef} className="w-full h-full absolute inset-0 cursor-grab active:cursor-grabbing touch-none" />
 
       {/* ── TOP BAR: Left side – Dimension switch + Filters + Search ───────── */}
-      <div className="absolute top-3 left-3 z-20 flex flex-wrap items-center gap-1.5 pointer-events-auto max-w-[calc(100%-200px)]">
+      <div className="absolute top-2 sm:top-3 left-2 sm:left-3 z-20 flex flex-wrap items-center gap-1 sm:gap-1.5 pointer-events-auto max-w-[calc(100vw-1rem)] sm:max-w-[calc(100%-200px)]">
 
         {/* 2D/3D Toggle */}
         {onToggleDimension && (
@@ -1206,8 +1264,8 @@ export function GraphGalaxy3D({
       </div>
 
       {/* ── LEFT VERTICAL CAMERA TOOLBAR ───────────────────────────────────── */}
-      {/* Placed on left-center so it never overlaps AI chat on the right */}
-      <div className="absolute left-3 top-1/2 -translate-y-1/2 z-20 pointer-events-auto flex flex-col items-center gap-1.5">
+      {/* Positioned comfortably near bottom-left on mobile, centered vertically on desktop */}
+      <div className="absolute left-3 bottom-5 sm:bottom-6 sm:top-1/2 sm:-translate-y-1/2 z-20 pointer-events-auto flex flex-col items-center gap-1 sm:gap-1.5 max-h-[55vh] overflow-y-auto no-scrollbar">
         <div className="flex flex-col items-center bg-white/95 dark:bg-slate-900/95 border border-slate-200 dark:border-slate-700/80 rounded-2xl shadow-2xl backdrop-blur-md p-1 gap-0.5">
 
           <button type="button" onClick={() => camRef.current.zoomIn?.()}
@@ -1254,6 +1312,16 @@ export function GraphGalaxy3D({
 
           <div className="w-full h-px bg-slate-200 dark:bg-slate-700/80 my-0.5" />
 
+          {/* Mobile Legend Toggle in Toolbar */}
+          <button
+            type="button"
+            onClick={() => setShowMobileLegend((p) => !p)}
+            className="sm:hidden p-2 rounded-xl hover:bg-cyan-50 dark:hover:bg-cyan-950/40 text-cyan-600 dark:text-cyan-400 transition-colors cursor-pointer"
+            title="Toggle Node Shapes & Tiers Legend"
+          >
+            <Layers className="w-4 h-4" />
+          </button>
+
           <button type="button" onClick={() => setAutoRotate((p) => !p)}
             className={`p-2 rounded-xl transition-colors cursor-pointer ${autoRotate ? 'bg-cyan-500/20 text-cyan-600 dark:text-cyan-300' : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
             title={autoRotate ? 'Stop Auto Rotate' : 'Start Auto Rotate'}>
@@ -1281,8 +1349,8 @@ export function GraphGalaxy3D({
           </button>
         </div>
 
-        {/* XYZ Orientation Gizmo (below toolbar) */}
-        <div className="mt-1 w-14 h-14 rounded-2xl bg-white/90 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-700/80 shadow-lg backdrop-blur-md flex items-center justify-center p-1" title="Camera Orientation">
+        {/* XYZ Orientation Gizmo (below toolbar on desktop) */}
+        <div className="hidden sm:flex mt-1 w-14 h-14 rounded-2xl bg-white/90 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-700/80 shadow-lg backdrop-blur-md items-center justify-center p-1" title="Camera Orientation">
           <canvas ref={gizmoRef} width={52} height={52} className="w-full h-full" />
         </div>
       </div>
@@ -1309,6 +1377,40 @@ export function GraphGalaxy3D({
           ))}
         </div>
       </div>
+
+      {/* ── MOBILE COLLAPSIBLE NODE SHAPES & TIERS POPUP ── */}
+      {showMobileLegend && (
+        <div className="sm:hidden absolute inset-x-3 bottom-14 z-30 p-3 rounded-2xl bg-white/95 dark:bg-[#0f172a]/95 border border-slate-200 dark:border-slate-700/80 shadow-2xl backdrop-blur-xl animate-fade-in pointer-events-auto">
+          <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-200 dark:border-slate-700/60">
+            <div className="flex items-center gap-1.5 font-bold text-xs text-slate-900 dark:text-white">
+              <Layers className="w-3.5 h-3.5 text-cyan-500" />
+              <span>Node Shapes &amp; Tiers</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowMobileLegend(false)}
+              className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-white"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            {[
+              { shape: '◆', label: 'Root Changed', color: 'text-amber-500' },
+              { shape: '✦', label: 'Critical', color: 'text-rose-500' },
+              { shape: '▲', label: 'High Impact', color: 'text-orange-500' },
+              { shape: '■', label: 'Medium Risk', color: 'text-cyan-500' },
+              { shape: '⬤', label: 'Impacted File', color: 'text-emerald-500' },
+              { shape: '●', label: 'Clean / Stable', color: 'text-slate-500' },
+            ].map(({ shape, label, color }) => (
+              <div key={label} className="flex items-center gap-1.5 p-1 rounded-lg bg-slate-50 dark:bg-slate-800/60 text-[11px] text-slate-700 dark:text-slate-300">
+                <span className={`${color} text-sm font-bold`}>{shape}</span>
+                <span>{label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* ── HELP MODAL ──────────────────────────────────────────────────────── */}
       {showHelp && (

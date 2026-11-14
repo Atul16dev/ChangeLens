@@ -81,12 +81,12 @@ npm test tests/auth.test.js
         </ScrollReveal>
 
         {/* Tab Controls (Smooth horizontal swipe on mobile) */}
-        <ScrollReveal animation="fade-down" delay={100} duration={650} className="flex items-center justify-center mb-6 sm:mb-8">
-          <div className="inline-flex items-center p-1 sm:p-1.5 rounded-xl bg-[#101726] border border-slate-700/80 shadow-inner overflow-x-auto max-w-full gap-1">
+        <ScrollReveal animation="fade-down" delay={100} duration={650} className="flex items-center justify-center mb-6 sm:mb-8 w-full">
+          <div className="inline-flex items-center p-1 sm:p-1.5 rounded-xl bg-[#101726] border border-slate-700/80 shadow-inner overflow-x-auto max-w-full gap-1 no-scrollbar">
             <button
               type="button"
               onClick={() => setActiveTab('graph')}
-              className={`flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all shrink-0 ${
+              className={`flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all shrink-0 min-h-[36px] ${
                 activeTab === 'graph'
                   ? 'bg-cyan-600 text-white shadow-md shadow-cyan-600/30'
                   : 'text-slate-400 hover:text-slate-200'
@@ -98,7 +98,7 @@ npm test tests/auth.test.js
             <button
               type="button"
               onClick={() => setActiveTab('symbols')}
-              className={`flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all shrink-0 ${
+              className={`flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all shrink-0 min-h-[36px] ${
                 activeTab === 'symbols'
                   ? 'bg-cyan-600 text-white shadow-md shadow-cyan-600/30'
                   : 'text-slate-400 hover:text-slate-200'
@@ -110,7 +110,7 @@ npm test tests/auth.test.js
             <button
               type="button"
               onClick={() => setActiveTab('ai')}
-              className={`flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all shrink-0 ${
+              className={`flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all shrink-0 min-h-[36px] ${
                 activeTab === 'ai'
                   ? 'bg-cyan-600 text-white shadow-md shadow-cyan-600/30'
                   : 'text-slate-400 hover:text-slate-200'
@@ -122,7 +122,7 @@ npm test tests/auth.test.js
             <button
               type="button"
               onClick={() => setActiveTab('whatif')}
-              className={`flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all shrink-0 ${
+              className={`flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all shrink-0 min-h-[36px] ${
                 activeTab === 'whatif'
                   ? 'bg-cyan-600 text-white shadow-md shadow-cyan-600/30'
                   : 'text-slate-400 hover:text-slate-200'
@@ -209,7 +209,7 @@ npm test tests/auth.test.js
 
               {/* Conditional 2D vs 3D View */}
               {previewDimension === '3D' ? (
-                <div className="w-full h-[380px] rounded-2xl overflow-hidden relative border border-slate-700/80 shadow-2xl">
+                <div className="w-full h-[280px] xs:h-[330px] sm:h-[380px] rounded-2xl overflow-hidden relative border border-slate-700/80 shadow-2xl">
                   <GraphGalaxy3D
                     graphData={PREVIEW_GRAPH_DATA}
                     selectedNodeId={selectedNode}

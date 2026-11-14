@@ -31,12 +31,14 @@ export function LandingPage() {
   }, [location.search, navigate, refreshUser]);
 
   return (
-    <div className="min-h-screen bg-white dark:bg-[#0b0f19] text-slate-900 dark:text-slate-100 font-sans selection:bg-cyan-500/30 selection:text-cyan-200 relative overflow-x-hidden">
-      {/* Permanent Ambient Background Grid & Floating Glow Orbs */}
-      <div className="fixed inset-0 pointer-events-none z-0 bg-grid-pattern opacity-60" />
-      <div className="fixed top-[-10%] left-[-10%] w-[600px] h-[600px] bg-cyan-600/10 rounded-full blur-[160px] pointer-events-none animate-pulse-glow z-0" />
-      <div className="fixed top-[40%] right-[-10%] w-[550px] h-[550px] bg-indigo-600/10 rounded-full blur-[160px] pointer-events-none animate-float-slow z-0" />
-      <div className="fixed bottom-[-10%] left-[20%] w-[650px] h-[650px] bg-violet-600/10 rounded-full blur-[170px] pointer-events-none animate-float-reverse z-0" />
+    <div className="min-h-screen bg-white dark:bg-[#0b0f19] text-slate-900 dark:text-slate-100 font-sans selection:bg-cyan-500/30 selection:text-cyan-200 relative overflow-x-hidden w-full max-w-full">
+      {/* Permanent Ambient Background Grid & Floating Glow Orbs (contained to prevent viewport expansion) */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        <div className="absolute inset-0 bg-grid-pattern opacity-60" />
+        <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-cyan-600/10 rounded-full blur-[160px] animate-pulse-glow" />
+        <div className="absolute top-[40%] right-[-10%] w-[550px] h-[550px] bg-indigo-600/10 rounded-full blur-[160px] animate-float-slow" />
+        <div className="absolute bottom-[-10%] left-[20%] w-[650px] h-[650px] bg-violet-600/10 rounded-full blur-[170px] animate-float-reverse" />
+      </div>
 
       {/* Fixed Navigation Header */}
       <Navbar />

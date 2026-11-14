@@ -516,7 +516,8 @@ export function AuthCanvas3D({ variant = 'login' }) {
   return (
     <div
       ref={panelRef}
-      className="relative w-full h-full min-h-[380px] sm:min-h-[420px] lg:min-h-screen overflow-hidden bg-gradient-to-br from-sky-100/80 via-slate-50 to-indigo-100/70 dark:from-[#040814] dark:via-[#071022] dark:to-[#0a1228] flex flex-col justify-between px-5 sm:px-8 xl:px-12 py-6 sm:py-8 select-none"
+      style={{ touchAction: 'pan-y' }}
+      className="relative w-full h-full min-h-[300px] xs:min-h-[350px] sm:min-h-[420px] lg:min-h-screen overflow-hidden bg-gradient-to-br from-sky-100/80 via-slate-50 to-indigo-100/70 dark:from-[#040814] dark:via-[#071022] dark:to-[#0a1228] flex flex-col justify-between px-4 sm:px-8 xl:px-12 py-5 sm:py-8 select-none"
     >
       {/* Subtle Architectural Grid & Seamless Edge-to-Edge Atmospheric Glow */}
       <div className="absolute inset-0 bg-grid-pattern opacity-35 dark:opacity-25 pointer-events-none" />
