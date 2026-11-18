@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { checkBridgeStatus, getBridgeChanges, runBridgeScan } from '../services/api.js';
 import { AstBlastLoaderOverlay } from './AstScannerLoader3D.jsx';
+import { FriendlyValidationModal } from './FriendlyValidationModal.jsx';
 
 export function LocalWorkshopSection({ onComplete, onFocusGuide }) {
   // Read session code from URL query string if present (e.g. ?session=CL-7842)
@@ -49,6 +50,22 @@ export function LocalWorkshopSection({ onComplete, onFocusGuide }) {
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [copiedCommand, setCopiedCommand] = useState(false);
+
+  // Compact Validation Popup Modal state
+  const [validationModal, setValidationModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    example: '',
+    iconType: 'alert',
+    secondaryActionLabel: '',
+    onSecondaryAction: null,
+    primaryActionLabel: 'Got it',
+    onPrimaryAction: null,
+  });
+
+  const closeValidationModal = () =>
+    setValidationModal((prev) => ({ ...prev, isOpen: false }));
 
   // Dynamic command generator:
   // On localhost: 'npx changelens connect --session=CL-...'
@@ -194,11 +211,64 @@ export function LocalWorkshopSection({ onComplete, onFocusGuide }) {
     return () => clearInterval(interval);
   }, [sessionCode, checkStatus]);
 
+  // Check session code manually
+  const handleCheckSession = () => {
+    const trimmed = sessionCode.trim();
+    if (!trimmed) {
+      setValidationModal({
+        isOpen: true,
+        title: 'Session Code Required',
+        message: 'Please enter the session pairing token shown in your terminal.',
+        example: 'CL-7842',
+        iconType: 'terminal',
+        secondaryActionLabel: '',
+        onSecondaryAction: null,
+        primaryActionLabel: 'Got it',
+        onPrimaryAction: () => {
+          closeValidationModal();
+          setTimeout(() => document.getElementById('bridge-session-input')?.focus(), 80);
+        },
+      });
+      return;
+    }
+    checkStatus(trimmed, false);
+  };
+
   // Trigger Blast Radius Scan
   const handleRunScan = async (e) => {
     e?.preventDefault();
     if (connectionStatus !== 'connected') {
-      setErrorMessage('Please connect your local terminal agent first using "npx changelens connect".');
+      setValidationModal({
+        isOpen: true,
+        title: 'Terminal Not Connected',
+        message: 'Connect your local project first by running the CLI command in your terminal.',
+        example: commandToRun,
+        iconType: 'terminal',
+        secondaryActionLabel: 'Copy Command',
+        onSecondaryAction: () => {
+          navigator.clipboard.writeText(commandToRun);
+          setCopiedCommand(true);
+          setTimeout(() => setCopiedCommand(false), 2200);
+          closeValidationModal();
+        },
+        primaryActionLabel: 'Got it',
+        onPrimaryAction: closeValidationModal,
+      });
+      return;
+    }
+
+    if (mode === 'manual' && !manualFiles.trim()) {
+      setValidationModal({
+        isOpen: true,
+        title: 'Changed Files Required',
+        message: 'Please enter at least one changed file path, or switch to Auto-Detect mode.',
+        example: 'server/models/user.js',
+        iconType: 'folder',
+        secondaryActionLabel: '',
+        onSecondaryAction: null,
+        primaryActionLabel: 'Got it',
+        onPrimaryAction: closeValidationModal,
+      });
       return;
     }
 
@@ -346,8 +416,8 @@ export function LocalWorkshopSection({ onComplete, onFocusGuide }) {
           />
           <button
             type="button"
-            onClick={() => checkStatus(sessionCode.trim(), false)}
-            disabled={connectionStatus === 'checking' || !sessionCode.trim()}
+            onClick={handleCheckSession}
+            disabled={connectionStatus === 'checking'}
             className="px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-[#1a253c] hover:bg-slate-200 dark:hover:bg-[#22304d] text-slate-800 dark:text-slate-100 hover:text-slate-900 dark:hover:text-white font-semibold text-xs border border-slate-300 dark:border-slate-600/80 transition-colors flex items-center gap-2 cursor-pointer disabled:opacity-50 outline-none focus:outline-none"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${connectionStatus === 'checking' ? 'animate-spin text-amber-500' : ''}`} />
@@ -553,7 +623,7 @@ export function LocalWorkshopSection({ onComplete, onFocusGuide }) {
         <button
           type="button"
           onClick={handleRunScan}
-          disabled={isScanning || connectionStatus !== 'connected'}
+          disabled={isScanning}
           className="w-full py-3.5 rounded-xl bg-gradient-to-r from-amber-600 via-orange-600 to-amber-500 hover:from-amber-500 hover:to-orange-500 text-white font-bold text-sm shadow-xl shadow-amber-500/25 active:scale-98 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 cursor-pointer outline-none focus:outline-none"
         >
           {isScanning ? (
@@ -577,6 +647,20 @@ export function LocalWorkshopSection({ onComplete, onFocusGuide }) {
           <strong className="text-slate-900 dark:text-slate-200">100% Code Privacy Guarantee:</strong> Your proprietary source code never leaves your computer. ChangeLens runs Tree-Sitter WASM parsers locally on your laptop and only transmits visual dependency graph metadata.
         </p>
       </div>
+
+      {/* COMPACT INPUT VALIDATION POPUP MODAL */}
+      <FriendlyValidationModal
+        isOpen={validationModal.isOpen}
+        onClose={closeValidationModal}
+        title={validationModal.title}
+        message={validationModal.message}
+        example={validationModal.example}
+        iconType={validationModal.iconType}
+        secondaryActionLabel={validationModal.secondaryActionLabel}
+        onSecondaryAction={validationModal.onSecondaryAction}
+        primaryActionLabel={validationModal.primaryActionLabel}
+        onPrimaryAction={validationModal.onPrimaryAction}
+      />
     </div>
   );
 }

@@ -23,6 +23,7 @@ import {
   getGitHubWorkflowTemplate,
 } from '../services/api.js';
 import { AstBlastLoaderOverlay } from './AstScannerLoader3D.jsx';
+import { FriendlyValidationModal } from './FriendlyValidationModal.jsx';
 
 function GitHubIcon({ className = 'w-5 h-5' }) {
   return (
@@ -82,6 +83,22 @@ export function GitHubConnectorModal({
   const [commentSuccess, setCommentSuccess] = useState(null);
   const [commentError, setCommentError] = useState(null);
 
+  // Compact Validation Popup Modal state
+  const [validationModal, setValidationModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    example: '',
+    iconType: 'pr',
+    secondaryActionLabel: '',
+    onSecondaryAction: null,
+    primaryActionLabel: 'Got it',
+    onPrimaryAction: null,
+  });
+
+  const closeValidationModal = () =>
+    setValidationModal((prev) => ({ ...prev, isOpen: false }));
+
   // Fetch workflow template when tab or toggles change
   useEffect(() => {
     if (activeTab === 'ci') {
@@ -93,12 +110,50 @@ export function GitHubConnectorModal({
 
   if (!isOpen) return null;
 
+  const validatePRUrl = (trimmed) => {
+    if (!trimmed) {
+      setValidationModal({
+        isOpen: true,
+        title: 'Pull Request URL Required',
+        message: 'Please enter a GitHub Pull Request link to continue.',
+        example: 'https://github.com/facebook/react/pull/28000',
+        iconType: 'pr',
+        secondaryActionLabel: 'Use Sample PR',
+        onSecondaryAction: () => {
+          setPrUrl('https://github.com/facebook/react/pull/28000');
+          closeValidationModal();
+        },
+        primaryActionLabel: 'Got it',
+        onPrimaryAction: closeValidationModal,
+      });
+      return false;
+    }
+
+    if (!trimmed.includes('/pull/')) {
+      setValidationModal({
+        isOpen: true,
+        title: 'Invalid Pull Request URL',
+        message: 'This does not look like a PR link. Make sure it includes /pull/NUMBER.',
+        example: 'https://github.com/owner/repo/pull/123',
+        iconType: 'pr',
+        secondaryActionLabel: 'Use Sample PR',
+        onSecondaryAction: () => {
+          setPrUrl('https://github.com/facebook/react/pull/28000');
+          closeValidationModal();
+        },
+        primaryActionLabel: 'Fix URL',
+        onPrimaryAction: closeValidationModal,
+      });
+      return false;
+    }
+
+    return true;
+  };
+
   const handleInspect = async (e) => {
     e?.preventDefault();
-    if (!prUrl.trim()) {
-      setError('Please enter a GitHub Pull Request URL.');
-      return;
-    }
+    const trimmed = prUrl.trim();
+    if (!validatePRUrl(trimmed)) return;
 
     setLoading(true);
     setError(null);
@@ -107,7 +162,7 @@ export function GitHubConnectorModal({
 
     try {
       const data = await inspectGitHubPR({
-        prUrl: prUrl.trim(),
+        prUrl: trimmed,
         token: token.trim() || undefined,
       });
 
@@ -121,14 +176,15 @@ export function GitHubConnectorModal({
   };
 
   const handleRunAnalysis = async () => {
-    if (!prUrl.trim()) return;
+    const trimmed = prUrl.trim();
+    if (!validatePRUrl(trimmed)) return;
 
     setLoading(true);
     setError(null);
 
     try {
       const result = await analyzeGitHubPR({
-        prUrl: prUrl.trim(),
+        prUrl: trimmed,
         token: token.trim() || undefined,
       });
 
@@ -165,15 +221,48 @@ export function GitHubConnectorModal({
 
   const handlePostComment = async () => {
     if (!inspectedPR) {
-      setCommentError('Please inspect a GitHub PR first in the Analyze tab.');
+      setValidationModal({
+        isOpen: true,
+        title: 'Inspect a PR First',
+        message: 'Please inspect a Pull Request in the Analyze tab before posting a comment.',
+        example: '',
+        iconType: 'pr',
+        secondaryActionLabel: '',
+        onSecondaryAction: null,
+        primaryActionLabel: 'Go to Analyze',
+        onPrimaryAction: () => {
+          setActiveTab('analyze');
+          closeValidationModal();
+        },
+      });
       return;
     }
     if (!token.trim()) {
-      setCommentError('GitHub Personal Access Token is required to post comments.');
+      setValidationModal({
+        isOpen: true,
+        title: 'GitHub Token Required',
+        message: 'Please enter a GitHub Personal Access Token (with repo scope) to post a comment.',
+        example: 'ghp_xxxxxxxxxxxx',
+        iconType: 'token',
+        secondaryActionLabel: '',
+        onSecondaryAction: null,
+        primaryActionLabel: 'Got it',
+        onPrimaryAction: closeValidationModal,
+      });
       return;
     }
     if (!currentAnalysisId) {
-      setCommentError('No active analysis report to post. Run analysis first.');
+      setValidationModal({
+        isOpen: true,
+        title: 'No Analysis Report Ready',
+        message: 'Run a blast radius analysis first before posting a report comment.',
+        example: '',
+        iconType: 'alert',
+        secondaryActionLabel: '',
+        onSecondaryAction: null,
+        primaryActionLabel: 'Got it',
+        onPrimaryAction: closeValidationModal,
+      });
       return;
     }
 
@@ -305,7 +394,7 @@ export function GitHubConnectorModal({
                     />
                     <button
                       type="submit"
-                      disabled={loading || !prUrl.trim()}
+                      disabled={loading}
                       className="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-xs rounded-lg transition-all disabled:opacity-50 cursor-pointer"
                     >
                       {loading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : 'Inspect'}
@@ -601,7 +690,7 @@ export function GitHubConnectorModal({
                   <button
                     type="button"
                     onClick={handlePostComment}
-                    disabled={postingComment || !inspectedPR || !token.trim()}
+                    disabled={postingComment}
                     className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold text-xs py-2.5 rounded-lg shadow-md transition-all disabled:opacity-50 cursor-pointer"
                   >
                     {postingComment ? (
@@ -622,6 +711,20 @@ export function GitHubConnectorModal({
           )}
         </div>
       </div>
+
+      {/* COMPACT INPUT VALIDATION POPUP MODAL */}
+      <FriendlyValidationModal
+        isOpen={validationModal.isOpen}
+        onClose={closeValidationModal}
+        title={validationModal.title}
+        message={validationModal.message}
+        example={validationModal.example}
+        iconType={validationModal.iconType}
+        secondaryActionLabel={validationModal.secondaryActionLabel}
+        onSecondaryAction={validationModal.onSecondaryAction}
+        primaryActionLabel={validationModal.primaryActionLabel}
+        onPrimaryAction={validationModal.onPrimaryAction}
+      />
     </div>
   );
 }

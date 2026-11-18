@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Play,
@@ -14,6 +14,7 @@ import {
 import { UserProfileMenu } from './UserProfileMenu.jsx';
 import { BrandLogo } from './BrandLogo.jsx';
 import { ThemeToggle } from './ThemeToggle.jsx';
+import { FriendlyValidationModal } from './FriendlyValidationModal.jsx';
 
 export function Header({
   onAnalyze,
@@ -35,6 +36,23 @@ export function Header({
   const [changedFile, setChangedFile] = useState('');
   const [maxDepth, setMaxDepth] = useState(10);
   const [isAdjusting, setIsAdjusting] = useState(false);
+  const repoPathInputRef = useRef(null);
+
+  // Compact Validation Popup Modal state
+  const [validationModal, setValidationModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    example: '',
+    iconType: 'folder',
+    secondaryActionLabel: '',
+    onSecondaryAction: null,
+    primaryActionLabel: 'Got it',
+    onPrimaryAction: null,
+  });
+
+  const closeValidationModal = () =>
+    setValidationModal((prev) => ({ ...prev, isOpen: false }));
 
   // Sync inputs whenever activeTargetContext updates from a previous analysis
   useEffect(() => {
@@ -62,6 +80,28 @@ export function Header({
 
   const handleSubmit = (e) => {
     e?.preventDefault();
+    if (!repoPath.trim()) {
+      setValidationModal({
+        isOpen: true,
+        title: 'Workspace Path Required',
+        message: 'Please enter a workspace or folder path before calculating.',
+        example: 'tests/fixtures/mern-sample',
+        iconType: 'folder',
+        secondaryActionLabel: 'Use Sample',
+        onSecondaryAction: () => {
+          setRepoPath('tests/fixtures/mern-sample');
+          closeValidationModal();
+          setTimeout(() => repoPathInputRef.current?.focus(), 80);
+        },
+        primaryActionLabel: 'Got it',
+        onPrimaryAction: () => {
+          closeValidationModal();
+          setTimeout(() => repoPathInputRef.current?.focus(), 80);
+        },
+      });
+      return;
+    }
+
     // Supports comma-separated multiple files or auto-detection if left blank
     const changedFiles = changedFile.trim()
       ? changedFile.split(',').map((f) => f.trim()).filter(Boolean)
@@ -216,6 +256,7 @@ export function Header({
                 <div className="relative flex items-center w-full xs:w-auto">
                   <Folder className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400 absolute left-2.5 pointer-events-none" />
                   <input
+                    ref={repoPathInputRef}
                     type="text"
                     value={repoPath}
                     onChange={(e) => setRepoPath(e.target.value)}
@@ -354,6 +395,20 @@ export function Header({
           </div>
         </div>
       )}
+
+      {/* COMPACT INPUT VALIDATION POPUP MODAL */}
+      <FriendlyValidationModal
+        isOpen={validationModal.isOpen}
+        onClose={closeValidationModal}
+        title={validationModal.title}
+        message={validationModal.message}
+        example={validationModal.example}
+        iconType={validationModal.iconType}
+        secondaryActionLabel={validationModal.secondaryActionLabel}
+        onSecondaryAction={validationModal.onSecondaryAction}
+        primaryActionLabel={validationModal.primaryActionLabel}
+        onPrimaryAction={validationModal.onPrimaryAction}
+      />
     </header>
   );
 }

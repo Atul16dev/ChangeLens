@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
 import { ConnectionGuideModal } from './ConnectionGuideModal.jsx';
+import { FriendlyValidationModal } from './FriendlyValidationModal.jsx';
 import { LocalWorkshopSection } from './LocalWorkshopSection.jsx';
 import { ProjectHubBackdrop3D } from './ProjectHubBackdrop3D.jsx';
 import { GreetingMascot3D } from './GreetingMascot3D.jsx';
@@ -146,6 +147,53 @@ export function ProjectHub({
   // General error banner
   const [error, setError] = useState(null);
 
+  // Compact Validation Popup Modal state
+  const [validationModal, setValidationModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    example: '',
+    iconType: 'alert',
+    secondaryActionLabel: '',
+    onSecondaryAction: null,
+    primaryActionLabel: 'Got it',
+    onPrimaryAction: null,
+  });
+
+  const closeValidationModal = () =>
+    setValidationModal((prev) => ({ ...prev, isOpen: false }));
+
+  // Catch API-level validation errors automatically and present them in the compact modal
+  useEffect(() => {
+    if (
+      apiError &&
+      (apiError.toLowerCase().includes('invalid') ||
+        apiError.includes('INVALID_') ||
+        apiError.includes('Target repository directory does not exist') ||
+        apiError.includes('not a pull request'))
+    ) {
+      setValidationModal({
+        isOpen: true,
+        title: 'Invalid Input',
+        message: apiError,
+        example:
+          activeMode === 'repo'
+            ? 'facebook/react'
+            : activeMode === 'pr'
+            ? 'https://github.com/facebook/react/pull/28000'
+            : '',
+        iconType: activeMode === 'pr' ? 'pr' : 'alert',
+        secondaryActionLabel: '',
+        onSecondaryAction: null,
+        primaryActionLabel: 'Got it',
+        onPrimaryAction: () => {
+          closeValidationModal();
+          if (onClearApiError) onClearApiError();
+        },
+      });
+    }
+  }, [apiError, activeMode, onClearApiError]);
+
   const effectiveError = error || apiError;
   const isRateLimitError =
     effectiveError &&
@@ -195,16 +243,114 @@ export function ProjectHub({
     else if (currentGuideType === 'local') localInputRef.current?.focus();
   };
 
+  // Shared PR URL validation helper
+  const validatePRUrl = (trimmed) => {
+    if (!trimmed) {
+      setValidationModal({
+        isOpen: true,
+        title: 'Pull Request URL Required',
+        message: 'Please enter a GitHub Pull Request link to continue.',
+        example: 'https://github.com/facebook/react/pull/28000',
+        iconType: 'pr',
+        secondaryActionLabel: 'Use Sample PR',
+        onSecondaryAction: () => {
+          setPrUrl('https://github.com/facebook/react/pull/28000');
+          closeValidationModal();
+          setTimeout(() => prInputRef.current?.focus(), 80);
+        },
+        primaryActionLabel: 'Got it',
+        onPrimaryAction: () => {
+          closeValidationModal();
+          setTimeout(() => prInputRef.current?.focus(), 80);
+        },
+      });
+      return false;
+    }
+
+    if (!trimmed.includes('/pull/')) {
+      setValidationModal({
+        isOpen: true,
+        title: 'Invalid Pull Request URL',
+        message: 'This does not look like a PR link. Make sure the URL includes /pull/NUMBER.',
+        example: 'https://github.com/owner/repo/pull/123',
+        iconType: 'pr',
+        secondaryActionLabel: 'Use Sample PR',
+        onSecondaryAction: () => {
+          setPrUrl('https://github.com/facebook/react/pull/28000');
+          closeValidationModal();
+        },
+        primaryActionLabel: 'Fix URL',
+        onPrimaryAction: () => {
+          closeValidationModal();
+          setTimeout(() => {
+            prInputRef.current?.focus();
+            prInputRef.current?.select();
+          }, 80);
+        },
+      });
+      return false;
+    }
+
+    return true;
+  };
+
   // Submit GitHub Repo
   const handleGitHubRepoSubmit = (e) => {
-    e.preventDefault();
-    if (!githubUrl.trim()) {
-      setError('Please enter a GitHub repository URL (e.g. owner/repo).');
+    e?.preventDefault();
+    const trimmed = githubUrl.trim();
+    if (!trimmed) {
+      setValidationModal({
+        isOpen: true,
+        title: 'Repository URL Required',
+        message: 'Please enter a GitHub repository URL or owner/repo name first.',
+        example: 'facebook/react',
+        iconType: 'folder',
+        secondaryActionLabel: 'Use Sample',
+        onSecondaryAction: () => {
+          setGithubUrl('https://github.com/facebook/react');
+          closeValidationModal();
+          setTimeout(() => repoInputRef.current?.focus(), 80);
+        },
+        primaryActionLabel: 'Got it',
+        onPrimaryAction: () => {
+          closeValidationModal();
+          setTimeout(() => repoInputRef.current?.focus(), 80);
+        },
+      });
       return;
     }
+
+    const isValidFormat =
+      /^https?:\/\/github\.com\/[^/\s]+\/[^/\s]+/i.test(trimmed) ||
+      /^[^/\s]+\/[^/\s]+$/.test(trimmed);
+
+    if (!isValidFormat) {
+      setValidationModal({
+        isOpen: true,
+        title: 'Invalid Repository URL',
+        message: `"${trimmed}" is not a valid GitHub repository. Use owner/repo or a full GitHub link.`,
+        example: 'facebook/react',
+        iconType: 'folder',
+        secondaryActionLabel: 'Use Sample',
+        onSecondaryAction: () => {
+          setGithubUrl('https://github.com/facebook/react');
+          closeValidationModal();
+        },
+        primaryActionLabel: 'Fix URL',
+        onPrimaryAction: () => {
+          closeValidationModal();
+          setTimeout(() => {
+            repoInputRef.current?.focus();
+            repoInputRef.current?.select();
+          }, 80);
+        },
+      });
+      return;
+    }
+
     setError(null);
     onConnectGitHubRepo({
-      repoUrl: githubUrl.trim(),
+      repoUrl: trimmed,
       token: repoToken.trim() || undefined,
     });
   };
@@ -212,17 +358,16 @@ export function ProjectHub({
   // Inspect PR files
   const handleInspectPR = async (e) => {
     e?.preventDefault();
-    if (!prUrl.trim()) {
-      setError('Please enter a GitHub Pull Request URL.');
-      return;
-    }
+    const trimmed = prUrl.trim();
+    if (!validatePRUrl(trimmed)) return;
+
     setInspectingPR(true);
     setError(null);
     setInspectedPR(null);
     setPrFiles([]);
     try {
       const data = await inspectGitHubPR({
-        prUrl: prUrl.trim(),
+        prUrl: trimmed,
         token: prToken.trim() || undefined,
       });
       setInspectedPR(data.pr);
@@ -233,7 +378,21 @@ export function ProjectHub({
       if (data.pr?.repo) setCommentRepo(data.pr.repo);
       if (data.pr?.number) setCommentPRNumber(String(data.pr.number));
     } catch (err) {
-      setError(err.message || 'Failed to inspect GitHub PR.');
+      if (err.message && (err.message.includes('Invalid') || err.message.includes('INVALID'))) {
+        setValidationModal({
+          isOpen: true,
+          title: 'Invalid Pull Request URL',
+          message: err.message,
+          example: 'https://github.com/facebook/react/pull/28000',
+          iconType: 'pr',
+          secondaryActionLabel: '',
+          onSecondaryAction: null,
+          primaryActionLabel: 'Got it',
+          onPrimaryAction: closeValidationModal,
+        });
+      } else {
+        setError(err.message || 'Failed to inspect GitHub PR.');
+      }
     } finally {
       setInspectingPR(false);
     }
@@ -241,14 +400,13 @@ export function ProjectHub({
 
   // Submit GitHub PR Analysis
   const handleGitHubPRSubmit = (e) => {
-    e.preventDefault();
-    if (!prUrl.trim()) {
-      setError('Please enter a GitHub Pull Request URL.');
-      return;
-    }
+    e?.preventDefault();
+    const trimmed = prUrl.trim();
+    if (!validatePRUrl(trimmed)) return;
+
     setError(null);
     onAnalyzeGitHubPR({
-      prUrl: prUrl.trim(),
+      prUrl: trimmed,
       token: prToken.trim() || undefined,
     });
   };
@@ -273,13 +431,38 @@ export function ProjectHub({
 
   // Post PR comment
   const handlePostPRComment = async (e) => {
-    e.preventDefault();
-    if (!commentOwner.trim() || !commentRepo.trim() || !commentPRNumber.trim()) {
-      setCommentError('Please fill in repository owner, name, and pull request number.');
+    e?.preventDefault();
+    const missingFields = [];
+    if (!commentOwner.trim()) missingFields.push('Owner');
+    if (!commentRepo.trim()) missingFields.push('Repository');
+    if (!commentPRNumber.trim()) missingFields.push('PR Number');
+
+    if (missingFields.length > 0) {
+      setValidationModal({
+        isOpen: true,
+        title: 'Missing PR Details',
+        message: `Please enter the ${missingFields.join(', ')} to post a review comment.`,
+        example: 'facebook / react / #28000',
+        iconType: 'pr',
+        secondaryActionLabel: '',
+        onSecondaryAction: null,
+        primaryActionLabel: 'Got it',
+        onPrimaryAction: closeValidationModal,
+      });
       return;
     }
     if (!commentToken.trim()) {
-      setCommentError('A Personal Access Token with repo scope is required to post PR comments.');
+      setValidationModal({
+        isOpen: true,
+        title: 'GitHub Token Required',
+        message: 'Please enter a GitHub Personal Access Token (with repo scope) to post a PR comment.',
+        example: 'ghp_xxxxxxxxxxxx',
+        iconType: 'token',
+        secondaryActionLabel: '',
+        onSecondaryAction: null,
+        primaryActionLabel: 'Got it',
+        onPrimaryAction: closeValidationModal,
+      });
       return;
     }
 
@@ -1421,6 +1604,20 @@ export function ProjectHub({
         onClose={() => setIsGuideModalOpen(false)}
         guideType={currentGuideType}
         onFocusInput={handleGuideFocus}
+      />
+
+      {/* COMPACT INPUT VALIDATION POPUP MODAL */}
+      <FriendlyValidationModal
+        isOpen={validationModal.isOpen}
+        onClose={closeValidationModal}
+        title={validationModal.title}
+        message={validationModal.message}
+        example={validationModal.example}
+        iconType={validationModal.iconType}
+        secondaryActionLabel={validationModal.secondaryActionLabel}
+        onSecondaryAction={validationModal.onSecondaryAction}
+        primaryActionLabel={validationModal.primaryActionLabel}
+        onPrimaryAction={validationModal.onPrimaryAction}
       />
     </div>
   );

@@ -8,6 +8,7 @@ import { GitHubConnectorModal } from '../components/GitHubConnectorModal.jsx';
 import { RepoSyncBar } from '../components/RepoSyncBar.jsx';
 import { ProjectHub } from '../components/ProjectHub.jsx';
 import { AstBlastLoaderOverlay } from '../components/AstScannerLoader3D.jsx';
+import { FriendlyValidationModal } from '../components/FriendlyValidationModal.jsx';
 import {
   checkBackendHealth,
   runImpactAnalysis,
@@ -588,6 +589,57 @@ export function DashboardPage() {
     }
   }, [isProjectHubOpen, refreshRecentAnalyses]);
 
+  // Compact Validation Popup Modal state for unexpected validation errors in dashboard
+  const [validationModal, setValidationModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    example: '',
+    iconType: 'alert',
+    secondaryActionLabel: '',
+    onSecondaryAction: null,
+    primaryActionLabel: 'Got it',
+    onPrimaryAction: null,
+  });
+
+  const closeValidationModal = () =>
+    setValidationModal((prev) => ({ ...prev, isOpen: false }));
+
+  // Catch API validation errors when in Dashboard and show compact modal
+  useEffect(() => {
+    if (
+      error &&
+      !isProjectHubOpen &&
+      (error.toLowerCase().includes('invalid') ||
+        error.includes('INVALID_') ||
+        error.includes('Target repository directory does not exist'))
+    ) {
+      const isMissingPath = error.includes('Target repository directory does not exist');
+      setValidationModal({
+        isOpen: true,
+        title: isMissingPath ? 'Folder Path Not Found' : 'Invalid Input',
+        message: isMissingPath
+          ? 'That workspace folder does not exist. Please check the path and try again.'
+          : error,
+        example: isMissingPath ? 'tests/fixtures/mern-sample' : '',
+        iconType: isMissingPath ? 'folder' : 'alert',
+        secondaryActionLabel: isMissingPath ? 'Load Demo' : '',
+        onSecondaryAction: isMissingPath
+          ? () => {
+              closeValidationModal();
+              setError(null);
+              handleLaunchDemo();
+            }
+          : null,
+        primaryActionLabel: 'Got it',
+        onPrimaryAction: () => {
+          closeValidationModal();
+          setError(null);
+        },
+      });
+    }
+  }, [error, isProjectHubOpen, handleLaunchDemo]);
+
   return (
     <div className="flex flex-col h-screen h-[100dvh] w-full max-w-full bg-white dark:bg-[#0b0f19] text-slate-900 dark:text-slate-100 overflow-hidden font-sans">
       {/* Top Navigation Bar with Authentication Awareness */}
@@ -813,6 +865,20 @@ export function DashboardPage() {
         onClose={() => setIsGitHubOpen(false)}
         onAnalysisComplete={handleOpenSavedReport}
         currentAnalysisId={currentAnalysisId}
+      />
+
+      {/* COMPACT INPUT VALIDATION POPUP MODAL */}
+      <FriendlyValidationModal
+        isOpen={validationModal.isOpen}
+        onClose={closeValidationModal}
+        title={validationModal.title}
+        message={validationModal.message}
+        example={validationModal.example}
+        iconType={validationModal.iconType}
+        secondaryActionLabel={validationModal.secondaryActionLabel}
+        onSecondaryAction={validationModal.onSecondaryAction}
+        primaryActionLabel={validationModal.primaryActionLabel}
+        onPrimaryAction={validationModal.onPrimaryAction}
       />
     </div>
   );
