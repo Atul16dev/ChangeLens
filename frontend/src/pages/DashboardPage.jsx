@@ -9,6 +9,7 @@ import { RepoSyncBar } from '../components/RepoSyncBar.jsx';
 import { ProjectHub } from '../components/ProjectHub.jsx';
 import { AstBlastLoaderOverlay } from '../components/AstScannerLoader3D.jsx';
 import { FriendlyValidationModal } from '../components/FriendlyValidationModal.jsx';
+import { FeedbackModal } from '../components/FeedbackModal.jsx';
 import {
   checkBackendHealth,
   runImpactAnalysis,
@@ -45,6 +46,9 @@ export function DashboardPage() {
 
   // GitHub Connector Modal state
   const [isGitHubOpen, setIsGitHubOpen] = useState(false);
+
+  // Feedback & Ratings Modal state
+  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
 
   // Project Hub state (Full-screen onboarding & project chooser - default on login if no ?analysisId in URL)
   const [isProjectHubOpen, setIsProjectHubOpen] = useState(() => {
@@ -662,6 +666,7 @@ export function DashboardPage() {
         onOpenHistory={() => setIsHistoryOpen(true)}
         onOpenGitHub={() => setIsGitHubOpen(true)}
         onOpenProjectHub={() => setIsProjectHubOpen((prev) => !prev)}
+        onOpenFeedback={() => setIsFeedbackOpen(true)}
         isDemoMode={isDemoMode}
         isProjectHubOpen={isProjectHubOpen}
         activeHubTab={activeHubTab}
@@ -829,6 +834,7 @@ export function DashboardPage() {
                 }`}
               >
                 <ImpactSidebar
+                  analysisId={currentAnalysisId}
                   impactData={effectiveImpactData}
                   explanationData={effectiveExplanationData}
                   selectedNodeId={selectedNodeId}
@@ -864,6 +870,13 @@ export function DashboardPage() {
         isOpen={isGitHubOpen}
         onClose={() => setIsGitHubOpen(false)}
         onAnalysisComplete={handleOpenSavedReport}
+        currentAnalysisId={currentAnalysisId}
+      />
+
+      {/* Feedback & 5-Star Ratings Modal */}
+      <FeedbackModal
+        isOpen={isFeedbackOpen}
+        onClose={() => setIsFeedbackOpen(false)}
         currentAnalysisId={currentAnalysisId}
       />
 

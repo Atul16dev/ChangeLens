@@ -14,6 +14,7 @@ const RegisterPage = lazyNamed(() => import('./pages/RegisterPage.jsx'), 'Regist
 const VerifyEmailPage = lazyNamed(() => import('./pages/VerifyEmailPage.jsx'), 'VerifyEmailPage');
 const ForgotPasswordPage = lazyNamed(() => import('./pages/ForgotPasswordPage.jsx'), 'ForgotPasswordPage');
 const ResetPasswordPage = lazyNamed(() => import('./pages/ResetPasswordPage.jsx'), 'ResetPasswordPage');
+const FeedbackPage = lazyNamed(() => import('./pages/FeedbackPage.jsx'), 'FeedbackPage');
 
 function PageFallback() {
   return (
@@ -52,6 +53,10 @@ export default function App() {
               <Route path="/verify-email" element={<VerifyEmailPage />} />
               <Route path="/forgot-password" element={<ForgotPasswordPage />} />
               <Route path="/reset-password" element={<ResetPasswordPage />} />
+
+              {/* Public Community & Feedback Hub */}
+              <Route path="/feedback" element={<FeedbackPage />} />
+              <Route path="/community" element={<Navigate to="/feedback" replace />} />
 
               {/* Catch-all redirect to landing page */}
               <Route path="*" element={<Navigate to="/" replace />} />

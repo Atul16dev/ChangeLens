@@ -10,6 +10,8 @@ import {
   Zap,
   X,
   History,
+  MessageSquarePlus,
+  Menu,
 } from 'lucide-react';
 import { UserProfileMenu } from './UserProfileMenu.jsx';
 import { BrandLogo } from './BrandLogo.jsx';
@@ -27,6 +29,7 @@ export function Header({
   onOpenHistory,
   onOpenGitHub,
   onOpenProjectHub,
+  onOpenFeedback,
   isDemoMode = false,
   isProjectHubOpen = false,
   activeHubTab = 'repo',
@@ -36,6 +39,7 @@ export function Header({
   const [changedFile, setChangedFile] = useState('');
   const [maxDepth, setMaxDepth] = useState(10);
   const [isAdjusting, setIsAdjusting] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const repoPathInputRef = useRef(null);
 
   // Compact Validation Popup Modal state
@@ -173,62 +177,102 @@ export function Header({
           </div>
         </div>
 
-        {/* Right: Actions (Connect Repo, GitHub PR, History, Profile) */}
+        {/* Right: Actions (Desktop Dock & Mobile Bar Toggle) */}
         <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
-          {/* Project Hub / Back to Workshop Button */}
-          {onOpenProjectHub && (
-            <button
-              type="button"
-              onClick={onOpenProjectHub}
-              className={`inline-flex items-center justify-center gap-1.5 px-2.5 sm:px-3 py-1.5 min-h-[36px] rounded-lg text-xs font-semibold transition-all shadow-sm active:scale-95 cursor-pointer ${
-                activeHubTab === 'local'
-                  ? 'bg-amber-100 dark:bg-amber-950/70 hover:bg-amber-200 dark:hover:bg-amber-900/80 text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-800/60'
-                  : activeHubTab === 'pr'
-                  ? 'bg-indigo-100 dark:bg-indigo-950/70 hover:bg-indigo-200 dark:hover:bg-indigo-900/80 text-indigo-900 dark:text-indigo-300 border border-indigo-300 dark:border-indigo-800/60'
-                  : 'bg-cyan-100 dark:bg-cyan-950/70 hover:bg-cyan-200 dark:hover:bg-cyan-900/80 text-cyan-900 dark:text-cyan-300 border border-cyan-300 dark:border-cyan-800/60'
-              }`}
-              title={
-                !isProjectHubOpen
-                  ? `Return to ${activeHubTab === 'local' ? 'Local Workshop' : activeHubTab === 'pr' ? 'GitHub PR' : 'Project Hub'}`
-                  : 'Open Project Hub'
-              }
-            >
-              <FolderPlus
-                className={`w-3.5 h-3.5 ${
+          {/* Desktop/Tablet Floating Dock (hidden on small mobile screens) */}
+          <div className="hidden sm:flex items-center gap-1 sm:gap-1.5 p-1 rounded-full bg-slate-100/90 dark:bg-[#131b2e]/90 border border-slate-200/90 dark:border-slate-800/90 shadow-xs backdrop-blur-md shrink-0">
+            {/* Project Hub / Back to Workshop Button */}
+            {onOpenProjectHub && (
+              <button
+                type="button"
+                onClick={onOpenProjectHub}
+                className={`inline-flex items-center justify-center gap-1.5 px-3 py-1.5 min-h-[32px] rounded-full text-xs font-semibold transition-all duration-200 active:scale-95 cursor-pointer ${
                   activeHubTab === 'local'
-                    ? 'text-amber-600 dark:text-amber-400'
+                    ? 'bg-amber-100 dark:bg-amber-950/80 hover:bg-amber-200 dark:hover:bg-amber-900/90 text-amber-900 dark:text-amber-300 shadow-xs'
                     : activeHubTab === 'pr'
-                    ? 'text-indigo-600 dark:text-indigo-400'
-                    : 'text-cyan-600 dark:text-cyan-400'
+                    ? 'bg-indigo-100 dark:bg-indigo-950/80 hover:bg-indigo-200 dark:hover:bg-indigo-900/90 text-indigo-900 dark:text-indigo-300 shadow-xs'
+                    : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:text-cyan-600 dark:hover:text-cyan-400 shadow-xs'
                 }`}
-              />
-              <span className="hidden md:inline">
-                {!isProjectHubOpen
-                  ? activeHubTab === 'local'
-                    ? 'Local Workshop'
-                    : activeHubTab === 'pr'
-                    ? 'GitHub PR'
-                    : 'Connect Repo'
-                  : 'Project Hub'}
-              </span>
-              <span className="md:hidden hidden xs:inline">
-                {!isProjectHubOpen ? 'Workshop' : 'Hub'}
-              </span>
-            </button>
-          )}
+                title={
+                  !isProjectHubOpen
+                    ? `Return to ${activeHubTab === 'local' ? 'Local Workshop' : activeHubTab === 'pr' ? 'GitHub PR' : 'Project Hub'}`
+                    : 'Open Project Hub'
+                }
+              >
+                <FolderPlus
+                  className={`w-3.5 h-3.5 ${
+                    activeHubTab === 'local'
+                      ? 'text-amber-600 dark:text-amber-400'
+                      : activeHubTab === 'pr'
+                      ? 'text-indigo-600 dark:text-indigo-400'
+                      : 'text-cyan-600 dark:text-cyan-400'
+                  }`}
+                />
+                <span className="hidden md:inline">
+                  {!isProjectHubOpen
+                    ? activeHubTab === 'local'
+                      ? 'Workshop'
+                      : activeHubTab === 'pr'
+                      ? 'GitHub PR'
+                      : 'Connect'
+                    : 'Project Hub'}
+                </span>
+                <span className="md:hidden hidden xs:inline">
+                  {!isProjectHubOpen ? 'Workshop' : 'Hub'}
+                </span>
+              </button>
+            )}
 
-          {/* Theme Toggle Button */}
-          <ThemeToggle size="sm" />
+            {/* History Button */}
+            {onOpenHistory && (
+              <button
+                type="button"
+                onClick={onOpenHistory}
+                className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 min-h-[32px] rounded-full text-xs font-semibold text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white hover:bg-white dark:hover:bg-slate-800 transition-all duration-200 hover:shadow-xs active:scale-95 cursor-pointer"
+                title="Open Analysis History & Saved Reports"
+              >
+                <History className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
+                <span className="hidden sm:inline">History</span>
+              </button>
+            )}
 
-          {/* History Button */}
+            {/* Feedback & Community Button */}
+            <Link
+              to="/feedback"
+              className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 min-h-[32px] rounded-full text-xs font-semibold text-white bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 hover:from-violet-500 hover:via-purple-500 hover:to-indigo-500 shadow-xs shadow-violet-500/25 hover:shadow-sm hover:shadow-violet-500/40 transition-all duration-200 active:scale-95 cursor-pointer"
+              title="Open Community Hub & Share Feedback"
+            >
+              <MessageSquarePlus className="w-3.5 h-3.5" />
+              <span className="hidden md:inline">Feedback</span>
+              <span className="hidden sm:inline-flex items-center px-1.5 py-0.2 text-[9px] font-bold rounded-full bg-white/20 text-white backdrop-blur-xs">
+                Hub
+              </span>
+            </Link>
+
+            {/* Divider */}
+            <div className="h-4 w-px bg-slate-300/80 dark:bg-slate-700/80 mx-0.5 shrink-0" />
+
+            {/* Theme Toggle Button */}
+            <ThemeToggle size="sm" variant="dock" />
+          </div>
+
+          {/* Mobile Bar Option Button (ONLY on mobile screens: sm:hidden) */}
           <button
             type="button"
-            onClick={onOpenHistory}
-            className="inline-flex items-center justify-center gap-1.5 px-2.5 sm:px-3 py-1.5 min-h-[36px] rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-[#182338] dark:hover:bg-[#1f2d48] text-slate-800 dark:text-slate-200 hover:text-slate-950 dark:hover:text-white border border-slate-300 dark:border-slate-600/80 transition-all shadow-sm active:scale-95 cursor-pointer"
-            title="Open Analysis History & Saved Reports"
+            onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+            className={`sm:hidden inline-flex items-center justify-center p-2 rounded-full border transition-all active:scale-95 cursor-pointer ${
+              isMobileMenuOpen
+                ? 'bg-violet-600 text-white border-violet-600 shadow-xs'
+                : 'bg-slate-100 dark:bg-[#131b2e] text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-800'
+            }`}
+            title="Toggle Quick Navigation Bar"
+            aria-label="Toggle Quick Navigation Bar"
           >
-            <History className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
-            <span className="hidden sm:inline">History</span>
+            {isMobileMenuOpen ? (
+              <X className="w-4 h-4" />
+            ) : (
+              <Menu className="w-4 h-4" />
+            )}
           </button>
 
           <div className="h-5 w-px bg-slate-200 dark:bg-slate-700/80 shrink-0" />
@@ -239,6 +283,94 @@ export function Header({
           </div>
         </div>
       </div>
+
+      {/* Mobile Menu Action Tray (shown when Mobile Bar option is toggled) */}
+      {isMobileMenuOpen && (
+        <div className="sm:hidden border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0c1220] px-4 py-3 space-y-2.5 shadow-lg animate-in slide-in-from-top-2 duration-150">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+              Quick Action Bar
+            </span>
+            <span className="text-[10px] text-slate-400">Mobile Navigation</span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            {/* 1. Project Hub / Workshop */}
+            {onOpenProjectHub && (
+              <button
+                type="button"
+                onClick={() => {
+                  onOpenProjectHub();
+                  setIsMobileMenuOpen(false);
+                }}
+                className={`p-2.5 rounded-xl text-left border flex items-center gap-2.5 transition-all cursor-pointer ${
+                  activeHubTab === 'local'
+                    ? 'bg-amber-100 dark:bg-amber-950/80 text-amber-900 dark:text-amber-300 border-amber-300 dark:border-amber-800'
+                    : activeHubTab === 'pr'
+                    ? 'bg-indigo-100 dark:bg-indigo-950/80 text-indigo-900 dark:text-indigo-300 border-indigo-300 dark:border-indigo-800'
+                    : 'bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-800'
+                }`}
+              >
+                <FolderPlus className="w-4 h-4 text-cyan-600 dark:text-cyan-400 shrink-0" />
+                <div className="min-w-0">
+                  <div className="text-xs font-bold truncate">
+                    {!isProjectHubOpen ? 'Workshop' : 'Project Hub'}
+                  </div>
+                  <div className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                    Files & Repos
+                  </div>
+                </div>
+              </button>
+            )}
+
+            {/* 2. History */}
+            {onOpenHistory && (
+              <button
+                type="button"
+                onClick={() => {
+                  onOpenHistory();
+                  setIsMobileMenuOpen(false);
+                }}
+                className="p-2.5 rounded-xl text-left border bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-800 flex items-center gap-2.5 cursor-pointer"
+              >
+                <History className="w-4 h-4 text-slate-500 dark:text-slate-400 shrink-0" />
+                <div className="min-w-0">
+                  <div className="text-xs font-bold truncate">History</div>
+                  <div className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                    Saved Reports
+                  </div>
+                </div>
+              </button>
+            )}
+
+            {/* 3. Feedback & Community Hub */}
+            <Link
+              to="/feedback"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="p-2.5 rounded-xl text-left border bg-gradient-to-r from-violet-600/10 to-indigo-600/10 text-violet-700 dark:text-violet-300 border-violet-200 dark:border-violet-800/60 flex items-center gap-2.5 cursor-pointer"
+            >
+              <MessageSquarePlus className="w-4 h-4 text-violet-600 dark:text-violet-400 shrink-0" />
+              <div className="min-w-0">
+                <div className="text-xs font-bold truncate flex items-center gap-1">
+                  <span>Feedback</span>
+                  <span className="px-1 py-0.2 rounded text-[8px] font-bold bg-violet-600 text-white">
+                    Hub
+                  </span>
+                </div>
+                <div className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                  Bugs & Ratings
+                </div>
+              </div>
+            </Link>
+
+            {/* 4. Light / Dark Mode Toggle */}
+            <div className="p-2.5 rounded-xl border bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 flex items-center justify-between gap-2">
+              <span className="text-xs font-bold text-slate-800 dark:text-slate-200">Theme</span>
+              <ThemeToggle size="sm" showLabel={false} />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ROW 2: Active Analysis Breadcrumb & Actions (Only visible in Graph View, NOT in Project Hub) */}
       {!isProjectHubOpen && (

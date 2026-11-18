@@ -12,6 +12,7 @@ import { analysesRoutes } from "./routes/analyses.routes.js";
 import { authRoutes } from "./routes/auth.routes.js";
 import { githubRoutes } from "./routes/github.routes.js";
 import { bridgeRoutes } from "./routes/bridge.routes.js";
+import { feedbackRoutes } from "./routes/feedback.routes.js";
 
 export function createApp({ sessionSecret, sessionStore } = {}) {
   const app = express();
@@ -71,7 +72,7 @@ export function createApp({ sessionSecret, sessionStore } = {}) {
     })
   );
 
-  app.use(express.json({ limit: "5mb" }));
+  app.use(express.json({ limit: "20mb" }));
   app.use(cookieParser(secret));
 
   // Express session middleware
@@ -106,6 +107,7 @@ export function createApp({ sessionSecret, sessionStore } = {}) {
   app.use("/api/v1/auth", authRoutes);
   app.use("/api/v1/github", githubRoutes);
   app.use("/api/v1/bridge", bridgeRoutes);
+  app.use("/api/v1/feedback", feedbackRoutes);
   app.use("/api/v1", analysesRoutes);
 
   // Serve compiled frontend UI if available

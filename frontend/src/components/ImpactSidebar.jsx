@@ -33,12 +33,14 @@ import {
   Minimize2,
 } from 'lucide-react';
 import { downloadText, downloadJson, printOrSavePDF } from '../utils/export.js';
+import { AnalysisRatingBar } from './AnalysisRatingBar.jsx';
 
 const DEFAULT_SIDEBAR_WIDTH = 420;
 const MIN_SIDEBAR_WIDTH = 340;
 const STORAGE_KEY = 'changelens_sidebar_width';
 
 export function ImpactSidebar({
+  analysisId = null,
   impactData,
   explanationData,
   selectedNodeId,
@@ -1127,6 +1129,9 @@ export function ImpactSidebar({
           </div>
         </div>
       )}
+
+      {/* Inline 5-Star Analysis Rating Footer */}
+      {!isSimulating && <AnalysisRatingBar analysisId={analysisId} />}
     </aside>
   </>
 );

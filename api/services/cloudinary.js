@@ -112,3 +112,44 @@ export async function deleteAvatar(urlOrPublicId) {
     return false;
   }
 }
+
+/**
+ * Uploads a feedback attachment (screenshot image or short bug video) to Cloudinary.
+ *
+ * @param {string} dataUri - Base64 data URI (data:image/... or data:video/...)
+ * @param {{ mediaType?: "image" | "video", userId?: string }} options
+ * @returns {Promise<{ url: string, mediaType: "image" | "video", bytes: number, format: string }>}
+ */
+export async function uploadFeedbackMedia(dataUri, { mediaType = "image", userId = "guest" } = {}) {
+  if (!initCloudinary()) {
+    throw new Error("Cloudinary is not configured.");
+  }
+
+  if (!dataUri || typeof dataUri !== "string") {
+    throw new TypeError("Media payload must be a non-empty string.");
+  }
+
+  const safeUserId = String(userId || "guest").replace(/[^a-zA-Z0-9_-]/g, "_");
+  const resourceType = mediaType === "video" ? "video" : "image";
+
+  try {
+    const result = await cloudinary.uploader.upload(dataUri, {
+      folder: "changelens/feedback",
+      public_id: `fb_${safeUserId}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+      resource_type: resourceType,
+      ...(resourceType === "image"
+        ? { transformation: [{ quality: "auto", fetch_format: "auto" }] }
+        : {}),
+    });
+
+    return {
+      url: result.secure_url,
+      mediaType: result.resource_type === "video" ? "video" : "image",
+      bytes: result.bytes || 0,
+      format: result.format || "",
+    };
+  } catch (err) {
+    console.error("☁️ [Cloudinary Feedback Media Upload Error]:", err.message);
+    throw new Error(`Failed to upload ${resourceType}: ${err.message}`);
+  }
+}

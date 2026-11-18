@@ -318,6 +318,74 @@ export async function runBridgeScan(sessionCode, { changedFiles, maxDepth = 10, 
   return data;
 }
 
+// =========================================================================
+// FEEDBACK & 5-STAR RATING ENDPOINTS
+// =========================================================================
+
+export async function submitFeedback({
+  type,
+  rating = null,
+  title = '',
+  message = '',
+  analysisId = null,
+  attachments = [],
+  context = {},
+}) {
+  const res = await fetchWithRetry(`${API_BASE}/feedback`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ type, rating, title, message, analysisId, attachments, context }),
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error?.message || 'Failed to submit feedback');
+  }
+  return data.data;
+}
+
+export async function getPublicFeedback({ type = '', rating = '', limit = 30 } = {}) {
+  const params = new URLSearchParams();
+  if (type && type !== 'all') params.set('type', type);
+  if (rating) params.set('rating', String(rating));
+  params.set('limit', String(limit));
+
+  const res = await fetchWithRetry(`${API_BASE}/feedback/public?${params.toString()}`);
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error?.message || 'Failed to load community feedback');
+  }
+  return data.data;
+}
+
+export async function getMyFeedback(limit = 20) {
+  const res = await fetchWithRetry(`${API_BASE}/feedback/mine?limit=${encodeURIComponent(limit)}`);
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error?.message || 'Failed to load your feedback history');
+  }
+  return data.data;
+}
+
+export async function getFeedbackStats() {
+  const res = await fetchWithRetry(`${API_BASE}/feedback/stats`);
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error?.message || 'Failed to load feedback stats');
+  }
+  return data.data;
+}
+
+export async function getAnalysisRating(analysisId) {
+  if (!analysisId) return { averageRating: 0, totalRatings: 0, userRating: null };
+  const res = await fetchWithRetry(`${API_BASE}/feedback/analysis/${encodeURIComponent(analysisId)}`);
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error?.message || 'Failed to load analysis rating');
+  }
+  return data.data;
+}
+
+
 
 
 
