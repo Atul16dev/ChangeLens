@@ -1,6 +1,7 @@
 import crypto from "node:crypto";
 import { userRepository, toSafeUser, normalizeEmail } from "../db/user-repository.js";
 import { otpRepository } from "../db/otp-repository.js";
+import { adminInvitationRepository } from "../db/admin-invitation-repository.js";
 import { hashPassword, verifyPassword } from "../services/hash.js";
 import {
   generateOtp,
@@ -217,7 +218,21 @@ export const authController = {
         });
       }
 
-      const updatedUser = await userRepository.updateVerification(user.id, true);
+      let updatedUser = await userRepository.updateVerification(user.id, true);
+
+      // Automatically consume any active pending admin invitation for this email
+      try {
+        const pendingInvite = await adminInvitationRepository.findActiveByEmail(cleanEmail);
+        if (pendingInvite && pendingInvite.status === "pending") {
+          updatedUser = await userRepository.updateRoleAndPermissions(user.id, {
+            role: pendingInvite.role,
+            permissions: pendingInvite.permissions,
+          });
+          await adminInvitationRepository.markAccepted(pendingInvite.id, user.id);
+        }
+      } catch (inviteErr) {
+        console.warn("[Auth] Error auto-activating admin invitation:", inviteErr.message);
+      }
 
       // Session regeneration to prevent fixation
       req.session.regenerate((err) => {
@@ -350,6 +365,16 @@ export const authController = {
         return res.status(401).json({
           success: false,
           error: { code: "INVALID_CREDENTIALS", message: "Invalid email or password." },
+        });
+      }
+
+      if (user.status === "banned") {
+        return res.status(403).json({
+          success: false,
+          error: {
+            code: "ACCOUNT_BANNED",
+            message: `Your account has been suspended by an administrator. Reason: ${user.ban_reason || user.banReason || "Violation of platform policies"}`,
+          },
         });
       }
 

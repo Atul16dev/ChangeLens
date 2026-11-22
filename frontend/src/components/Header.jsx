@@ -12,7 +12,10 @@ import {
   History,
   MessageSquarePlus,
   Menu,
+  Shield,
+  Crown,
 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext.jsx';
 import { UserProfileMenu } from './UserProfileMenu.jsx';
 import { BrandLogo } from './BrandLogo.jsx';
 import { ThemeToggle } from './ThemeToggle.jsx';
@@ -35,6 +38,10 @@ export function Header({
   activeHubTab = 'repo',
   activeTargetContext,
 }) {
+  const { user } = useAuth();
+  const isStaff = user?.role === 'admin' || user?.role === 'superadmin';
+  const isSuperAdmin = user?.role === 'superadmin';
+
   const [repoPath, setRepoPath] = useState('');
   const [changedFile, setChangedFile] = useState('');
   const [maxDepth, setMaxDepth] = useState(10);
@@ -236,6 +243,22 @@ export function Header({
               </button>
             )}
 
+            {/* Admin Portal Button (ONLY for Admins & Super Admins) */}
+            {isStaff && (
+              <Link
+                to="/admin"
+                className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 min-h-[32px] rounded-full text-xs font-semibold text-amber-700 dark:text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 transition-all duration-200 active:scale-95 cursor-pointer shadow-xs"
+                title="Launch Admin Control Center"
+              >
+                {isSuperAdmin ? (
+                  <Crown className="w-3.5 h-3.5 text-amber-500" />
+                ) : (
+                  <Shield className="w-3.5 h-3.5 text-indigo-500" />
+                )}
+                <span className="hidden sm:inline">Admin</span>
+              </Link>
+            )}
+
             {/* Feedback & Community Button */}
             <Link
               to="/feedback"
@@ -341,6 +364,32 @@ export function Header({
                   </div>
                 </div>
               </button>
+            )}
+
+            {/* Admin Portal (Staff Only) */}
+            {isStaff && (
+              <Link
+                to="/admin"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="p-2.5 rounded-xl text-left border bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20 flex items-center gap-2.5 cursor-pointer"
+              >
+                {isSuperAdmin ? (
+                  <Crown className="w-4 h-4 text-amber-500 shrink-0" />
+                ) : (
+                  <Shield className="w-4 h-4 text-indigo-500 shrink-0" />
+                )}
+                <div className="min-w-0">
+                  <div className="text-xs font-bold truncate flex items-center gap-1">
+                    <span>Admin Portal</span>
+                    <span className="px-1 py-0.2 rounded text-[8px] font-bold bg-amber-500 text-white">
+                      {isSuperAdmin ? 'Owner' : 'Staff'}
+                    </span>
+                  </div>
+                  <div className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                    Team & Control Center
+                  </div>
+                </div>
+              </Link>
             )}
 
             {/* 3. Feedback & Community Hub */}

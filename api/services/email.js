@@ -198,3 +198,56 @@ export async function sendPasswordResetEmail({ to, name, otp }) {
 
   return sendEmail({ to, subject, html, text });
 }
+
+/**
+ * Sends Admin / Super Admin Invitation Email
+ */
+export async function sendAdminInvitationEmail({ to, inviterName, role, inviteUrl, expiresAt }) {
+  const roleDisplay = role === "superadmin" ? "Super Admin (Co-Owner)" : "Admin";
+  const subject = `You've been invited as a ChangeLens ${roleDisplay}`;
+  const expiryFormatted = expiresAt ? new Date(expiresAt).toUTCString() : "in 72 hours";
+
+  const text = `Hello,\n\n${inviterName || "A Super Admin"} has invited you to join the ChangeLens management team as a ${roleDisplay}.\n\nTo accept this invitation and activate your privileges, visit:\n${inviteUrl}\n\nThis invitation link expires on ${expiryFormatted}.\n\n- ChangeLens Team`;
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>ChangeLens Staff Invitation</title>
+      <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #020617; color: #f8fafc; margin: 0; padding: 40px 20px; }
+        .container { max-width: 520px; margin: 0 auto; background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; padding: 32px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5); }
+        .logo { font-size: 20px; font-weight: 700; color: #6366f1; letter-spacing: -0.5px; margin-bottom: 24px; }
+        .badge { display: inline-block; padding: 4px 10px; border-radius: 9999px; font-size: 11px; font-weight: 600; text-transform: uppercase; background: rgba(99, 102, 241, 0.2); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.4); margin-bottom: 12px; }
+        h1 { font-size: 20px; color: #ffffff; margin-bottom: 12px; }
+        p { color: #94a3b8; font-size: 14px; line-height: 1.6; margin-bottom: 20px; }
+        .btn { display: inline-block; background: #4f46e5; color: #ffffff !important; padding: 12px 24px; border-radius: 8px; font-weight: 600; font-size: 14px; text-decoration: none; margin: 16px 0; }
+        .expiry-box { background: #020617; border: 1px solid #1e293b; border-radius: 6px; padding: 12px; font-size: 12px; color: #94a3b8; margin: 16px 0; }
+        .footer { font-size: 12px; color: #64748b; border-top: 1px solid #1e293b; padding-top: 16px; margin-top: 32px; text-align: center; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="logo">⚡ ChangeLens Security</div>
+        <div class="badge">${roleDisplay} Invitation</div>
+        <h1>Join the ChangeLens Admin Team</h1>
+        <p>Hi,</p>
+        <p><strong>${inviterName || "A Super Admin"}</strong> has invited you to join ChangeLens with <strong>${roleDisplay}</strong> privileges.</p>
+        <div style="text-align: center;">
+          <a href="${inviteUrl}" class="btn">Accept Invitation & Activate Access</a>
+        </div>
+        <div class="expiry-box">
+          <strong>Expiration:</strong> This invite link is valid until ${expiryFormatted}.
+        </div>
+        <p style="font-size: 12px; color: #64748b;">If you were not expecting this invitation, you can safely ignore this email.</p>
+        <div class="footer">
+          &copy; ${new Date().getFullYear()} ChangeLens Code Impact Intelligence. All rights reserved.
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  return sendEmail({ to, subject, html, text });
+}

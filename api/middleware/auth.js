@@ -44,6 +44,18 @@ export function requireAuth(req, res, next) {
       },
     });
   }
+
+  if (req.user.status === "banned") {
+    return res.status(403).json({
+      success: false,
+      error: {
+        code: "ACCOUNT_BANNED",
+        message: `Your account has been suspended by an administrator. Reason: ${req.user.ban_reason || "Violation of platform policies"}`,
+        requestId: req.id,
+      },
+    });
+  }
+
   next();
 }
 
@@ -62,6 +74,17 @@ export function requireVerified(req, res, next) {
     });
   }
 
+  if (req.user.status === "banned") {
+    return res.status(403).json({
+      success: false,
+      error: {
+        code: "ACCOUNT_BANNED",
+        message: `Your account has been suspended by an administrator. Reason: ${req.user.ban_reason || "Violation of platform policies"}`,
+        requestId: req.id,
+      },
+    });
+  }
+
   if (!req.user.is_email_verified) {
     return res.status(403).json({
       success: false,
@@ -74,6 +97,134 @@ export function requireVerified(req, res, next) {
   }
 
   next();
+}
+
+/**
+ * Route guard requiring admin or superadmin role
+ */
+export function requireAdmin(req, res, next) {
+  if (!req.user) {
+    return res.status(401).json({
+      success: false,
+      error: {
+        code: "UNAUTHORIZED",
+        message: "You must be logged in to perform this action.",
+        requestId: req.id,
+      },
+    });
+  }
+
+  if (req.user.role !== "admin" && req.user.role !== "superadmin") {
+    return res.status(403).json({
+      success: false,
+      error: {
+        code: "FORBIDDEN_ADMIN_REQUIRED",
+        message: "Admin privileges are required to access this resource.",
+        requestId: req.id,
+      },
+    });
+  }
+
+  next();
+}
+
+/**
+ * Route guard strictly requiring superadmin role (site owner)
+ */
+export function requireSuperAdmin(req, res, next) {
+  if (!req.user) {
+    return res.status(401).json({
+      success: false,
+      error: {
+        code: "UNAUTHORIZED",
+        message: "You must be logged in to perform this action.",
+        requestId: req.id,
+      },
+    });
+  }
+
+  if (req.user.role !== "superadmin") {
+    return res.status(403).json({
+      success: false,
+      error: {
+        code: "FORBIDDEN_SUPER_ADMIN_REQUIRED",
+        message: "Super Admin privileges are required to perform this action.",
+        requestId: req.id,
+      },
+    });
+  }
+
+  next();
+}
+
+/**
+ * Route guard checking specific admin accessibility permission
+ * (Super Admin automatically satisfies all permissions)
+ */
+export function requirePermission(permissionName) {
+  return function permissionGuard(req, res, next) {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        error: {
+          code: "UNAUTHORIZED",
+          message: "You must be logged in to perform this action.",
+          requestId: req.id,
+        },
+      });
+    }
+
+    if (req.user.role === "superadmin") {
+      return next();
+    }
+
+    if (req.user.role === "admin" && req.user.permissions?.[permissionName]) {
+      return next();
+    }
+
+    return res.status(403).json({
+      success: false,
+      error: {
+        code: "FORBIDDEN_PERMISSION_REQUIRED",
+        message: `You do not have the required '${permissionName}' permission to perform this action.`,
+        requestId: req.id,
+      },
+    });
+  };
+}
+
+/**
+ * Route guard checking permission to manage users
+ * (Super Admin or Admin with canManageUsers: true)
+ */
+export function requireUserManagement(req, res, next) {
+  if (!req.user) {
+    return res.status(401).json({
+      success: false,
+      error: {
+        code: "UNAUTHORIZED",
+        message: "You must be logged in to perform this action.",
+        requestId: req.id,
+      },
+    });
+  }
+
+  if (req.user.role === "superadmin") {
+    return next();
+  }
+
+  if (req.user.role === "admin" && req.user.permissions?.canManageUsers) {
+    return next();
+  }
+
+  return res.status(403).json({
+    success: false,
+    error: {
+      code: "FORBIDDEN_USER_MANAGEMENT_REQUIRED",
+      message: "You do not have the required 'canManageUsers' permission to perform user management actions.",
+      requestId: req.id,
+    },
+  });
 }
 
 /**

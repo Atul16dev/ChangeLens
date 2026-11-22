@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext.jsx';
 import { AuthProvider } from './context/AuthContext.jsx';
 import { ProtectedRoute } from './components/ProtectedRoute.jsx';
+import { AdminRoute } from './components/AdminRoute.jsx';
 
 const lazyNamed = (loader, exportName) =>
   lazy(() => loader().then((mod) => ({ default: mod[exportName] })));
@@ -15,6 +16,8 @@ const VerifyEmailPage = lazyNamed(() => import('./pages/VerifyEmailPage.jsx'), '
 const ForgotPasswordPage = lazyNamed(() => import('./pages/ForgotPasswordPage.jsx'), 'ForgotPasswordPage');
 const ResetPasswordPage = lazyNamed(() => import('./pages/ResetPasswordPage.jsx'), 'ResetPasswordPage');
 const FeedbackPage = lazyNamed(() => import('./pages/FeedbackPage.jsx'), 'FeedbackPage');
+const AdminPage = lazyNamed(() => import('./pages/AdminPage.jsx'), 'AdminPage');
+const AcceptInvitePage = lazyNamed(() => import('./pages/AcceptInvitePage.jsx'), 'AcceptInvitePage');
 
 function PageFallback() {
   return (
@@ -57,6 +60,19 @@ export default function App() {
               {/* Public Community & Feedback Hub */}
               <Route path="/feedback" element={<FeedbackPage />} />
               <Route path="/community" element={<Navigate to="/feedback" replace />} />
+
+              {/* Admin Portal & Staff Management (Protected) */}
+              <Route
+                path="/admin"
+                element={
+                  <AdminRoute>
+                    <AdminPage />
+                  </AdminRoute>
+                }
+              />
+
+              {/* Staff Invitation Acceptance (Public / Token-Guarded) */}
+              <Route path="/admin/invite/accept" element={<AcceptInvitePage />} />
 
               {/* Catch-all redirect to landing page */}
               <Route path="*" element={<Navigate to="/" replace />} />
