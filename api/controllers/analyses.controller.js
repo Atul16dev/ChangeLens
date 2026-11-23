@@ -5,6 +5,8 @@ import { resolveRepositoryDependencies } from "../../analyzer/dependency-resolve
 import { buildDependencyGraph } from "../../analyzer/dependency-graph.js";
 import { classifyImpactPolicies } from "../../analyzer/change-classifier.js";
 import { generateImpactExplanation, calculateRiskLevel } from "../../analyzer/ai-explainer.js";
+import { analyzeTestImpact } from "../../analyzer/test-impact-analyzer.js";
+import { calculateDetailedRiskScore } from "../../analyzer/risk-engine.js";
 import { computeGraphLayout } from "../../analyzer/graph-layout.js";
 import { isGitRepository, getWorkingTreeChanges, getCommitDiff, getGitRoot, getGitBranch } from "../../analyzer/local-git.js";
 import { generateAnalysisChatResponse } from "../../services/chat-assistant.js";
@@ -314,11 +316,28 @@ export async function performAnalysis({
     symbolTable,
   });
 
-  // 5. Generate React Flow visual graph with symbol metadata
+  // 5. Predictive Test Impact Analysis (TIA)
+  const testImpact = analyzeTestImpact({
+    allFiles,
+    changes,
+    impactAnalysis,
+    graph,
+    dependencies,
+  });
+
+  // 6. Compute 0–100 Explainable Risk Score
+  const detailedRisk = calculateDetailedRiskScore({
+    summary: impactAnalysis.summary,
+    changes,
+    impactAnalysis,
+    testImpact,
+  });
+
+  // 7. Generate React Flow visual graph with symbol metadata
   const reactFlowGraph = await formatReactFlowGraph(graph, impactAnalysis, changedFilesSet, symbolTable, changes);
   const riskLevel = calculateRiskLevel(impactAnalysis.summary);
 
-  // 6. Store analysis run
+  // 8. Store analysis run
   const analysisId = `analysis_${Date.now()}`;
   const analysisRecord = {
     analysisId,
@@ -337,10 +356,20 @@ export async function performAnalysis({
     },
     status: "completed",
     coverage: scanReport.coverage,
+    testImpact,
+    riskScore: detailedRisk.score,
+    detailedRisk,
     summary: {
       ...impactAnalysis.summary,
       mode: analysisMode,
       riskLevel,
+      riskScore: detailedRisk.score,
+      testImpact: {
+        totalTestsCount: testImpact.totalTestsCount,
+        affectedTestsCount: testImpact.affectedTestsCount,
+        timeSavedPercentage: testImpact.timeSavedPercentage,
+        recommendedCommand: testImpact.recommendedCommand,
+      },
     },
     changes,
     graph: reactFlowGraph,
@@ -385,6 +414,9 @@ export async function runAnalysis(req, res, next) {
         status: "completed",
         summary: analysisRecord.summary,
         coverage: analysisRecord.coverage,
+        testImpact: analysisRecord.testImpact,
+        riskScore: analysisRecord.riskScore,
+        detailedRisk: analysisRecord.detailedRisk,
       },
     });
   } catch (error) {
@@ -421,6 +453,9 @@ export async function getAnalysis(req, res, next) {
         summary: analysis.summary,
         coverage: analysis.coverage,
         rawGraphData: analysis.rawGraphData,
+        testImpact: analysis.testImpact || null,
+        riskScore: analysis.riskScore ?? analysis.detailedRisk?.score ?? null,
+        detailedRisk: analysis.detailedRisk || null,
       },
     });
   } catch (error) {
@@ -484,6 +519,9 @@ export async function getAnalysisImpact(req, res, next) {
         staleRenames: impact.staleRenames || [],
         blastRadius: impact.blastRadius || {},
         allFindings: impact.allFindings || [],
+        testImpact: analysis.testImpact || null,
+        riskScore: analysis.riskScore ?? analysis.detailedRisk?.score ?? null,
+        detailedRisk: analysis.detailedRisk || null,
       },
     });
   } catch (error) {
@@ -615,6 +653,7 @@ export async function getAnalysisExplanation(req, res, next) {
       explanation = generateImpactExplanation({
         impactAnalysis: analysis.impactAnalysis || {},
         changes: analysis.changes || [],
+        testImpact: analysis.testImpact || null,
       });
     }
 

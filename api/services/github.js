@@ -277,6 +277,9 @@ export async function analyzeGitHubPR({ prUrl, token, repoPath, maxDepth = 10, u
     summary: analysisRecord.summary,
     coverage: analysisRecord.coverage,
     impactAnalysis: analysisRecord.impactAnalysis,
+    testImpact: analysisRecord.testImpact || null,
+    riskScore: analysisRecord.riskScore ?? analysisRecord.detailedRisk?.score ?? null,
+    detailedRisk: analysisRecord.detailedRisk || null,
   };
 }
 

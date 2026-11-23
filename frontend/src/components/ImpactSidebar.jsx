@@ -31,6 +31,10 @@ import {
   List,
   Maximize2,
   Minimize2,
+  FlaskConical,
+  Terminal,
+  Activity,
+  Sliders,
 } from 'lucide-react';
 import { downloadText, downloadJson, printOrSavePDF } from '../utils/export.js';
 import { AnalysisRatingBar } from './AnalysisRatingBar.jsx';
@@ -54,9 +58,10 @@ export function ImpactSidebar({
   onCloseMobile,
   isFullMobileView = false,
 }) {
-  const [activeMainTab, setActiveMainTab] = useState('findings'); // 'findings' | 'ai_review'
+  const [activeMainTab, setActiveMainTab] = useState('findings'); // 'findings' | 'ai_review' | 'test_impact'
   const [activeFilterTab, setActiveFilterTab] = useState('all'); // 'all' | 'critical' | 'direct' | 'transitive'
   const [copied, setCopied] = useState(false);
+  const [copiedTestCmd, setCopiedTestCmd] = useState(false);
   const [findingSearchQuery, setFindingSearchQuery] = useState('');
   const [viewLayout, setViewLayout] = useState('auto'); // 'auto' | 'grid' | 'list'
   const [isCardsExpanded, setIsCardsExpanded] = useState(false);
@@ -270,40 +275,63 @@ export function ImpactSidebar({
     });
   };
 
+  const testImpact = impactData?.testImpact || explanationData?.testImpact || null;
+  const detailedRisk = impactData?.detailedRisk || explanationData?.detailedRisk || null;
+  const numericalRiskScore = impactData?.riskScore ?? explanationData?.riskScore ?? detailedRisk?.score ?? null;
+
+  const handleCopyTestCommand = async () => {
+    if (!testImpact?.recommendedCommand) return;
+    try {
+      await navigator.clipboard.writeText(testImpact.recommendedCommand);
+      setCopiedTestCmd(true);
+      setTimeout(() => setCopiedTestCmd(false), 2500);
+    } catch (err) {
+      console.error('Failed to copy test command:', err);
+    }
+  };
+
   const getRiskBadge = (risk) => {
     switch (risk) {
       case 'CRITICAL':
         return {
           bg: 'bg-rose-950/80 text-rose-300 border-rose-500/50',
           dot: 'bg-rose-500 animate-pulse',
+          badgeBg: 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20',
+          barColor: 'bg-rose-500',
           label: 'CRITICAL RISK',
-          subtext: 'Broken imports will cause build failure',
+          subtext: 'Broken imports or missing symbols will cause build failure',
         };
       case 'HIGH':
         return {
           bg: 'bg-orange-950/80 text-orange-300 border-orange-500/50',
           dot: 'bg-orange-500',
+          badgeBg: 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20',
+          barColor: 'bg-orange-500',
           label: 'HIGH RISK',
-          subtext: 'Direct downstream consumers impacted',
+          subtext: 'Direct downstream consumers or security boundaries impacted',
         };
       case 'MEDIUM':
         return {
           bg: 'bg-yellow-950/80 text-yellow-300 border-yellow-500/50',
           dot: 'bg-yellow-500',
+          badgeBg: 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border-yellow-500/20',
+          barColor: 'bg-amber-500',
           label: 'MEDIUM RISK',
-          subtext: 'Transitive dependencies impacted',
+          subtext: 'Transitive dependencies impacted across modules',
         };
       default:
         return {
           bg: 'bg-emerald-950/80 text-emerald-300 border-emerald-500/50',
           dot: 'bg-emerald-500',
+          badgeBg: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
+          barColor: 'bg-emerald-500',
           label: 'LOW RISK',
-          subtext: 'Isolated changes with clean blast radius',
+          subtext: 'Isolated changes with minimal blast radius',
         };
     }
   };
 
-  const riskConfig = getRiskBadge(explanationData?.riskLevel || 'LOW');
+  const riskConfig = getRiskBadge(explanationData?.riskLevel || detailedRisk?.tier || 'LOW');
 
   return (
     <>
@@ -447,17 +475,17 @@ export function ImpactSidebar({
         )}
 
         {/* Top Main Navigation Tabs */}
-        <div className="flex items-center border-b border-slate-200 dark:border-slate-700/80 bg-slate-100 dark:bg-[#090d18] p-2 gap-1.5">
+        <div className="flex items-center border-b border-slate-200 dark:border-slate-700/80 bg-slate-100 dark:bg-[#090d18] p-2 gap-1.5 overflow-x-auto">
           <button
             onClick={() => setActiveMainTab('findings')}
-            className={`flex-1 py-2 px-2.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
+            className={`flex-1 py-2 px-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all shrink-0 ${
               activeMainTab === 'findings'
                 ? 'bg-white text-slate-900 border border-slate-300 dark:bg-[#182338] dark:text-white dark:border-slate-600 shadow-sm'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60 dark:text-slate-300 dark:hover:text-white dark:hover:bg-[#131b2a]'
             }`}
           >
             <Layers className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />
-            <span>AST Findings</span>
+            <span>Findings</span>
             <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 font-mono">
               {allFindings.length}
             </span>
@@ -465,19 +493,33 @@ export function ImpactSidebar({
 
           <button
             onClick={() => setActiveMainTab('ai_review')}
-            className={`flex-1 py-2 px-2.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
+            className={`flex-1 py-2 px-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all shrink-0 ${
               activeMainTab === 'ai_review'
                 ? 'bg-purple-100 text-purple-900 border border-purple-300 dark:bg-gradient-to-r dark:from-indigo-950 dark:to-purple-950 dark:text-purple-200 dark:border-purple-500/40 shadow-sm'
                 : 'text-slate-600 hover:text-purple-800 hover:bg-purple-50 dark:text-slate-300 dark:hover:text-purple-300 dark:hover:bg-purple-950/20'
             }`}
           >
             <Sparkles className="w-3.5 h-3.5 text-purple-400" />
-            <span>AI PR Review</span>
-            {explanationData?.riskLevel && (
-              <span className={`px-1.5 py-0.2 rounded-full text-[10px] border font-bold ${riskConfig.bg}`}>
-                {explanationData.riskLevel}
-              </span>
-            )}
+            <span>Risk Score</span>
+            <span className={`px-1.5 py-0.2 rounded-full text-[10px] border font-bold ${riskConfig.badgeBg}`}>
+              {numericalRiskScore !== null ? `${numericalRiskScore}/100` : explanationData?.riskLevel || '0/100'}
+            </span>
+          </button>
+
+          <button
+            onClick={() => setActiveMainTab('test_impact')}
+            className={`flex-1 py-2 px-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all shrink-0 ${
+              activeMainTab === 'test_impact'
+                ? 'bg-emerald-100 text-emerald-900 border border-emerald-300 dark:bg-emerald-950/70 dark:text-emerald-200 dark:border-emerald-500/40 shadow-sm'
+                : 'text-slate-600 hover:text-emerald-800 hover:bg-emerald-50 dark:text-slate-300 dark:hover:text-emerald-300 dark:hover:bg-emerald-950/20'
+            }`}
+            title="Predictive Test Selection based on AST blast radius"
+          >
+            <FlaskConical className="w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400" />
+            <span>Test Impact</span>
+            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 font-mono font-bold">
+              {testImpact?.affectedTestsCount ?? 0}
+            </span>
           </button>
 
           {/* Desktop Width Quick Expand / Collapse Button */}
@@ -1013,22 +1055,78 @@ export function ImpactSidebar({
         </>
       )}
 
-      {/* TAB 2: AI PR REVIEW & COMMENT GENERATOR */}
+      {/* TAB 2: AI PR REVIEW & RISK ASSESSMENT */}
       {activeMainTab === 'ai_review' && (
         <div className="flex-1 overflow-y-auto p-4 pb-12 space-y-4">
-          {/* Risk Level Alert Banner */}
-          <div className={`p-3.5 rounded-xl border flex items-center justify-between ${riskConfig.bg}`}>
-            <div className="flex items-center gap-2.5">
-              <span className={`w-3 h-3 rounded-full shrink-0 ${riskConfig.dot}`}></span>
+          {/* 0-100 Explainable Risk Score Card */}
+          <div className="bg-white dark:bg-[#131d2e] border border-slate-200 dark:border-slate-700/80 rounded-2xl p-4 shadow-sm">
+            <div className="flex items-center justify-between mb-2">
               <div>
-                <h3 className="text-sm font-bold tracking-tight">{riskConfig.label}</h3>
-                <p className="text-[11px] opacity-90">{riskConfig.subtext}</p>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  Explainable Risk Score
+                </span>
+                <div className="flex items-baseline gap-2 mt-0.5">
+                  <span className="text-3xl font-black text-slate-900 dark:text-white">
+                    {numericalRiskScore !== null ? numericalRiskScore : 0}
+                  </span>
+                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">/ 100</span>
+                  <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full border ${riskConfig.badgeBg}`}>
+                    {riskConfig.label}
+                  </span>
+                </div>
+              </div>
+              <div className={`p-2.5 rounded-2xl border ${riskConfig.bg}`}>
+                <Activity className="w-5 h-5 text-slate-800 dark:text-white" />
               </div>
             </div>
-            <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-black/40 border border-white/10">
-              {summary.totalImpactedFiles} Files Impacted
-            </span>
+
+            {/* Progress Meter */}
+            <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden mb-2">
+              <div
+                className={`h-full transition-all duration-500 ${riskConfig.barColor}`}
+                style={{ width: `${Math.min(100, Math.max(5, numericalRiskScore ?? 5))}%` }}
+              />
+            </div>
+            <p className="text-xs text-slate-600 dark:text-slate-300">
+              {detailedRisk?.recommendation || riskConfig.subtext}
+            </p>
           </div>
+
+          {/* Explainable Factor Breakdown (Why is this score assigned?) */}
+          {detailedRisk?.factors && detailedRisk.factors.length > 0 && (
+            <div className="bg-white dark:bg-[#131d2e] border border-slate-200 dark:border-slate-700/80 rounded-2xl p-3.5 shadow-sm">
+              <h4 className="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+                <Sliders className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />
+                Deterministic Scoring Breakdown
+              </h4>
+              <div className="space-y-1.5">
+                {detailedRisk.factors.map((factor, i) => (
+                  <div
+                    key={i}
+                    className="flex items-start justify-between gap-2 p-2 rounded-xl bg-slate-50 dark:bg-[#0a0f1d] border border-slate-200/80 dark:border-slate-800/80"
+                  >
+                    <div>
+                      <div className="text-xs font-bold text-slate-900 dark:text-white">
+                        {factor.name}
+                      </div>
+                      <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5 leading-snug">
+                        {factor.description}
+                      </p>
+                    </div>
+                    <span
+                      className={`text-xs font-mono font-extrabold px-2 py-0.5 rounded-lg shrink-0 ${
+                        factor.points < 0
+                          ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
+                          : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20'
+                      }`}
+                    >
+                      {factor.points > 0 ? `+${factor.points}` : factor.points} pts
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Executive Overview Box */}
           <div className="bg-white dark:bg-[#131d2e] border border-slate-200 dark:border-slate-700/80 rounded-xl p-3.5 shadow-sm">
@@ -1126,6 +1224,130 @@ export function ImpactSidebar({
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* TAB 3: TEST IMPACT ANALYSIS (PREDICTIVE TEST SELECTION) */}
+      {activeMainTab === 'test_impact' && (
+        <div className="flex-1 overflow-y-auto p-4 pb-12 space-y-4">
+          {/* Predictive Test Selection Hero Banner */}
+          <div className="bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 dark:from-emerald-950/40 dark:via-teal-950/30 dark:to-slate-900 p-4 rounded-2xl border border-emerald-200 dark:border-emerald-800/60 shadow-sm">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+                  <FlaskConical className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-extrabold text-slate-900 dark:text-white">
+                    Predictive Test Selection
+                  </h3>
+                  <p className="text-[11px] text-slate-600 dark:text-slate-400">
+                    Run only affected test suites to save developer & CI time
+                  </p>
+                </div>
+              </div>
+              <div className="text-right">
+                <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400">
+                  ~{testImpact?.timeSavedPercentage ?? 0}%
+                </span>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                  CI Time Saved
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-emerald-200/60 dark:border-emerald-800/40 text-center">
+              <div className="p-2 rounded-xl bg-white/70 dark:bg-slate-900/60 border border-emerald-200/50 dark:border-emerald-800/40">
+                <span className="text-[10px] font-semibold text-slate-500">Targeted Tests to Run</span>
+                <p className="text-base font-black text-emerald-600 dark:text-emerald-400 mt-0.5">
+                  {testImpact?.affectedTestsCount ?? 0}
+                </p>
+              </div>
+              <div className="p-2 rounded-xl bg-white/70 dark:bg-slate-900/60 border border-emerald-200/50 dark:border-emerald-800/40">
+                <span className="text-[10px] font-semibold text-slate-500">Total Scanned Tests</span>
+                <p className="text-base font-black text-slate-900 dark:text-white mt-0.5">
+                  {testImpact?.totalTestsCount ?? 0}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Recommended CLI Test Command Box */}
+          {testImpact?.recommendedCommand && (
+            <div className="bg-white dark:bg-[#131d2e] border border-slate-200 dark:border-slate-700/80 rounded-2xl p-3.5 shadow-sm">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                  <Terminal className="w-3.5 h-3.5 text-emerald-500" />
+                  <span>Targeted Test Command</span>
+                </div>
+                <button
+                  onClick={handleCopyTestCommand}
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-xs transition active:scale-95"
+                >
+                  {copiedTestCmd ? (
+                    <>
+                      <Check className="w-3.5 h-3.5" />
+                      <span>Copied!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3.5 h-3.5" />
+                      <span>Copy</span>
+                    </>
+                  )}
+                </button>
+              </div>
+              <div className="p-2.5 bg-slate-900 text-emerald-300 font-mono text-xs rounded-xl overflow-x-auto shadow-inner">
+                <code>{testImpact.recommendedCommand}</code>
+              </div>
+            </div>
+          )}
+
+          {/* Affected Tests List */}
+          <div className="space-y-2">
+            <h4 className="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider px-1">
+              Impacted Test Suites ({testImpact?.affectedTests?.length || 0})
+            </h4>
+
+            {(!testImpact?.affectedTests || testImpact.affectedTests.length === 0) ? (
+              <div className="p-6 rounded-2xl bg-white dark:bg-[#131d2e] border border-slate-200 dark:border-slate-700/80 text-center">
+                <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
+                <p className="text-xs font-bold text-slate-900 dark:text-white">
+                  {testImpact?.totalTestsCount === 0
+                    ? 'No test files detected in repository'
+                    : 'Zero test suites impacted by these changes'}
+                </p>
+                <p className="text-[11px] text-slate-500 mt-1">
+                  {testImpact?.summary || 'All test suites remain completely untouched.'}
+                </p>
+              </div>
+            ) : (
+              testImpact.affectedTests.map((testItem, i) => (
+                <div
+                  key={i}
+                  className="p-3.5 rounded-2xl bg-white dark:bg-[#131d2e] border border-slate-200 dark:border-slate-700/80 shadow-xs"
+                >
+                  <div className="flex items-center justify-between gap-2 mb-1.5">
+                    <span className="font-mono text-xs font-bold text-slate-900 dark:text-white break-all">
+                      {testItem.file}
+                    </span>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shrink-0">
+                      {testItem.impactType}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-600 dark:text-slate-300 mb-2 leading-relaxed">
+                    {testItem.reason}
+                  </p>
+                  {testItem.targetChangedFile && (
+                    <div className="text-[11px] font-mono text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                      <span>Target:</span>
+                      <span className="text-slate-700 dark:text-slate-300 font-semibold">{testItem.targetChangedFile}</span>
+                    </div>
+                  )}
+                </div>
+              ))
+            )}
           </div>
         </div>
       )}

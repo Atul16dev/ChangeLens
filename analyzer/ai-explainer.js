@@ -10,6 +10,8 @@
  * - GitHub PR Markdown formatting with alert callouts and collapsible details
  */
 
+import { calculateDetailedRiskScore, getTierFromScore, RISK_TIERS } from "./risk-engine.js";
+
 /**
  * Assesses overall risk tier based on deterministic findings.
  * @param {object} summary 
@@ -29,6 +31,8 @@ export function calculateRiskLevel(summary = {}) {
   return "LOW";
 }
 
+export { calculateDetailedRiskScore, getTierFromScore, RISK_TIERS };
+
 /**
  * Builds a deterministic, structured markdown PR review comment.
  * 
@@ -36,9 +40,17 @@ export function calculateRiskLevel(summary = {}) {
  * @param {object} params.impactAnalysis - Output from classifyImpactPolicies
  * @param {Array<object>} [params.changes=[]] - Parsed git changes
  * @param {string} [params.riskLevel] - Calculated risk level
+ * @param {object} [params.riskScore=null] - Output from calculateDetailedRiskScore
+ * @param {object} [params.testImpact=null] - Output from analyzeTestImpact
  * @returns {string} GitHub-flavored markdown comment
  */
-export function formatPRMarkdownComment({ impactAnalysis, changes = [], riskLevel }) {
+export function formatPRMarkdownComment({
+  impactAnalysis,
+  changes = [],
+  riskLevel,
+  riskScore = null,
+  testImpact = null,
+}) {
   const summary = impactAnalysis?.summary || {};
   const brokenImports = impactAnalysis?.brokenImports || [];
   const brokenSymbols = impactAnalysis?.brokenSymbols || [];
@@ -46,18 +58,29 @@ export function formatPRMarkdownComment({ impactAnalysis, changes = [], riskLeve
   const blastRadius = impactAnalysis?.blastRadius || [];
   const allFindings = impactAnalysis?.allFindings || [];
 
+  const detailedRisk =
+    riskScore ||
+    calculateDetailedRiskScore({
+      summary,
+      changes,
+      impactAnalysis,
+      testImpact,
+    });
+
+  const effectiveRiskLevel = riskLevel || detailedRisk.tier;
+
   const riskBadge = {
     CRITICAL: "🚨 **CRITICAL RISK** — Broken Imports or Missing Symbols Detected",
     HIGH: "⚠️ **HIGH RISK** — Direct Downstream Dependents Impacted",
     MEDIUM: "🔶 **MEDIUM RISK** — Transitive Downstream Impact",
     LOW: "✅ **LOW RISK** — Isolated Changes with Minimal Blast Radius",
-  }[riskLevel] || "ℹ️ **UNKNOWN RISK**";
+  }[effectiveRiskLevel] || "ℹ️ **UNKNOWN RISK**";
 
   const lines = [];
 
-  // Header & Risk Banner
+  // Header & Risk Banner with 0-100 score
   lines.push(`## 🔍 ChangeLens Impact Analysis Report`);
-  lines.push(`> ${riskBadge}`);
+  lines.push(`> ${riskBadge} • **Risk Score: \`${detailedRisk.score}/100\`**`);
   lines.push("");
 
   // Executive Overview Table
@@ -65,6 +88,7 @@ export function formatPRMarkdownComment({ impactAnalysis, changes = [], riskLeve
   lines.push(`| Metric | Count | Status |`);
   lines.push(`| :--- | :---: | :--- |`);
   lines.push(`| **Root Changed Files** | \`${changes.length || summary.totalChangedFiles || 0}\` | ${changes.length > 0 ? "Changes Inspected" : "Baseline"} |`);
+  lines.push(`| **Explainable Risk Score** | \`🎯 ${detailedRisk.score}/100\` | **${detailedRisk.label}** |`);
   lines.push(`| **Broken Imports** | \`${summary.brokenImportsCount || brokenImports.length}\` | ${brokenImports.length > 0 ? "🚨 Immediate Fix Required" : "✅ Clean"} |`);
   if (summary.brokenSymbolsCount > 0 || brokenSymbols.length > 0) {
     lines.push(`| **Broken Symbols** | \`${summary.brokenSymbolsCount || brokenSymbols.length}\` | 🚨 Missing Functions/Exports |`);
@@ -72,7 +96,34 @@ export function formatPRMarkdownComment({ impactAnalysis, changes = [], riskLeve
   lines.push(`| **Direct Dependents (Depth 1)** | \`${summary.directDependentsCount || 0}\` | ${summary.directDependentsCount > 0 ? "⚠️ Needs Testing" : "✅ None"} |`);
   lines.push(`| **Transitive Dependents (Depth 2+)** | \`${summary.transitiveDependentsCount || 0}\` | ${summary.transitiveDependentsCount > 0 ? "🔶 Downstream Flow" : "✅ None"} |`);
   lines.push(`| **Total Blast Radius** | \`${summary.impactedFilesCount || 0}\` | Total impacted files |`);
+  if (testImpact && testImpact.totalTestsCount > 0) {
+    lines.push(`| **Predictive Test Selection** | \`${testImpact.affectedTestsCount} / ${testImpact.totalTestsCount} tests\` | 🧪 ~${testImpact.timeSavedPercentage}% CI time saved |`);
+  }
   lines.push("");
+
+  // Predictive Test Selection (Test Impact Analysis)
+  if (testImpact && testImpact.totalTestsCount > 0) {
+    lines.push(`### 🧪 Predictive Test Selection (Test Impact Analysis)`);
+    lines.push(`> Identified **${testImpact.affectedTestsCount}** of **${testImpact.totalTestsCount}** tests impacted by these changes. Executing targeted tests saves **~${testImpact.timeSavedPercentage}%** test run time.`);
+    lines.push("");
+
+    if (testImpact.recommendedCommand) {
+      lines.push(`Run targeted test suites with:`);
+      lines.push("```bash");
+      lines.push(testImpact.recommendedCommand);
+      lines.push("```");
+      lines.push("");
+    }
+
+    if (testImpact.affectedTests.length > 0) {
+      lines.push(`| Affected Test File | Impact Type | Depth | Reason |`);
+      lines.push(`| :--- | :---: | :---: | :--- |`);
+      for (const t of testImpact.affectedTests) {
+        lines.push(`| \`${t.file}\` | \`${t.impactType}\` | Depth ${t.depth} | ${t.reason} |`);
+      }
+      lines.push("");
+    }
+  }
 
   // Critical Alerts: Broken Imports (if any)
   if (brokenImports.length > 0) {
@@ -207,19 +258,36 @@ export { callGeminiAPI, isGeminiAvailable } from "../services/gemini.js";
  * @param {object} params
  * @param {object} params.impactAnalysis - Output from classifyImpactPolicies
  * @param {Array<object>} [params.changes=[]] - Parsed git changes
+ * @param {object} [params.testImpact=null] - Output from analyzeTestImpact
  * @returns {object} Complete deterministic explanation result
  */
-export function generateImpactExplanation({ impactAnalysis, changes = [] } = {}) {
+export function generateImpactExplanation({ impactAnalysis, changes = [], testImpact = null } = {}) {
   if (!impactAnalysis || !impactAnalysis.summary) {
     throw new TypeError("Valid impactAnalysis object is required.");
   }
 
   const riskLevel = calculateRiskLevel(impactAnalysis.summary);
-  const prCommentMarkdown = formatPRMarkdownComment({ impactAnalysis, changes, riskLevel });
+  const detailedRisk = calculateDetailedRiskScore({
+    summary: impactAnalysis.summary,
+    changes,
+    impactAnalysis,
+    testImpact,
+  });
+
+  const prCommentMarkdown = formatPRMarkdownComment({
+    impactAnalysis,
+    changes,
+    riskLevel,
+    riskScore: detailedRisk,
+    testImpact,
+  });
   const deterministicNarrative = buildDeterministicNarrative({ impactAnalysis, changes, riskLevel });
 
   return {
     riskLevel,
+    riskScore: detailedRisk.score,
+    detailedRisk,
+    testImpact: testImpact || null,
     executiveSummary: deterministicNarrative.executiveSummary,
     aiNarrative: deterministicNarrative.executiveSummary,
     actionItems: deterministicNarrative.actionItems,
