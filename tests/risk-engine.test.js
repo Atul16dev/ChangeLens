@@ -30,7 +30,7 @@ test("Explainable Risk Engine (0-100 Score) Suite", async (t) => {
     assert.ok(result.recommendation.includes("Do not merge"));
   });
 
-  await t.test("Modifying authentication or database modules adds domain criticality points", () => {
+  await t.test("Modifying authentication or database modules adds domain criticality points (+25 pts for auth)", () => {
     const authResult = calculateDetailedRiskScore({
       summary: { directDependentsCount: 1 },
       changes: ["api/middleware/auth.js"],
@@ -42,7 +42,32 @@ test("Explainable Risk Engine (0-100 Score) Suite", async (t) => {
     });
 
     assert.ok(authResult.score > standardResult.score);
-    assert.ok(authResult.factors.some((f) => f.id === "sensitive_auth_security"));
+    const authFactor = authResult.factors.find((f) => f.id === "sensitive_auth_security");
+    assert.ok(authFactor);
+    assert.equal(authFactor.points, 25);
+  });
+
+  await t.test("Broken symbol references assign +20 points and blast radius depth > 3 assigns +15 points", () => {
+    const symbolResult = calculateDetailedRiskScore({
+      summary: { brokenImportsCount: 0, brokenSymbolsCount: 1, directDependentsCount: 1 },
+      changes: ["src/user.js"],
+      impactAnalysis: {
+        blastRadius: [
+          { depth: 1, file: "a.js" },
+          { depth: 2, file: "b.js" },
+          { depth: 3, file: "c.js" },
+          { depth: 4, file: "d.js" }, // Depth > 3
+        ],
+      },
+    });
+
+    const symbolFactor = symbolResult.factors.find((f) => f.id === "broken_symbols");
+    assert.ok(symbolFactor);
+    assert.equal(symbolFactor.points, 20);
+
+    const depthFactor = symbolResult.factors.find((f) => f.id === "deep_propagation");
+    assert.ok(depthFactor);
+    assert.equal(depthFactor.points, 15);
   });
 
   await t.test("Targeted automated test coverage mitigates risk score", () => {

@@ -542,6 +542,16 @@ export function DashboardPage() {
   const effectiveImpactData = simulationData ? simulationData.impactAnalysis : impactData;
   const effectiveExplanationData = simulationData ? simulationData.explanation : explanationData;
 
+  const currentRiskScore =
+    effectiveImpactData?.riskScore ??
+    effectiveImpactData?.detailedRisk?.score ??
+    effectiveExplanationData?.riskScore ??
+    null;
+  const currentRiskTier =
+    effectiveImpactData?.detailedRisk?.tier ??
+    effectiveExplanationData?.riskLevel ??
+    'LOW';
+
   // Check health on mount and auto-restore analysis if ?analysisId= is present in URL
   useEffect(() => {
     let isCancelled = false;
@@ -678,6 +688,13 @@ export function DashboardPage() {
         isProjectHubOpen={isProjectHubOpen}
         activeHubTab={activeHubTab}
         activeTargetContext={activeTargetContext}
+        riskScore={currentRiskScore}
+        riskTier={currentRiskTier}
+        onOpenRisk={() => {
+          setIsProjectHubOpen(false);
+          setMobileViewTab('findings');
+          setIsSidebarOpenMobile(true);
+        }}
       />
 
       {/* Workspace & Hub Content Region (unified relative container for 3D Blast Loader) */}

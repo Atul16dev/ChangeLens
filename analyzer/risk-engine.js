@@ -25,7 +25,7 @@ const SENSITIVE_PATTERNS = [
     category: "auth_security",
     label: "Authentication / Security Module",
     pattern: /(?:^|[\\/])(?:auth|security|jwt|token|permission|admin|session|password|crypto|oauth)[^\\/]*\.[a-zA-Z0-9]+$/i,
-    weight: 20,
+    weight: 25,
     description: "Modifications to authentication, security, or access control boundaries.",
   },
   {
@@ -114,7 +114,7 @@ export function calculateDetailedRiskScore({
     score += pts;
     factors.push({
       id: "broken_symbols",
-      name: "Missing Function / Symbol Exports",
+      name: "Broken Export / Symbol Reference",
       points: pts,
       severity: "CRITICAL",
       category: "defect",
@@ -154,22 +154,22 @@ export function calculateDetailedRiskScore({
   for (const b of blastRadius) {
     if (b.depth && b.depth > maxDepth) maxDepth = b.depth;
   }
-  if (maxDepth >= 4) {
-    score += 10;
+  if (maxDepth > 3) {
+    score += 15;
     factors.push({
       id: "deep_propagation",
-      name: "Deep Dependency Chain (Depth ≥ 4)",
-      points: 10,
+      name: "Blast Radius Depth > 3 (Deep Propagation)",
+      points: 15,
       severity: "HIGH",
       category: "architecture",
-      description: `Impact traverses ${maxDepth} layers deep into downstream architectural components.`,
+      description: `Impact propagates ${maxDepth} layers deep across system boundaries (> 3 layers).`,
     });
   } else if (maxDepth === 3) {
-    score += 5;
+    score += 8;
     factors.push({
       id: "moderate_propagation",
-      name: "Moderate Propagation (Depth 3)",
-      points: 5,
+      name: "Moderate Propagation (Depth = 3)",
+      points: 8,
       severity: "MEDIUM",
       category: "architecture",
       description: "Impact propagates 3 layers deep across system boundaries.",
@@ -184,7 +184,7 @@ export function calculateDetailedRiskScore({
     for (const rule of SENSITIVE_PATTERNS) {
       if (rule.pattern.test(filePath) && !detectedSensitive.has(rule.category)) {
         detectedSensitive.add(rule.category);
-        const addedPts = Math.min(rule.weight, 25 - sensitivePointsTotal);
+        const addedPts = Math.min(rule.weight, 35 - sensitivePointsTotal);
         if (addedPts > 0) {
           sensitivePointsTotal += addedPts;
           factors.push({

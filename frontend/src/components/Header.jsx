@@ -14,6 +14,7 @@ import {
   Menu,
   Shield,
   Crown,
+  Activity,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
 import { UserProfileMenu } from './UserProfileMenu.jsx';
@@ -37,6 +38,9 @@ export function Header({
   isProjectHubOpen = false,
   activeHubTab = 'repo',
   activeTargetContext,
+  riskScore = null,
+  riskTier = null,
+  onOpenRisk = null,
 }) {
   const { user } = useAuth();
   const isStaff = user?.role === 'admin' || user?.role === 'superadmin';
@@ -226,6 +230,32 @@ export function Header({
                 </span>
                 <span className="md:hidden hidden xs:inline">
                   {!isProjectHubOpen ? 'Workshop' : 'Hub'}
+                </span>
+              </button>
+            )}
+
+            {/* Explainable 0-100 Risk Score Pill */}
+            {riskScore !== null && onOpenRisk && (
+              <button
+                type="button"
+                onClick={onOpenRisk}
+                className={`inline-flex items-center justify-center gap-1.5 px-3 py-1.5 min-h-[32px] rounded-full text-xs font-bold border transition-all duration-200 hover:shadow-xs active:scale-95 cursor-pointer ${
+                  riskTier === 'CRITICAL'
+                    ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30 hover:bg-rose-500/20'
+                    : riskTier === 'HIGH'
+                    ? 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/30 hover:bg-orange-500/20'
+                    : riskTier === 'MEDIUM'
+                    ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30 hover:bg-amber-500/20'
+                    : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20'
+                }`}
+                title="Inspect Explainable 0–100 Risk Speedometer Gauge"
+              >
+                <Activity className="w-3.5 h-3.5" />
+                <span>
+                  Risk: <strong className="font-mono">{riskScore}/100</strong>
+                </span>
+                <span className="hidden lg:inline-flex text-[9px] uppercase font-black tracking-wider px-1.5 py-0.2 rounded-full bg-black/5 dark:bg-white/10">
+                  {riskTier}
                 </span>
               </button>
             )}

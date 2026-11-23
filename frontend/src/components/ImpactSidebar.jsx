@@ -38,6 +38,7 @@ import {
 } from 'lucide-react';
 import { downloadText, downloadJson, printOrSavePDF } from '../utils/export.js';
 import { AnalysisRatingBar } from './AnalysisRatingBar.jsx';
+import { RiskGauge } from './RiskGauge.jsx';
 
 const DEFAULT_SIDEBAR_WIDTH = 420;
 const MIN_SIDEBAR_WIDTH = 340;
@@ -1058,75 +1059,14 @@ export function ImpactSidebar({
       {/* TAB 2: AI PR REVIEW & RISK ASSESSMENT */}
       {activeMainTab === 'ai_review' && (
         <div className="flex-1 overflow-y-auto p-4 pb-12 space-y-4">
-          {/* 0-100 Explainable Risk Score Card */}
-          <div className="bg-white dark:bg-[#131d2e] border border-slate-200 dark:border-slate-700/80 rounded-2xl p-4 shadow-sm">
-            <div className="flex items-center justify-between mb-2">
-              <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                  Explainable Risk Score
-                </span>
-                <div className="flex items-baseline gap-2 mt-0.5">
-                  <span className="text-3xl font-black text-slate-900 dark:text-white">
-                    {numericalRiskScore !== null ? numericalRiskScore : 0}
-                  </span>
-                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">/ 100</span>
-                  <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full border ${riskConfig.badgeBg}`}>
-                    {riskConfig.label}
-                  </span>
-                </div>
-              </div>
-              <div className={`p-2.5 rounded-2xl border ${riskConfig.bg}`}>
-                <Activity className="w-5 h-5 text-slate-800 dark:text-white" />
-              </div>
-            </div>
-
-            {/* Progress Meter */}
-            <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden mb-2">
-              <div
-                className={`h-full transition-all duration-500 ${riskConfig.barColor}`}
-                style={{ width: `${Math.min(100, Math.max(5, numericalRiskScore ?? 5))}%` }}
-              />
-            </div>
-            <p className="text-xs text-slate-600 dark:text-slate-300">
-              {detailedRisk?.recommendation || riskConfig.subtext}
-            </p>
-          </div>
-
-          {/* Explainable Factor Breakdown (Why is this score assigned?) */}
-          {detailedRisk?.factors && detailedRisk.factors.length > 0 && (
-            <div className="bg-white dark:bg-[#131d2e] border border-slate-200 dark:border-slate-700/80 rounded-2xl p-3.5 shadow-sm">
-              <h4 className="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
-                <Sliders className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />
-                Deterministic Scoring Breakdown
-              </h4>
-              <div className="space-y-1.5">
-                {detailedRisk.factors.map((factor, i) => (
-                  <div
-                    key={i}
-                    className="flex items-start justify-between gap-2 p-2 rounded-xl bg-slate-50 dark:bg-[#0a0f1d] border border-slate-200/80 dark:border-slate-800/80"
-                  >
-                    <div>
-                      <div className="text-xs font-bold text-slate-900 dark:text-white">
-                        {factor.name}
-                      </div>
-                      <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5 leading-snug">
-                        {factor.description}
-                      </p>
-                    </div>
-                    <span
-                      className={`text-xs font-mono font-extrabold px-2 py-0.5 rounded-lg shrink-0 ${
-                        factor.points < 0
-                          ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
-                          : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20'
-                      }`}
-                    >
-                      {factor.points > 0 ? `+${factor.points}` : factor.points} pts
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          {/* Visual 0-100 Speedometer Risk Gauge & Deterministic Breakdown */}
+          <RiskGauge
+            score={numericalRiskScore}
+            tier={detailedRisk?.tier || explanationData?.riskLevel || 'LOW'}
+            label={detailedRisk?.label || riskConfig.label}
+            factors={detailedRisk?.factors || []}
+            recommendation={detailedRisk?.recommendation || riskConfig.subtext}
+          />
 
           {/* Executive Overview Box */}
           <div className="bg-white dark:bg-[#131d2e] border border-slate-200 dark:border-slate-700/80 rounded-xl p-3.5 shadow-sm">
