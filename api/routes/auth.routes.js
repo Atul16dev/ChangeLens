@@ -34,3 +34,7 @@ authRoutes.post("/reset-password", authLimiter, authController.resetPassword);
 // Google OAuth
 authRoutes.get("/google", authController.googleAuth);
 authRoutes.get("/google/callback", authController.googleCallback);
+
+// GitHub OAuth
+authRoutes.get("/github", authController.githubAuth);
+authRoutes.get("/github/callback", authController.githubCallback);

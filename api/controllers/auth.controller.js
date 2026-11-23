@@ -20,6 +20,11 @@ import {
   verifyGoogleCode,
 } from "../services/google-auth.js";
 import {
+  isGitHubAuthConfigured,
+  getGitHubAuthUrl,
+  verifyGitHubCode,
+} from "../services/github-auth.js";
+import {
   isCloudinaryConfigured,
   uploadAvatar,
   deleteAvatar,
@@ -349,6 +354,16 @@ export const authController = {
           error: {
             code: "GOOGLE_ACCOUNT_NO_PASSWORD",
             message: "This account was registered using Google. Please log in using 'Continue with Google' or use 'Forgot Password' to set a password.",
+          },
+        });
+      }
+
+      if (!user.password_hash && user.auth_provider === "github") {
+        return res.status(400).json({
+          success: false,
+          error: {
+            code: "GITHUB_ACCOUNT_NO_PASSWORD",
+            message: "This account was registered using GitHub. Please log in using 'Continue with GitHub' or use 'Forgot Password' to set a password.",
           },
         });
       }
@@ -823,6 +838,87 @@ export const authController = {
         if (err) return next(err);
         req.session.userId = user.id;
         const frontendUrl = process.env.FRONTEND_URL || process.env.FRONTEND_ORIGIN || "http://localhost:5173";
+        return res.redirect(`${frontendUrl}/app`);
+      });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  /**
+   * Initiate GitHub OAuth flow
+   */
+  async githubAuth(req, res, next) {
+    try {
+      if (!isGitHubAuthConfigured()) {
+        return res.status(503).json({
+          success: false,
+          error: {
+            code: "GITHUB_AUTH_UNAVAILABLE",
+            message: "GitHub OAuth is not configured on this server.",
+          },
+        });
+      }
+
+      const state = crypto.randomBytes(32).toString("hex");
+      req.session.githubOAuthState = state;
+
+      const url = getGitHubAuthUrl(state);
+      return res.redirect(url);
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  /**
+   * Handle GitHub OAuth Callback
+   */
+  async githubCallback(req, res, next) {
+    try {
+      const { code, state } = req.query || {};
+
+      if (!state || state !== req.session?.githubOAuthState) {
+        return res.status(403).json({
+          success: false,
+          error: { code: "INVALID_OAUTH_STATE", message: "Invalid OAuth state parameter." },
+        });
+      }
+
+      delete req.session.githubOAuthState;
+
+      const githubProfile = await verifyGitHubCode(code);
+      const cleanEmail = normalizeEmail(githubProfile.email);
+
+      let user = await userRepository.findByEmail(cleanEmail);
+
+      if (user) {
+        if (!user.github_id) {
+          user = await userRepository.linkGitHubAccount(
+            user.id,
+            githubProfile.githubId,
+            githubProfile.username
+          );
+        } else if (!user.is_email_verified) {
+          user = await userRepository.updateVerification(user.id, true);
+        }
+      } else {
+        user = await userRepository.create({
+          name: githubProfile.name || githubProfile.username,
+          email: cleanEmail,
+          passwordHash: null,
+          authProvider: "github",
+          githubId: githubProfile.githubId,
+          githubUsername: githubProfile.username,
+          isEmailVerified: 1,
+          avatar: githubProfile.avatar || null,
+        });
+      }
+
+      req.session.regenerate((err) => {
+        if (err) return next(err);
+        req.session.userId = user.id;
+        const frontendUrl =
+          process.env.FRONTEND_URL || process.env.FRONTEND_ORIGIN || "http://localhost:5173";
         return res.redirect(`${frontendUrl}/app`);
       });
     } catch (err) {

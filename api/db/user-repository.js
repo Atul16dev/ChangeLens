@@ -66,6 +66,8 @@ export function toSafeUser(user) {
       : [],
     auth_provider: safe.auth_provider || safe.authProvider || "local",
     google_id: safe.google_id || safe.googleId || null,
+    github_id: safe.github_id || safe.githubId || null,
+    github_username: safe.github_username || safe.githubUsername || null,
     is_email_verified: Boolean(safe.is_email_verified ?? safe.isEmailVerified),
     created_at: safe.created_at || (safe.createdAt ? new Date(safe.createdAt).toISOString() : new Date().toISOString()),
     updated_at: safe.updated_at || (safe.updatedAt ? new Date(safe.updatedAt).toISOString() : new Date().toISOString()),
@@ -108,6 +110,8 @@ function formatUserDoc(doc) {
     password_hash: doc.passwordHash,
     auth_provider: doc.authProvider,
     google_id: doc.googleId,
+    github_id: doc.githubId || null,
+    github_username: doc.githubUsername || null,
     is_email_verified: doc.isEmailVerified ? 1 : 0,
     created_at: doc.createdAt ? doc.createdAt.toISOString() : new Date().toISOString(),
     updated_at: doc.updatedAt ? doc.updatedAt.toISOString() : new Date().toISOString(),
@@ -116,7 +120,19 @@ function formatUserDoc(doc) {
 }
 
 export const userRepository = {
-  async create({ name, email, passwordHash = null, authProvider = "local", googleId = null, isEmailVerified = 0, role = "user", permissions = {} }) {
+  async create({
+    name,
+    email,
+    passwordHash = null,
+    authProvider = "local",
+    googleId = null,
+    githubId = null,
+    githubUsername = null,
+    isEmailVerified = 0,
+    role = "user",
+    permissions = {},
+    avatar = null,
+  }) {
     const cleanEmail = normalizeEmail(email);
     await ensureDbReady();
 
@@ -133,6 +149,9 @@ export const userRepository = {
         passwordHash,
         authProvider,
         googleId,
+        githubId,
+        githubUsername,
+        avatar,
         isEmailVerified: Boolean(isEmailVerified),
         role: initialRole,
         permissions: initialPermissions,
@@ -152,6 +171,7 @@ export const userRepository = {
       id,
       name: name.trim(),
       email: cleanEmail,
+      avatar,
       role: initialRole,
       permissions: initialPermissions,
       status: "active",
@@ -162,6 +182,8 @@ export const userRepository = {
       password_hash: passwordHash,
       auth_provider: authProvider,
       google_id: googleId,
+      github_id: githubId,
+      github_username: githubUsername,
       is_email_verified: isEmailVerified ? 1 : 0,
       created_at: now,
       updated_at: now,
@@ -313,6 +335,41 @@ export const userRepository = {
       user.updated_at = new Date().toISOString();
     }
     return user || null;
+  },
+
+  async linkGitHubAccount(id, githubId, githubUsername = null) {
+    if (isMongoConnected()) {
+      const doc = await User.findByIdAndUpdate(
+        id,
+        { githubId, githubUsername, isEmailVerified: true },
+        { new: true }
+      );
+      return formatUserDoc(doc);
+    }
+
+    const user = memoryUsers.get(id);
+    if (user) {
+      user.github_id = String(githubId);
+      user.github_username = githubUsername;
+      user.is_email_verified = 1;
+      user.updated_at = new Date().toISOString();
+    }
+    return user || null;
+  },
+
+  async findByGitHubId(githubId) {
+    if (!githubId) return null;
+    if (isMongoConnected()) {
+      const doc = await User.findOne({ githubId: String(githubId) });
+      return formatUserDoc(doc);
+    }
+
+    for (const user of memoryUsers.values()) {
+      if (user.github_id === String(githubId)) {
+        return toSafeUser(user);
+      }
+    }
+    return null;
   },
 
   async updateRoleAndPermissions(id, { role, permissions } = {}) {

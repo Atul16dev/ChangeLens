@@ -23,13 +23,22 @@ const UserSchema = new mongoose.Schema(
     },
     authProvider: {
       type: String,
-      enum: ["local", "google"],
+      enum: ["local", "google", "github"],
       default: "local",
     },
     googleId: {
       type: String,
       sparse: true,
       index: true,
+    },
+    githubId: {
+      type: String,
+      sparse: true,
+      index: true,
+    },
+    githubUsername: {
+      type: String,
+      default: null,
     },
     isEmailVerified: {
       type: Boolean,
@@ -115,6 +124,8 @@ UserSchema.methods.toSafeObject = function () {
       : [],
     auth_provider: this.authProvider,
     google_id: this.googleId,
+    github_id: this.githubId || null,
+    github_username: this.githubUsername || null,
     is_email_verified: this.isEmailVerified,
     created_at: this.createdAt ? this.createdAt.toISOString() : new Date().toISOString(),
     updated_at: this.updatedAt ? this.updatedAt.toISOString() : new Date().toISOString(),
