@@ -14,6 +14,7 @@ import { githubRoutes } from "./routes/github.routes.js";
 import { bridgeRoutes } from "./routes/bridge.routes.js";
 import { feedbackRoutes } from "./routes/feedback.routes.js";
 import { adminRoutes } from "./routes/admin.routes.js";
+import { jobsRoutes } from "./routes/jobs.routes.js";
 
 export function createApp({ sessionSecret, sessionStore } = {}) {
   const app = express();
@@ -110,6 +111,7 @@ export function createApp({ sessionSecret, sessionStore } = {}) {
   app.use("/api/v1/bridge", bridgeRoutes);
   app.use("/api/v1/feedback", feedbackRoutes);
   app.use("/api/v1/admin", adminRoutes);
+  app.use("/api/v1/jobs", jobsRoutes);
   app.use("/api/v1", analysesRoutes);
 
   // Serve compiled frontend UI if available

@@ -12,6 +12,7 @@ import { isGitRepository, getWorkingTreeChanges, getCommitDiff, getGitRoot, getG
 import { generateAnalysisChatResponse } from "../../services/chat-assistant.js";
 import { buildSymbolTable } from "../../analyzer/symbol-analyzer.js";
 import { analysesStore } from "../store.js";
+import { analysisQueue } from "../queue/analysis-queue.js";
 
 /**
  * Formats in-memory graph nodes and edges using ELK.js layered layout.
@@ -138,7 +139,18 @@ export async function performAnalysis({
   changedFiles: userChangedFiles,
   baseRef,
   maxDepth = 10,
+  onProgress = null,
 } = {}, userId = null) {
+  const notify = (progress, stage) => {
+    if (typeof onProgress === "function") {
+      try {
+        onProgress({ progress, stage });
+      } catch {}
+    }
+  };
+
+  notify(10, "Validating repository target directory...");
+
   // Default to sample mern repository if no path is passed
   const targetDir = repoPath
     ? path.resolve(repoPath)
@@ -147,6 +159,8 @@ export async function performAnalysis({
   if (!existsSync(targetDir)) {
     throw new Error(`Target repository directory does not exist: "${targetDir}"`);
   }
+
+  notify(25, "Scanning repository ASTs and detecting source files...");
 
   // 1. Scan repository ASTs first so we know all valid code files
   const scanReport = await scanRepository(targetDir);
@@ -300,13 +314,16 @@ export async function performAnalysis({
   }
 
   // 2. Resolve module dependencies & Build Symbol Table
+  notify(40, "Resolving module dependencies and building symbol table...");
   const dependencies = resolveRepositoryDependencies(scanReport);
   const symbolTable = buildSymbolTable(scanReport.files);
 
   // 3. Build directed dependency graph
+  notify(55, "Building directed dependency graph...");
   const graph = buildDependencyGraph(dependencies, allFiles);
 
   // 4. Apply change status impact policies (Reverse BFS & Symbol Analysis)
+  notify(70, "Classifying impact policies & multi-hop blast radius...");
   const impactAnalysis = classifyImpactPolicies({
     changes,
     graph,
@@ -317,6 +334,7 @@ export async function performAnalysis({
   });
 
   // 5. Predictive Test Impact Analysis (TIA)
+  notify(82, "Running predictive test impact selection...");
   const testImpact = analyzeTestImpact({
     allFiles,
     changes,
@@ -326,6 +344,7 @@ export async function performAnalysis({
   });
 
   // 6. Compute 0–100 Explainable Risk Score
+  notify(90, "Evaluating explainable 0–100 risk score...");
   const detailedRisk = calculateDetailedRiskScore({
     summary: impactAnalysis.summary,
     changes,
@@ -334,10 +353,12 @@ export async function performAnalysis({
   });
 
   // 7. Generate React Flow visual graph with symbol metadata
+  notify(95, "Generating deterministic ELK graph visual layout...");
   const reactFlowGraph = await formatReactFlowGraph(graph, impactAnalysis, changedFilesSet, symbolTable, changes);
   const riskLevel = calculateRiskLevel(impactAnalysis.summary);
 
   // 8. Store analysis run
+  notify(98, "Finalizing analysis and caching results...");
   const analysisId = `analysis_${Date.now()}`;
   const analysisRecord = {
     analysisId,
@@ -385,8 +406,12 @@ export async function performAnalysis({
   };
 
   await analysesStore.save(analysisId, analysisRecord, userId);
+  notify(100, "Analysis completed successfully.");
   return analysisRecord;
 }
+
+// Register performAnalysis as the execution runner for background queue jobs
+analysisQueue.setRunner(performAnalysis);
 
 /**
  * Helper to fetch analysis record by ID from store.
@@ -400,10 +425,33 @@ async function getAnalysisRecord(id) {
 /**
  * POST /api/v1/analyze
  * Initiates repository and change impact analysis.
+ * Supports both synchronous execution and asynchronous background queue processing.
  */
 export async function runAnalysis(req, res, next) {
   try {
     const userId = req.user?.id || null;
+    const isAsync =
+      req.query.async === "true" ||
+      req.body?.async === true ||
+      req.headers["prefer"] === "respond-async" ||
+      req.headers["x-async-job"] === "true";
+
+    if (isAsync) {
+      const job = analysisQueue.enqueueJob(req.body || {}, userId);
+      return res.status(202).json({
+        success: true,
+        data: {
+          jobId: job.jobId,
+          status: job.status,
+          progress: job.progress,
+          stage: job.stage,
+          pollUrl: `/api/v1/jobs/${job.jobId}`,
+          eventsUrl: `/api/v1/jobs/${job.jobId}/events`,
+          message: "Analysis job queued for background processing",
+        },
+      });
+    }
+
     const analysisRecord = await performAnalysis(req.body || {}, userId);
 
     res.status(201).json({

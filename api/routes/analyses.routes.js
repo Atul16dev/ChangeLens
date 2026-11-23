@@ -13,11 +13,15 @@ import {
   toggleAnalysisPin,
 } from "../controllers/analyses.controller.js";
 import { requireAuth } from "../middleware/auth.js";
+import { createAnalysisJob } from "../controllers/jobs.controller.js";
 
 const router = Router();
 
-// Run new analysis
+// Run new analysis (supports synchronous or async via query/headers/body)
 router.post("/analyze", runAnalysis);
+
+// Explicit async analysis job creation
+router.post("/analyze/async", createAnalysisJob);
 
 // List user analysis history (search, pagination)
 router.get("/analyses/history", requireAuth, getAnalysisHistory);

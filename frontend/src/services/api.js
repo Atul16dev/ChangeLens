@@ -30,7 +30,143 @@ export async function checkBackendHealth() {
   return res.json();
 }
 
-export async function runImpactAnalysis({ repoPath, changedFiles, baseRef, maxDepth = 10 } = {}) {
+/**
+ * Retrieves the status and progress of an asynchronous analysis job.
+ */
+export async function getJobStatus(jobId) {
+  const res = await fetchWithRetry(`${API_BASE}/jobs/${jobId}`);
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error?.message || `Failed to fetch job status`);
+  }
+  return data.data;
+}
+
+/**
+ * Polls or listens via SSE to an asynchronous job until completion or failure.
+ */
+export async function pollJobUntilComplete(jobId, { onProgress = null, pollInterval = 400, timeout = 120000 } = {}) {
+  const startTime = Date.now();
+
+  return new Promise((resolve, reject) => {
+    let completed = false;
+    let eventSource = null;
+
+    const cleanup = () => {
+      completed = true;
+      if (eventSource) {
+        eventSource.close();
+        eventSource = null;
+      }
+    };
+
+    const startPolling = async () => {
+      while (!completed) {
+        if (Date.now() - startTime > timeout) {
+          cleanup();
+          return reject(new Error("Analysis job timed out."));
+        }
+
+        try {
+          const job = await getJobStatus(jobId);
+          if (onProgress) {
+            onProgress({ progress: job.progress, stage: job.stage, status: job.status });
+          }
+
+          if (job.status === "COMPLETED") {
+            cleanup();
+            return resolve(job.result);
+          }
+          if (job.status === "FAILED") {
+            cleanup();
+            return reject(new Error(job.error?.message || "Analysis job failed."));
+          }
+        } catch (err) {
+          console.warn("[Queue Poll] Transient polling error:", err);
+        }
+
+        await new Promise((r) => setTimeout(r, pollInterval));
+      }
+    };
+
+    // Try EventSource if supported
+    if (typeof window !== "undefined" && window.EventSource) {
+      try {
+        eventSource = new EventSource(`${API_BASE}/jobs/${jobId}/events`);
+
+        eventSource.addEventListener("progress", (e) => {
+          try {
+            const data = JSON.parse(e.data);
+            if (onProgress) onProgress(data);
+          } catch {}
+        });
+
+        eventSource.addEventListener("completed", (e) => {
+          try {
+            const data = JSON.parse(e.data);
+            cleanup();
+            resolve(data.result);
+          } catch (err) {
+            cleanup();
+            reject(err);
+          }
+        });
+
+        eventSource.addEventListener("failed", (e) => {
+          try {
+            const data = JSON.parse(e.data);
+            cleanup();
+            reject(new Error(data.error?.message || "Analysis job failed."));
+          } catch (err) {
+            cleanup();
+            reject(err);
+          }
+        });
+
+        eventSource.onerror = () => {
+          cleanup();
+          startPolling();
+        };
+      } catch {
+        startPolling();
+      }
+    } else {
+      startPolling();
+    }
+  });
+}
+
+export async function runImpactAnalysis({ repoPath, changedFiles, baseRef, maxDepth = 10, onProgress = null, useAsyncQueue = true } = {}) {
+  // If async queue mode is active, enqueue job and stream/poll progress
+  if (useAsyncQueue) {
+    try {
+      const payload = { async: true };
+      if (repoPath) payload.repoPath = repoPath;
+      if (changedFiles && changedFiles.length > 0) payload.changedFiles = changedFiles;
+      if (baseRef) payload.baseRef = baseRef;
+      if (maxDepth) payload.maxDepth = maxDepth;
+
+      const res = await fetchWithRetry(`${API_BASE}/analyze?async=true`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (res.status === 202 && data.data?.jobId) {
+        return await pollJobUntilComplete(data.data.jobId, { onProgress });
+      }
+      if (data.data) {
+        return data.data;
+      }
+    } catch (queueErr) {
+      console.warn('[Queue Client] Async queue dispatch failed, falling back to synchronous execution:', queueErr);
+    }
+  }
+
+  // Synchronous execution
   const payload = {};
   if (repoPath) payload.repoPath = repoPath;
   if (changedFiles && changedFiles.length > 0) payload.changedFiles = changedFiles;

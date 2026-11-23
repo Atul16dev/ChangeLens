@@ -200,12 +200,19 @@ export function DashboardPage() {
   // Trigger analysis pipeline
   const executeAnalysis = useCallback(async (options = {}, { onSuccess = null } = {}) => {
     setLoading(true);
-    setLoadingMessage('Scanning ASTs & Computing Multi-Hop Blast Radius...');
+    setLoadingMessage('Initializing analysis worker & scanning ASTs...');
     setError(null);
 
     try {
-      // 1. Run analysis endpoint
-      const analysisResult = await runImpactAnalysis(options);
+      // 1. Run analysis endpoint (with live progress tracking)
+      const analysisResult = await runImpactAnalysis({
+        ...options,
+        onProgress: ({ progress, stage }) => {
+          if (stage) {
+            setLoadingMessage(`${stage} (${progress || 0}%)`);
+          }
+        },
+      });
       const { analysisId } = analysisResult;
       setCurrentAnalysisId(analysisId);
       updateUrlAnalysisId(analysisId, isDemoMode);
