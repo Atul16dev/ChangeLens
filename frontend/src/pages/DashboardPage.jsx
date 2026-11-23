@@ -40,6 +40,7 @@ export function DashboardPage() {
   // Mobile / Tablet Responsive Impact Sidebar State & Primary View Switcher
   const [mobileViewTab, setMobileViewTab] = useState('graph'); // 'graph' | 'findings'
   const [isSidebarOpenMobile, setIsSidebarOpenMobile] = useState(false);
+  const [sidebarActiveTab, setSidebarActiveTab] = useState('findings'); // 'findings' | 'ai_review' | 'test_impact'
 
   // History Drawer state
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
@@ -552,6 +553,21 @@ export function DashboardPage() {
     effectiveExplanationData?.riskLevel ??
     'LOW';
 
+  // Smoothly open Risk Score tab in the right-side sidebar without shifting layout
+  const handleOpenRisk = useCallback(() => {
+    // 1. Close Project Hub if it was open so the analysis graph and sidebar are visible
+    setIsProjectHubOpen(false);
+
+    // 2. Switch the right-side sidebar tab directly to 'ai_review' (where RiskGauge is displayed)
+    setSidebarActiveTab('ai_review');
+
+    // 3. ONLY if on mobile/small screens (< 1024px), toggle mobile sidebar view
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+      setMobileViewTab('findings');
+      setIsSidebarOpenMobile(true);
+    }
+  }, []);
+
   // Check health on mount and auto-restore analysis if ?analysisId= is present in URL
   useEffect(() => {
     let isCancelled = false;
@@ -690,11 +706,7 @@ export function DashboardPage() {
         activeTargetContext={activeTargetContext}
         riskScore={currentRiskScore}
         riskTier={currentRiskTier}
-        onOpenRisk={() => {
-          setIsProjectHubOpen(false);
-          setMobileViewTab('findings');
-          setIsSidebarOpenMobile(true);
-        }}
+        onOpenRisk={handleOpenRisk}
       />
 
       {/* Workspace & Hub Content Region (unified relative container for 3D Blast Loader) */}
@@ -874,6 +886,8 @@ export function DashboardPage() {
                     setIsSidebarOpenMobile(false);
                   }}
                   isFullMobileView={mobileViewTab === 'findings'}
+                  activeMainTab={sidebarActiveTab}
+                  onMainTabChange={setSidebarActiveTab}
                 />
               </div>
             </div>

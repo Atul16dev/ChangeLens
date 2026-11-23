@@ -58,8 +58,17 @@ export function ImpactSidebar({
   isMobileOpen = false,
   onCloseMobile,
   isFullMobileView = false,
+  activeMainTab: externalActiveMainTab,
+  onMainTabChange,
 }) {
-  const [activeMainTab, setActiveMainTab] = useState('findings'); // 'findings' | 'ai_review' | 'test_impact'
+  const [internalActiveMainTab, setInternalActiveMainTab] = useState('findings'); // 'findings' | 'ai_review' | 'test_impact'
+  const activeMainTab = externalActiveMainTab !== undefined ? externalActiveMainTab : internalActiveMainTab;
+  const setActiveMainTab = (tab) => {
+    if (typeof onMainTabChange === 'function') {
+      onMainTabChange(tab);
+    }
+    setInternalActiveMainTab(tab);
+  };
   const [activeFilterTab, setActiveFilterTab] = useState('all'); // 'all' | 'critical' | 'direct' | 'transitive'
   const [copied, setCopied] = useState(false);
   const [copiedTestCmd, setCopiedTestCmd] = useState(false);
