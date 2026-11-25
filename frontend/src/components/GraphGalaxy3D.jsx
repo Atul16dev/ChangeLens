@@ -10,6 +10,7 @@ import {
   getOptimalPixelRatio,
   getPrefersReducedMotion,
   observeVisibility,
+  wrapCurveProgress,
 } from '../utils/threeHelpers.js';
 import {
   Sparkles,
@@ -983,11 +984,12 @@ export function GraphGalaxy3D({
     // ── Animation Loop (viewport-aware & reduced-motion friendly) ──────────────
     let animId = null;
     let isVisible = true;
+    let isDisposed = false;
     const timer = new THREE.Timer();
     const _v3 = new THREE.Vector3();
 
     const animate = (timestamp) => {
-      if (!isVisible) {
+      if (isDisposed || !isVisible) {
         animId = null;
         return;
       }
@@ -1021,7 +1023,7 @@ export function GraphGalaxy3D({
       // Simulation epicenter shockwaves
       simShockwaves.forEach((sw) => {
         sw.mesh.lookAt(camera.position);
-        const phase = (t * 0.55 + sw.phaseOffset) % 1;
+        const phase = wrapCurveProgress(t * 0.55 + sw.phaseOffset);
         const sScale = 1.0 + phase * 3.8;
         sw.mesh.scale.set(sScale, sScale, sScale);
         sw.mat.opacity = (1 - phase) * (isDark ? 0.75 : 0.85);
@@ -1030,12 +1032,12 @@ export function GraphGalaxy3D({
       // Photon packets + sequential hop-by-hop simulation wave pulses
       edgeObjs.forEach((eo) => {
         if (eo.photon && eo.curve) {
-          eo.progress = (eo.progress + eo.speed) % 1;
+          eo.progress = wrapCurveProgress(eo.progress + eo.speed);
           eo.photon.position.copy(eo.curve.getPointAt(eo.progress));
         }
         if (eo.simPulse && eo.curve) {
-          const cycle = (t * 0.48 - eo.edgeHop * 0.24 + 10) % 1;
-          const u = eo.waveReverse ? 1 - cycle : cycle;
+          const cycle = wrapCurveProgress(t * 0.48 - eo.edgeHop * 0.24 + 10);
+          const u = eo.waveReverse ? wrapCurveProgress(1 - cycle) : cycle;
           eo.simPulse.position.copy(eo.curve.getPointAt(u));
           const pulseScale = 0.8 + Math.sin(cycle * Math.PI) * 0.65;
           eo.simPulse.scale.setScalar(pulseScale);
@@ -1127,6 +1129,7 @@ export function GraphGalaxy3D({
     };
 
     const stopVisibility = observeVisibility(container, (visible) => {
+      if (isDisposed) return;
       isVisible = visible;
       if (visible && animId === null) {
         animId = requestAnimationFrame(animate);
@@ -1140,6 +1143,7 @@ export function GraphGalaxy3D({
 
     // ── Cleanup ───────────────────────────────────────────────────────────────
     return () => {
+      isDisposed = true;
       if (animId !== null) cancelAnimationFrame(animId);
       stopVisibility();
       timer.dispose();

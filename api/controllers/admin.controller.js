@@ -422,6 +422,17 @@ export const adminController = {
         });
       }
 
+      if (isSuperAdminEmail(targetUser.email)) {
+        return res.status(400).json({
+          success: false,
+          error: {
+            code: "CANNOT_DEMOTE_BOOTSTRAP_SUPERADMIN",
+            message: `${targetUser.email} is configured as a bootstrap Super Admin via environment configuration and cannot be demoted here.`,
+            requestId: req.id,
+          },
+        });
+      }
+
       const updatedUser = await userRepository.updateRoleAndPermissions(id, {
         role: "user",
         permissions: {},
@@ -585,9 +596,11 @@ export const adminController = {
 
       const analysesList = analysesResult.analyses || [];
       const totalAnalyses = analysesResult.total || analysesList.length;
-      const highRiskAnalyses = analysesList.filter(
-        (a) => a.riskLevel === "HIGH" || (a.riskScore !== undefined && a.riskScore >= 70)
-      ).length;
+      const highRiskAnalyses = analysesList.filter((a) => {
+        const level = a.summary?.riskLevel || a.riskLevel;
+        const score = a.summary?.riskScore ?? a.riskScore;
+        return level === "HIGH" || level === "CRITICAL" || (typeof score === "number" && score >= 70);
+      }).length;
 
       const lastActive =
         analysesList[0]?.createdAt ||

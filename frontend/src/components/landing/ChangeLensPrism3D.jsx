@@ -6,6 +6,7 @@ import {
   getOptimalPixelRatio,
   getPrefersReducedMotion,
   observeVisibility,
+  wrapCurveProgress,
 } from '../../utils/threeHelpers.js';
 import {
   Sparkles,
@@ -952,7 +953,7 @@ export function ChangeLensPrism3D() {
 
     // --- 10. RESIZE OBSERVER ---
     const handleResize = () => {
-      if (!container) return;
+      if (isDisposed || !container) return;
       const nw = container.clientWidth;
       const nh = container.clientHeight;
       if (nw === 0 || nh === 0) return;
@@ -970,10 +971,11 @@ export function ChangeLensPrism3D() {
     // --- 11. ANIMATION LOOP (viewport-paused + reduced-motion friendly) ---
     let animationFrameId = null;
     let isVisible = true;
+    let isDisposed = false;
     const timer = new THREE.Timer();
 
     const animate = (timestamp) => {
-      if (!isVisible) {
+      if (isDisposed || !isVisible) {
         animationFrameId = null;
         return;
       }
@@ -1025,7 +1027,7 @@ export function ChangeLensPrism3D() {
       emitterHalo.scale.setScalar(1 + emitterPulse * 0.25);
 
       incidentPhotons.forEach((ph) => {
-        const progress = (elapsedTime * 0.55 + ph.offset) % 1;
+        const progress = wrapCurveProgress(elapsedTime * 0.55 + ph.offset);
         laserCurve.getPointAt(progress, ph.mesh.position);
         const fade = Math.sin(progress * Math.PI);
         ph.mat.opacity = 0.25 + fade * 0.75;
@@ -1062,7 +1064,7 @@ export function ChangeLensPrism3D() {
         // Outward photons along each beam
         obj.beamPhotons.forEach((bp) => {
           const speed = isFocused ? photonSpeed * 1.4 : photonSpeed;
-          const progress = (elapsedTime * speed + bp.offset + obj.idx * 0.12) % 1;
+          const progress = wrapCurveProgress(elapsedTime * speed + bp.offset + obj.idx * 0.12);
           obj.curve.getPointAt(progress, bp.mesh.position);
           const fade = Math.sin(progress * Math.PI);
           bp.mat.opacity = isDimmed ? 0.15 : 0.3 + fade * 0.7;
@@ -1084,6 +1086,7 @@ export function ChangeLensPrism3D() {
     };
 
     const stopVisibility = observeVisibility(container, (visible) => {
+      if (isDisposed) return;
       isVisible = visible;
       if (visible && !reducedMotion && animationFrameId === null) {
         animationFrameId = requestAnimationFrame(animate);
@@ -1101,6 +1104,7 @@ export function ChangeLensPrism3D() {
 
     // --- CLEANUP ---
     return () => {
+      isDisposed = true;
       if (animationFrameId !== null) cancelAnimationFrame(animationFrameId);
       stopVisibility();
       timer.dispose();

@@ -322,6 +322,36 @@ export class AnalysisQueue extends EventEmitter {
   }
 
   /**
+   * Marks orphaned QUEUED or PROCESSING jobs in MongoDB from previous server runs as FAILED.
+   */
+  async reconcileStaleJobs() {
+    if (!isMongoConnected()) return 0;
+    try {
+      const result = await Job.updateMany(
+        {
+          status: { $in: ["QUEUED", "PROCESSING"] },
+          jobId: { $nin: Array.from(this.jobs.keys()) },
+        },
+        {
+          $set: {
+            status: "FAILED",
+            stage: "Interrupted by server restart",
+            completedAt: new Date(),
+            error: {
+              code: "SERVER_RESTART_INTERRUPTED",
+              message: "Analysis job was interrupted because the server restarted.",
+            },
+          },
+        }
+      );
+      return result?.modifiedCount || 0;
+    } catch (err) {
+      console.warn("[AnalysisQueue] Failed to reconcile stale jobs:", err.message);
+      return 0;
+    }
+  }
+
+  /**
    * Retrieves a job by ID from memory, or fallback to MongoDB.
    */
   async getJob(jobId) {
@@ -333,7 +363,10 @@ export class AnalysisQueue extends EventEmitter {
       try {
         const mongoJob = await Job.findOne({ jobId }).lean();
         if (mongoJob) {
-          // Hydrate memory cache
+          if (this.jobs.size >= this.maxJobHistory) {
+            const oldestKey = this.jobs.keys().next().value;
+            if (oldestKey !== undefined) this.jobs.delete(oldestKey);
+          }
           this.jobs.set(jobId, mongoJob);
           return mongoJob;
         }
@@ -352,7 +385,11 @@ export class AnalysisQueue extends EventEmitter {
     const results = [];
     for (const job of this.jobs.values()) {
       if (status && job.status !== status) continue;
-      if (userId && String(job.user) !== String(userId)) continue;
+      if (userId) {
+        if (String(job.user) !== String(userId)) continue;
+      } else if (job.user) {
+        continue; // Unauthenticated callers only see anonymous jobs
+      }
       results.push(job);
     }
 

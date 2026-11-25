@@ -140,3 +140,15 @@ export function disposeThreeResources(scene, renderer, composer = null, containe
     renderer.dispose();
   }
 }
+
+/**
+ * Wraps curve interpolation progress into the finite [0, 1) range so
+ * Three.js Curve.getPointAt() never receives NaN, negative values, or >= 1.
+ */
+export function wrapCurveProgress(value) {
+  if (!Number.isFinite(value)) return 0;
+  const mod = value % 1;
+  if (mod === 0) return 0;
+  const positive = mod < 0 ? mod + 1 : mod;
+  return positive >= 1 ? 0 : positive;
+}

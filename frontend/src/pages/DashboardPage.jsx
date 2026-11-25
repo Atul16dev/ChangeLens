@@ -27,7 +27,7 @@ import {
   togglePinTrackedRepository,
   removeTrackedRepository,
 } from '../services/api.js';
-import { AlertCircle, ShieldAlert, Network } from 'lucide-react';
+import { AlertCircle, ShieldAlert, Network, ExternalLink } from 'lucide-react';
 
 export function DashboardPage() {
   const [loading, setLoading] = useState(false);
@@ -523,8 +523,26 @@ export function DashboardPage() {
         setCurrentAnalysisId(id);
         updateUrlAnalysisId(id, false);
         setGraphData(scanResult.graph);
-        setImpactData(scanResult.impactAnalysis?.summary || scanResult.summary);
-        setExplanationData(scanResult.impactAnalysis?.explanation || null);
+        const fullImpact =
+          scanResult.impactAnalysis &&
+          typeof scanResult.impactAnalysis === 'object' &&
+          scanResult.impactAnalysis.summary
+            ? scanResult.impactAnalysis
+            : {
+                summary: scanResult.summary || {},
+                brokenImports: scanResult.impactAnalysis?.brokenImports || [],
+                brokenSymbols: scanResult.impactAnalysis?.brokenSymbols || [],
+                staleRenames: scanResult.impactAnalysis?.staleRenames || [],
+                blastRadius: Array.isArray(scanResult.impactAnalysis?.blastRadius)
+                  ? scanResult.impactAnalysis.blastRadius
+                  : [],
+                allFindings: scanResult.impactAnalysis?.allFindings || [],
+                testImpact: scanResult.testImpact || null,
+                riskScore: scanResult.riskScore ?? scanResult.detailedRisk?.score ?? null,
+                detailedRisk: scanResult.detailedRisk || null,
+              };
+        setImpactData(fullImpact);
+        setExplanationData(scanResult.impactAnalysis?.explanation || scanResult.explanation || null);
         setSelectedNodeId(null);
         setSimulationData(null);
         setIsSimulating(false);
@@ -904,7 +922,12 @@ export function DashboardPage() {
                 >
                   <ShieldAlert className="w-3.5 h-3.5 text-cyan-400" />
                   <span>
-                    Findings ({effectiveImpactData?.summary?.totalImpactedFiles ?? 0})
+                    Findings (
+                    {effectiveImpactData?.summary?.impactedFilesCount ??
+                      effectiveImpactData?.summary?.totalImpactedFiles ??
+                      effectiveImpactData?.allFindings?.length ??
+                      0}
+                    )
                   </span>
                 </button>
               </div>

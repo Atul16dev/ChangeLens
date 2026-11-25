@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import path from "node:path";
 import { existsSync } from "node:fs";
 import { scanRepository } from "../../analyzer/repository-scanner.js";
@@ -19,13 +20,23 @@ import { analysisQueue } from "../queue/analysis-queue.js";
  * Provides deterministic positions, crossing minimization, and rich semantic edge metadata.
  */
 async function formatReactFlowGraph(graph, impactAnalysis, changedFilesSet, symbolTable = null, changes = []) {
+  const SEVERITY_PRIORITY = { CRITICAL: 4, HIGH: 3, MEDIUM: 2, LOW: 1, NONE: 0 };
   const impactedFilesMap = new Map();
   for (const f of impactAnalysis.allFindings) {
     if (f.affectedFile) {
-      impactedFilesMap.set(f.affectedFile, {
-        severity: f.severity,
-        depth: f.depth,
-      });
+      const existing = impactedFilesMap.get(f.affectedFile);
+      const nextScore = SEVERITY_PRIORITY[f.severity] ?? 0;
+      const existingScore = existing ? (SEVERITY_PRIORITY[existing.severity] ?? 0) : -1;
+      if (
+        !existing ||
+        nextScore > existingScore ||
+        (nextScore === existingScore && f.depth < existing.depth)
+      ) {
+        impactedFilesMap.set(f.affectedFile, {
+          severity: f.severity,
+          depth: f.depth,
+        });
+      }
     }
   }
 
@@ -359,7 +370,7 @@ export async function performAnalysis({
 
   // 8. Store analysis run
   notify(98, "Finalizing analysis and caching results...");
-  const analysisId = `analysis_${Date.now()}`;
+  const analysisId = `analysis_${Date.now()}_${crypto.randomUUID().slice(0, 8)}`;
   const analysisRecord = {
     analysisId,
     targetDir,
@@ -565,7 +576,7 @@ export async function getAnalysisImpact(req, res, next) {
         summary: analysis.summary || {},
         brokenImports: impact.brokenImports || [],
         staleRenames: impact.staleRenames || [],
-        blastRadius: impact.blastRadius || {},
+        blastRadius: Array.isArray(impact.blastRadius) ? impact.blastRadius : [],
         allFindings: impact.allFindings || [],
         testImpact: analysis.testImpact || null,
         riskScore: analysis.riskScore ?? analysis.detailedRisk?.score ?? null,
@@ -579,11 +590,12 @@ export async function getAnalysisImpact(req, res, next) {
 
 /**
  * GET /api/v1/analyses
- * Lists recent analysis runs.
+ * Lists recent analysis runs (strictly user-scoped when logged in, anonymous-only when unauthenticated).
  */
-export async function listAnalyses(_req, res, next) {
+export async function listAnalyses(req, res, next) {
   try {
-    const list = await analysesStore.list();
+    const userId = req.user?.id || null;
+    const list = await analysesStore.list(userId);
     res.status(200).json({
       success: true,
       data: list,
@@ -620,6 +632,18 @@ export async function deleteAnalysisRecord(req, res, next) {
   try {
     const { id } = req.params;
     const userId = req.user?.id || null;
+
+    const existing = await analysesStore.get(id);
+    if (!existing) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: "ANALYSIS_NOT_FOUND",
+          message: `Analysis report "${id}" was not found.`,
+          requestId: req.id,
+        },
+      });
+    }
 
     const success = await analysesStore.delete(id, userId);
     if (!success) {
@@ -797,10 +821,24 @@ export async function simulateAnalysisImpact(req, res, next) {
       graph = buildDependencyGraph(analysis.dependencies, analysis.allFiles);
     }
     if (!graph || !analysis.symbolTable || !analysis.dependencies) {
-      const effectiveDir =
-        analysis.targetDir && existsSync(analysis.targetDir)
-          ? analysis.targetDir
-          : path.resolve(process.cwd(), "tests/fixtures/mern-sample");
+      const mernSampleDir = path.resolve(process.cwd(), "tests/fixtures/mern-sample");
+      const isSampleOrigin =
+        !analysis.targetDir ||
+        String(analysis.targetDir).includes("mern-sample");
+      const hasTargetDir = Boolean(analysis.targetDir && existsSync(analysis.targetDir));
+
+      if (!hasTargetDir && !isSampleOrigin) {
+        return res.status(400).json({
+          success: false,
+          error: {
+            code: "WORKSPACE_UNAVAILABLE",
+            message:
+              "Original repository directory is no longer available on the server for live What-If re-simulation. Re-run the scan to refresh workspace state.",
+          },
+        });
+      }
+
+      const effectiveDir = hasTargetDir ? analysis.targetDir : mernSampleDir;
       const scanReport = await scanRepository(effectiveDir);
       const dependencies = resolveRepositoryDependencies(scanReport);
       const allFiles = scanReport.files.map((f) => f.path.split(path.sep).join("/"));

@@ -299,11 +299,14 @@ export const userRepository = {
   },
 
   async updatePassword(id, passwordHash) {
-    const now = new Date();
+    await ensureDbReady();
     if (isMongoConnected()) {
+      const existing = await User.findById(id).select("passwordChangedAt").lean();
+      const prevMs = existing?.passwordChangedAt ? new Date(existing.passwordChangedAt).getTime() : 0;
+      const changedAt = new Date(Math.max(Date.now(), prevMs + 2));
       const doc = await User.findByIdAndUpdate(
         id,
-        { passwordHash, passwordChangedAt: now },
+        { passwordHash, passwordChangedAt: changedAt },
         { new: true }
       );
       return formatUserDoc(doc);
@@ -311,9 +314,11 @@ export const userRepository = {
 
     const user = memoryUsers.get(id);
     if (user) {
+      const prevMs = user.password_changed_at ? new Date(user.password_changed_at).getTime() : 0;
+      const changedAt = new Date(Math.max(Date.now(), prevMs + 2)).toISOString();
       user.password_hash = passwordHash;
-      user.password_changed_at = now.toISOString();
-      user.updated_at = now.toISOString();
+      user.password_changed_at = changedAt;
+      user.updated_at = changedAt;
     }
     return user || null;
   },
@@ -359,6 +364,7 @@ export const userRepository = {
 
   async findByGitHubId(githubId) {
     if (!githubId) return null;
+    await ensureDbReady();
     if (isMongoConnected()) {
       const doc = await User.findOne({ githubId: String(githubId) });
       return formatUserDoc(doc);
@@ -366,7 +372,7 @@ export const userRepository = {
 
     for (const user of memoryUsers.values()) {
       if (user.github_id === String(githubId)) {
-        return toSafeUser(user);
+        return user;
       }
     }
     return null;
@@ -509,7 +515,8 @@ export const userRepository = {
         query.status = status;
       }
       if (search) {
-        const regex = new RegExp(search, "i");
+        const escaped = String(search).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        const regex = new RegExp(escaped, "i");
         query.$or = [{ name: regex }, { email: regex }];
       }
 

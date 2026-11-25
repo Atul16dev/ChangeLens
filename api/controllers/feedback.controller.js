@@ -15,6 +15,8 @@ const MESSAGE_REQUIRED_TYPES = new Set([
 const MAX_ATTACHMENTS = 3;
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024; // 5 MB
 const MAX_VIDEO_BYTES = 12 * 1024 * 1024; // 12 MB
+// Keep aggregate inline base64 payloads safely below MongoDB's 16 MB BSON document limit
+const MAX_TOTAL_INLINE_DATA_CHARS = 14 * 1024 * 1024;
 
 const ALLOWED_IMAGE_MIMES = new Set([
   "image/png",
@@ -66,6 +68,7 @@ async function processAttachments(rawAttachments, userId) {
   }
 
   const processed = [];
+  let totalInlineChars = 0;
 
   for (const item of rawAttachments) {
     if (!item || typeof item !== "object") continue;
@@ -129,6 +132,20 @@ async function processAttachments(rawAttachments, userId) {
             status: 502,
             code: "MEDIA_UPLOAD_FAILED",
             message: `Failed to upload "${fileName}": ${uploadErr.message}`,
+          },
+        };
+      }
+    }
+
+    if (finalUrl.startsWith("data:")) {
+      totalInlineChars += finalUrl.length;
+      if (totalInlineChars > MAX_TOTAL_INLINE_DATA_CHARS) {
+        return {
+          error: {
+            status: 400,
+            code: "ATTACHMENTS_TOO_LARGE",
+            message:
+              "Total inline attachment payload exceeds the 14 MB limit. Please attach smaller files.",
           },
         };
       }

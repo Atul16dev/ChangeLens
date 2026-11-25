@@ -6,6 +6,7 @@ import {
   getOptimalPixelRatio,
   getPrefersReducedMotion,
   observeVisibility,
+  wrapCurveProgress,
 } from '../../utils/threeHelpers.js';
 import {
   Globe,
@@ -375,9 +376,12 @@ export function GlobalTelemetryGlobe3D() {
     // --- 8. ANIMATION LOOP (viewport-paused + reduced-motion friendly) ---
     let animId = null;
     let isVisible = true;
+    let isDisposed = false;
     const timer = new THREE.Timer();
 
     const renderFrame = (elapsed) => {
+      if (isDisposed) return;
+
       // If user is not dragging, apply gentle idle rotation & inertia damping
       if (!isPointerDown && !reducedMotion) {
         // Natural idle spinning around Y axis
@@ -399,7 +403,7 @@ export function GlobalTelemetryGlobe3D() {
 
       // Animate packet photons traveling along arcs
       packetMeshes.forEach((p) => {
-        p.progress = (p.progress + p.speed) % 1;
+        p.progress = wrapCurveProgress(p.progress + p.speed);
         const pointOnCurve = p.curve.getPointAt(p.progress);
         p.mesh.position.copy(pointOnCurve);
       });
@@ -408,7 +412,7 @@ export function GlobalTelemetryGlobe3D() {
     };
 
     const animate = (timestamp) => {
-      if (!isVisible) {
+      if (isDisposed || !isVisible) {
         animId = null;
         return;
       }
@@ -418,6 +422,7 @@ export function GlobalTelemetryGlobe3D() {
     };
 
     const stopVisibility = observeVisibility(container, (visible) => {
+      if (isDisposed) return;
       isVisible = visible;
       if (visible && !reducedMotion && animId === null) {
         animId = requestAnimationFrame(animate);
@@ -434,6 +439,7 @@ export function GlobalTelemetryGlobe3D() {
 
     // --- CLEANUP ---
     return () => {
+      isDisposed = true;
       if (animId !== null) cancelAnimationFrame(animId);
       stopVisibility();
       timer.dispose();

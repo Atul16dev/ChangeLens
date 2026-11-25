@@ -312,22 +312,16 @@ export async function postPRComment({ owner, repo, pullNumber, token, analysisId
       throw new Error(`Analysis "${analysisId}" not found.`);
     }
 
-    const { summary, impactAnalysis } = analysis;
-    const explanation = {
-      summary: summary || {},
-      explanation: `Automated ChangeLens Blast Radius evaluation for PR #${pullNumber}.`,
-      findings: impactAnalysis?.allFindings || [],
-      riskLevel: calculateRiskLevel(summary),
-      suggestedTests: [
-        "npm test",
-        ...(impactAnalysis?.allFindings || [])
-          .filter((f) => f.affectedFile && f.affectedFile.includes("test"))
-          .map((f) => `npm test ${f.affectedFile}`),
-      ],
-      brokenSymbols: impactAnalysis?.brokenSymbols || [],
-    };
+    const { summary, impactAnalysis, changes = [], detailedRisk = null, testImpact = null } = analysis;
+    const riskLevel = calculateRiskLevel(summary);
 
-    markdown = formatPRMarkdownComment(explanation, analysisId, impactAnalysis);
+    markdown = formatPRMarkdownComment({
+      impactAnalysis,
+      changes,
+      riskLevel,
+      riskScore: detailedRisk,
+      testImpact,
+    });
   }
 
   if (!markdown) {
@@ -648,80 +642,103 @@ export async function compareCommits({ owner, repo, baseSha, headSha, token }) {
   };
 }
 
+const repoSyncLocks = new Map();
+
+function withRepoSyncLock(lockKey, fn) {
+  const prev = repoSyncLocks.get(lockKey) || Promise.resolve();
+  const next = prev.then(fn, fn);
+  const cleanup = next.finally(() => {
+    if (repoSyncLocks.get(lockKey) === cleanup) {
+      repoSyncLocks.delete(lockKey);
+    }
+  });
+  repoSyncLocks.set(lockKey, cleanup);
+  return next;
+}
+
 /**
  * Ensures a remote GitHub repository is cloned or synced in the local cache.
- * Uses shallow depth 1 clone for speed and minimal disk usage.
+ * Uses shallow depth 1 clone with mutex locking and never persists PAT credentials on disk.
  */
 export async function ensureGitHubRepositoryCached({ owner, repo, branch, commitSha, token }) {
-  const cacheBase = path.resolve(process.cwd(), ".changelens-cache", "repos");
-  const targetDir = path.resolve(cacheBase, `${owner}_${repo}`);
+  const lockKey = `${owner}/${repo}`.toLowerCase();
+  return withRepoSyncLock(lockKey, async () => {
+    const cacheBase = path.resolve(process.cwd(), ".changelens-cache", "repos");
+    const targetDir = path.resolve(cacheBase, `${owner}_${repo}`);
+    const cleanRemoteUrl = `https://github.com/${owner}/${repo}.git`;
 
-  const effectiveToken =
-    token && typeof token === "string" && token.trim()
-      ? token.trim()
-      : (process.env.GITHUB_TOKEN || process.env.GH_TOKEN || "").trim();
+    const effectiveToken =
+      token && typeof token === "string" && token.trim()
+        ? token.trim()
+        : (process.env.GITHUB_TOKEN || process.env.GH_TOKEN || "").trim();
 
-  const cloneUrl = effectiveToken
-    ? `https://x-access-token:${encodeURIComponent(effectiveToken)}@github.com/${owner}/${repo}.git`
-    : `https://github.com/${owner}/${repo}.git`;
+    const authHeaderArgs = effectiveToken
+      ? [
+          "-c",
+          `http.extraheader=AUTHORIZATION: basic ${Buffer.from(`x-access-token:${effectiveToken}`).toString("base64")}`,
+        ]
+      : [];
 
-  await fs.mkdir(cacheBase, { recursive: true });
+    await fs.mkdir(cacheBase, { recursive: true });
 
-  let isCloned = false;
-  try {
-    const s = await fs.stat(path.resolve(targetDir, ".git"));
-    isCloned = s.isDirectory();
-  } catch {
-    isCloned = false;
-  }
-
-  if (!isCloned) {
+    let isCloned = false;
     try {
-      await fs.rm(targetDir, { recursive: true, force: true });
-    } catch {}
-
-    const cloneArgs = ["clone", "--depth", "1"];
-    if (branch) {
-      cloneArgs.push("--branch", branch);
-    }
-    cloneArgs.push(cloneUrl, targetDir);
-
-    try {
-      await executeGit(cloneArgs, process.cwd(), { timeout: 60000 });
-    } catch (err) {
-      const safeErr = maskGitCredentials(err.message);
-      throw new Error(
-        `Failed to clone repository "${owner}/${repo}": ${safeErr}. If this repository is private, please provide a GitHub Personal Access Token.`
-      );
-    }
-  } else {
-    try {
-      const fetchArgs = ["fetch", "--depth", "1", "origin"];
-      if (commitSha) {
-        fetchArgs.push(commitSha);
-      } else if (branch) {
-        fetchArgs.push(branch);
-      }
-      await executeGit(fetchArgs, targetDir, { timeout: 45000 });
-    } catch (err) {
-      console.warn(`[GitHub Cache] Fetch warning for ${owner}/${repo}:`, err.message);
-    }
-  }
-
-  if (commitSha) {
-    try {
-      await executeGit(["checkout", commitSha], targetDir);
+      const s = await fs.stat(path.resolve(targetDir, ".git"));
+      isCloned = s.isDirectory();
     } catch {
+      isCloned = false;
+    }
+
+    if (!isCloned) {
       try {
-        await executeGit(["fetch", "--depth", "1", "origin", commitSha], targetDir);
-        await executeGit(["checkout", commitSha], targetDir);
+        await fs.rm(targetDir, { recursive: true, force: true });
+      } catch {}
+
+      const cloneArgs = [...authHeaderArgs, "clone", "--depth", "1"];
+      if (branch) {
+        cloneArgs.push("--branch", branch);
+      }
+      cloneArgs.push(cleanRemoteUrl, targetDir);
+
+      try {
+        await executeGit(cloneArgs, process.cwd(), { timeout: 60000 });
       } catch (err) {
-        console.warn(`[GitHub Cache] Checkout commitSha warning for ${commitSha}:`, err.message);
+        const safeErr = maskGitCredentials(err.message);
+        throw new Error(
+          `Failed to clone repository "${owner}/${repo}": ${safeErr}. If this repository is private, please provide a GitHub Personal Access Token.`
+        );
+      }
+    } else {
+      try {
+        // Ensure clean remote URL without embedded credentials on disk
+        await executeGit(["remote", "set-url", "origin", cleanRemoteUrl], targetDir).catch(() => {});
+        const fetchArgs = [...authHeaderArgs, "fetch", "--depth", "1", "origin"];
+        if (commitSha) {
+          fetchArgs.push(commitSha);
+        } else if (branch) {
+          fetchArgs.push(branch);
+        }
+        await executeGit(fetchArgs, targetDir, { timeout: 45000 });
+      } catch (err) {
+        console.warn(`[GitHub Cache] Fetch warning for ${owner}/${repo}:`, maskGitCredentials(err.message));
       }
     }
-  }
 
-  return targetDir;
+    if (commitSha) {
+      try {
+        await executeGit(["checkout", commitSha], targetDir);
+      } catch {
+        try {
+          await executeGit([...authHeaderArgs, "fetch", "--depth", "1", "origin", commitSha], targetDir);
+          await executeGit(["checkout", commitSha], targetDir);
+        } catch (err) {
+          console.warn(`[GitHub Cache] Checkout commitSha warning for ${commitSha}:`, maskGitCredentials(err.message));
+        }
+      }
+    }
+
+    return targetDir;
+  });
 }
 
 /**

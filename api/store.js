@@ -222,10 +222,7 @@ export const analysesStore = {
 
     if (isMongoConnected()) {
       try {
-        const filter = {};
-        if (userId) {
-          filter.user = userId;
-        }
+        const filter = userId ? { user: userId } : { user: null };
 
         if (search && typeof search === "string" && search.trim()) {
           const s = escapeRegex(search.trim());
@@ -279,7 +276,9 @@ export const analysesStore = {
 
     let all = Array.from(analyses.values());
     if (userId) {
-      all = all.filter((a) => !a.user || a.user === userId);
+      all = all.filter((a) => a.user === userId);
+    } else {
+      all = all.filter((a) => !a.user);
     }
 
     if (search && typeof search === "string" && search.trim()) {
@@ -376,29 +375,39 @@ export const analysesStore = {
     };
   },
 
-  async list() {
-    return (await this.listByUser(null, { limit: 50 })).analyses;
+  async list(userId = null) {
+    const { analyses: items } = await this.listByUser(userId, { limit: 50 });
+    if (!userId) {
+      // Avoid exposing local host directory paths in unauthenticated list responses
+      return items.map((item) => ({
+        ...item,
+        targetDir: item.targetDir ? item.targetDir.split(/[\\/]/).filter(Boolean).pop() : null,
+      }));
+    }
+    return items;
   },
 
   async delete(analysisId, userId = null) {
     const memRecord = analyses.get(analysisId);
-    if (memRecord && userId && memRecord.user && memRecord.user !== userId) {
+    if (memRecord && userId && memRecord.user !== userId) {
       return false; // Forbidden: not owner
     }
 
     if (isMongoConnected()) {
       try {
-        const query = { analysisId };
-        if (userId) {
-          query.$or = [{ user: userId }, { user: null }];
-        }
+        const query = userId ? { analysisId, user: userId } : { analysisId, user: null };
         const res = await Analysis.deleteOne(query);
         if (res.deletedCount === 0 && !memRecord) {
           return false;
         }
       } catch (err) {
         console.warn("[MongoDB] Failed to delete analysis record:", err.message);
+        return false;
       }
+    }
+
+    if (!memRecord && !isMongoConnected()) {
+      return false;
     }
 
     analyses.delete(analysisId);

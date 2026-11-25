@@ -76,11 +76,11 @@ export function generateTestCommand(affectedTestPaths = [], allFiles = []) {
     return null;
   }
 
-  // Detect dominant test framework / language from files
-  const firstTest = affectedTestPaths[0] || "";
-  const isPython = firstTest.endsWith(".py") || allFiles.some((f) => f.endsWith(".py"));
-  const isGo = firstTest.endsWith(".go");
-  const isJava = firstTest.endsWith(".java") || firstTest.endsWith(".kt");
+  // Detect test framework / language primarily from the impacted test files themselves
+  const isPython = affectedTestPaths.some((f) => f.endsWith(".py")) ||
+    (affectedTestPaths.length === 0 && allFiles.some((f) => f.endsWith(".py")));
+  const isGo = affectedTestPaths.some((f) => f.endsWith(".go"));
+  const isJava = affectedTestPaths.some((f) => f.endsWith(".java") || f.endsWith(".kt"));
 
   if (isPython) {
     return `pytest ${affectedTestPaths.join(" ")}`;

@@ -59,6 +59,16 @@ export function clearSentEmails() {
   sentEmails.length = 0;
 }
 
+function escapeHtml(str) {
+  if (typeof str !== "string") return "";
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 /**
  * Sends an email and records it in sentEmails history
  */
@@ -76,10 +86,12 @@ export async function sendEmail({ to, subject, html, text }) {
   let info = null;
   try {
     info = await currentTransporter.sendMail(mailOptions);
-    console.log(`✉️ [EmailService] Email sent successfully to ${to} (MessageId: ${info?.messageId || "ok"})`);
+    if (process.env.NODE_ENV !== "test") {
+      console.log(`✉️ [EmailService] Email sent (MessageId: ${info?.messageId || "ok"})`);
+    }
   } catch (err) {
-    console.error(`❌ [EmailService] SMTP error sending to ${to}:`, err.message || err);
-    if (process.env.SMTP_HOST && process.env.SMTP_USER) {
+    console.error(`❌ [EmailService] SMTP error:`, err.message || err);
+    if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
       throw new Error(`Email delivery failed: ${err.message || "SMTP error"}`);
     }
   }
@@ -134,7 +146,7 @@ export async function sendVerificationEmail({ to, name, otp }) {
       <div class="container">
         <div class="logo">⚡ ChangeLens Security</div>
         <h1>Verify your email address</h1>
-        <p>Hi ${name || "there"},</p>
+        <p>Hi ${escapeHtml(name) || "there"},</p>
         <p>Thank you for signing up for ChangeLens. Please enter the following 6-digit verification code to complete your registration:</p>
         <div class="otp-box">
           <div class="otp-code">${otp}</div>
@@ -181,7 +193,7 @@ export async function sendPasswordResetEmail({ to, name, otp }) {
       <div class="container">
         <div class="logo">🔒 ChangeLens Security</div>
         <h1>Reset your password</h1>
-        <p>Hi ${name || "there"},</p>
+        <p>Hi ${escapeHtml(name) || "there"},</p>
         <p>A password reset was requested for your ChangeLens account. Enter this 6-digit confirmation code on the password reset page:</p>
         <div class="otp-box">
           <div class="otp-code">${otp}</div>
@@ -233,7 +245,7 @@ export async function sendAdminInvitationEmail({ to, inviterName, role, inviteUr
         <div class="badge">${roleDisplay} Invitation</div>
         <h1>Join the ChangeLens Admin Team</h1>
         <p>Hi,</p>
-        <p><strong>${inviterName || "A Super Admin"}</strong> has invited you to join ChangeLens with <strong>${roleDisplay}</strong> privileges.</p>
+        <p><strong>${escapeHtml(inviterName) || "A Super Admin"}</strong> has invited you to join ChangeLens with <strong>${escapeHtml(roleDisplay)}</strong> privileges.</p>
         <div style="text-align: center;">
           <a href="${inviteUrl}" class="btn">Accept Invitation & Activate Access</a>
         </div>

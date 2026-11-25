@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import { Router } from "express";
 import {
   getBridgeSessionStatus,
@@ -70,7 +71,7 @@ bridgeRoutes.post("/scan/:session", async (req, res) => {
     const result = await requestBridgeScan(sessionCode, { changedFiles, maxDepth, mode });
     const session = getActiveSession(sessionCode);
     const targetDir = session?.workspace?.path || result.targetDir || "Local Workspace";
-    const analysisId = result.analysisId || `analysis_local_${Date.now()}`;
+    const analysisId = result.analysisId || `analysis_local_${Date.now()}_${crypto.randomUUID().slice(0, 8)}`;
     const folderName = targetDir.split(/[\\/]/).filter(Boolean).pop() || "Local Project";
     const changes = result.changes || [];
     const changedFilesList = (changes.length > 0
@@ -104,7 +105,7 @@ bridgeRoutes.post("/scan/:session", async (req, res) => {
       impactAnalysis: result.impactAnalysis || {
         brokenImports: [],
         staleRenames: [],
-        blastRadius: {},
+        blastRadius: [],
         allFindings: [],
       },
       explanation,
@@ -114,7 +115,7 @@ bridgeRoutes.post("/scan/:session", async (req, res) => {
       createdAt: new Date(),
     };
 
-    const userId = req.user?.id || req.session?.user?.id || null;
+    const userId = req.user?.id || req.session?.userId || null;
     await analysesStore.save(analysisId, analysisRecord, userId);
 
     return res.json({

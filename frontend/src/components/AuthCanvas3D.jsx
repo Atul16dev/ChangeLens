@@ -404,6 +404,7 @@ export function AuthCanvas3D({ variant = 'login' }) {
 
     // Responsive camera framing for AST cluster & outer sky geodesic cage
     const fitCameraToContainer = (w, h) => {
+      if (!w || !h) return;
       const aspect = w / Math.max(h, 1);
       camera.aspect = aspect;
       const vFov = (camera.fov * Math.PI) / 180;
@@ -417,7 +418,10 @@ export function AuthCanvas3D({ variant = 'login' }) {
     };
     fitCameraToContainer(width, height);
 
+    let disposed = false;
+
     const resizeObserver = new ResizeObserver(() => {
+      if (disposed) return;
       const w = container.clientWidth;
       const h = container.clientHeight;
       if (!w || !h) return;
@@ -434,6 +438,7 @@ export function AuthCanvas3D({ variant = 'login' }) {
     const tmpPoint = new THREE.Vector3();
 
     const renderFrame = (elapsed) => {
+      if (disposed) return;
       // Whole 3D AST cluster moves calmly inside the surrounding orbital rings
       clusterGroup.rotation.y = elapsed * 0.2;
       clusterGroup.rotation.x = Math.sin(elapsed * 0.28) * 0.12;
@@ -459,7 +464,9 @@ export function AuthCanvas3D({ variant = 'login' }) {
 
       // Travelling impact photons flowing from Root -> 1-Hop -> 2-Hop along TubeGeometry curves
       pulses.forEach((p) => {
-        const t = (elapsed * p.speed + p.offset) % 1;
+        if (!p.curve) return;
+        const rawT = (elapsed * p.speed + p.offset) % 1;
+        const t = Math.max(0, Math.min(1, Number.isFinite(rawT) ? rawT : 0));
         p.curve.getPointAt(t, tmpPoint);
         p.mesh.position.copy(tmpPoint);
       });
@@ -476,7 +483,7 @@ export function AuthCanvas3D({ variant = 'login' }) {
     };
 
     const tick = (timestamp) => {
-      if (!isVisible) {
+      if (disposed || !isVisible) {
         animId = null;
         return;
       }
@@ -486,6 +493,7 @@ export function AuthCanvas3D({ variant = 'login' }) {
     };
 
     const stopVisibility = observeVisibility(container, (visible) => {
+      if (disposed) return;
       isVisible = visible;
       if (visible && !reducedMotion && animId === null) {
         animId = requestAnimationFrame(tick);
@@ -501,7 +509,9 @@ export function AuthCanvas3D({ variant = 'login' }) {
     }
 
     return () => {
+      disposed = true;
       if (animId !== null) cancelAnimationFrame(animId);
+      animId = null;
       stopVisibility();
       panel.removeEventListener('pointermove', onPointerMove);
       panel.removeEventListener('pointerleave', onPointerLeave);

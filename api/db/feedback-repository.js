@@ -114,7 +114,11 @@ export const feedbackRepository = {
           if (message) existing.message = message;
           if (title) existing.title = title;
           if (cleanAttachments.length > 0) existing.attachments = cleanAttachments;
-          existing.context = { ...existing.context, ...context };
+          const prevCtx =
+            existing.context && typeof existing.context.toObject === "function"
+              ? existing.context.toObject()
+              : existing.context || {};
+          existing.context = { ...prevCtx, ...context };
           await existing.save();
           return { record: formatFeedbackDoc(existing), updated: true };
         }

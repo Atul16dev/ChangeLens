@@ -26,6 +26,19 @@ export function LoginPage() {
     }
   }, [isAuthenticated, navigate, from]);
 
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const oauthError = params.get('error');
+    const reason = params.get('reason');
+    if (oauthError === 'account_banned') {
+      setError(`Account suspended: ${reason || 'Violation of platform policies.'}`);
+    } else if (oauthError === 'oauth_denied') {
+      setError('OAuth authorization was cancelled or denied.');
+    } else if (oauthError === 'oauth_failed') {
+      setError('Authentication could not be completed. Please try again.');
+    }
+  }, [location.search]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!email.trim() || !password) {

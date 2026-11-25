@@ -21,6 +21,28 @@ export async function hydrateUser(req, res, next) {
       return;
     }
 
+    // Invalidate session if password was reset/changed after this session was issued
+    if (req.session.passwordChangedAtSnapshot !== undefined) {
+      const currentSnapshot = rawUser.password_changed_at ? String(rawUser.password_changed_at) : null;
+      if (currentSnapshot !== req.session.passwordChangedAtSnapshot) {
+        req.session.destroy(() => {
+          res.clearCookie("changelens.sid");
+          req.user = null;
+          next();
+        });
+        return;
+      }
+    } else if (rawUser.password_changed_at && req.session.sessionIssuedAt) {
+      if (new Date(rawUser.password_changed_at).getTime() > req.session.sessionIssuedAt) {
+        req.session.destroy(() => {
+          res.clearCookie("changelens.sid");
+          req.user = null;
+          next();
+        });
+        return;
+      }
+    }
+
     req.user = toSafeUser(rawUser);
     next();
   } catch (err) {
@@ -30,23 +52,25 @@ export async function hydrateUser(req, res, next) {
   }
 }
 
-/**
- * Route guard requiring authenticated session
- */
-export function requireAuth(req, res, next) {
+function rejectIfUnauthenticatedOrBanned(
+  req,
+  res,
+  unauthorizedMessage = "You must be logged in to perform this action."
+) {
   if (!req.user) {
-    return res.status(401).json({
+    res.status(401).json({
       success: false,
       error: {
         code: "UNAUTHORIZED",
-        message: "You must be logged in to perform this action.",
+        message: unauthorizedMessage,
         requestId: req.id,
       },
     });
+    return true;
   }
 
   if (req.user.status === "banned") {
-    return res.status(403).json({
+    res.status(403).json({
       success: false,
       error: {
         code: "ACCOUNT_BANNED",
@@ -54,8 +78,17 @@ export function requireAuth(req, res, next) {
         requestId: req.id,
       },
     });
+    return true;
   }
 
+  return false;
+}
+
+/**
+ * Route guard requiring authenticated session
+ */
+export function requireAuth(req, res, next) {
+  if (rejectIfUnauthenticatedOrBanned(req, res)) return;
   next();
 }
 
@@ -63,27 +96,7 @@ export function requireAuth(req, res, next) {
  * Route guard requiring verified email
  */
 export function requireVerified(req, res, next) {
-  if (!req.user) {
-    return res.status(401).json({
-      success: false,
-      error: {
-        code: "UNAUTHORIZED",
-        message: "Authentication required.",
-        requestId: req.id,
-      },
-    });
-  }
-
-  if (req.user.status === "banned") {
-    return res.status(403).json({
-      success: false,
-      error: {
-        code: "ACCOUNT_BANNED",
-        message: `Your account has been suspended by an administrator. Reason: ${req.user.ban_reason || "Violation of platform policies"}`,
-        requestId: req.id,
-      },
-    });
-  }
+  if (rejectIfUnauthenticatedOrBanned(req, res, "Authentication required.")) return;
 
   if (!req.user.is_email_verified) {
     return res.status(403).json({
@@ -103,16 +116,7 @@ export function requireVerified(req, res, next) {
  * Route guard requiring admin or superadmin role
  */
 export function requireAdmin(req, res, next) {
-  if (!req.user) {
-    return res.status(401).json({
-      success: false,
-      error: {
-        code: "UNAUTHORIZED",
-        message: "You must be logged in to perform this action.",
-        requestId: req.id,
-      },
-    });
-  }
+  if (rejectIfUnauthenticatedOrBanned(req, res)) return;
 
   if (req.user.role !== "admin" && req.user.role !== "superadmin") {
     return res.status(403).json({
@@ -132,16 +136,7 @@ export function requireAdmin(req, res, next) {
  * Route guard strictly requiring superadmin role (site owner)
  */
 export function requireSuperAdmin(req, res, next) {
-  if (!req.user) {
-    return res.status(401).json({
-      success: false,
-      error: {
-        code: "UNAUTHORIZED",
-        message: "You must be logged in to perform this action.",
-        requestId: req.id,
-      },
-    });
-  }
+  if (rejectIfUnauthenticatedOrBanned(req, res)) return;
 
   if (req.user.role !== "superadmin") {
     return res.status(403).json({
@@ -163,16 +158,7 @@ export function requireSuperAdmin(req, res, next) {
  */
 export function requirePermission(permissionName) {
   return function permissionGuard(req, res, next) {
-    if (!req.user) {
-      return res.status(401).json({
-        success: false,
-        error: {
-          code: "UNAUTHORIZED",
-          message: "You must be logged in to perform this action.",
-          requestId: req.id,
-        },
-      });
-    }
+    if (rejectIfUnauthenticatedOrBanned(req, res)) return;
 
     if (req.user.role === "superadmin") {
       return next();
@@ -198,16 +184,7 @@ export function requirePermission(permissionName) {
  * (Super Admin or Admin with canManageUsers: true)
  */
 export function requireUserManagement(req, res, next) {
-  if (!req.user) {
-    return res.status(401).json({
-      success: false,
-      error: {
-        code: "UNAUTHORIZED",
-        message: "You must be logged in to perform this action.",
-        requestId: req.id,
-      },
-    });
-  }
+  if (rejectIfUnauthenticatedOrBanned(req, res)) return;
 
   if (req.user.role === "superadmin") {
     return next();
@@ -228,25 +205,24 @@ export function requireUserManagement(req, res, next) {
 }
 
 /**
- * In-memory sliding window rate limiter for auth endpoints
+ * Isolated per-endpoint sliding window rate limiter
  */
-const rateLimitMap = new Map();
-
-// Periodic cleanup to prune expired IP tracking records
-const rateLimitCleanupTimer = setInterval(() => {
-  const now = Date.now();
-  for (const [ip, entry] of rateLimitMap.entries()) {
-    if (now > entry.resetTime) {
-      rateLimitMap.delete(ip);
-    }
-  }
-}, 5 * 60 * 1000);
-
-if (typeof rateLimitCleanupTimer.unref === "function") {
-  rateLimitCleanupTimer.unref();
-}
-
 export function createRateLimiter({ windowMs = 60 * 1000, max = 15, message = "Too many requests, please try again later." } = {}) {
+  const rateLimitMap = new Map();
+
+  const cleanupTimer = setInterval(() => {
+    const now = Date.now();
+    for (const [ip, entry] of rateLimitMap.entries()) {
+      if (now > entry.resetTime) {
+        rateLimitMap.delete(ip);
+      }
+    }
+  }, Math.max(windowMs, 60 * 1000));
+
+  if (typeof cleanupTimer.unref === "function") {
+    cleanupTimer.unref();
+  }
+
   return function rateLimiter(req, res, next) {
     if (process.env.NODE_ENV === "test" && !process.env.TEST_RATE_LIMIT) {
       return next(); // bypass in tests unless specifically testing rate limiter

@@ -205,11 +205,25 @@ export function classifyImpactPolicies({
     (m) => typeof m === "object" && Array.isArray(m.symbols) && m.symbols.length > 0
   );
 
+  const deletedFilesSet = new Set(deletedFileChanges);
   const brokenAffectedSet = new Set(brokenImportFindings.map((b) => b.affectedFile));
-  const rawFindings = (hasSymbolFilter && symbolBlastResult
-    ? symbolBlastResult.allFindings
-    : blastRadiusResult.findings
-  ).filter((f) => {
+
+  let baseFindings = blastRadiusResult.findings;
+  if (hasSymbolFilter && symbolBlastResult) {
+    if (deletedFilesSet.size > 0) {
+      const seenPairs = new Set(
+        symbolBlastResult.allFindings.map((f) => `${f.changedFile}->${f.affectedFile}`)
+      );
+      const deletedTransitive = blastRadiusResult.findings.filter(
+        (f) => deletedFilesSet.has(f.changedFile) && !seenPairs.has(`${f.changedFile}->${f.affectedFile}`)
+      );
+      baseFindings = [...symbolBlastResult.allFindings, ...deletedTransitive];
+    } else {
+      baseFindings = symbolBlastResult.allFindings;
+    }
+  }
+
+  const rawFindings = baseFindings.filter((f) => {
     // Avoid duplicating depth-1 findings that are already captured as critical broken imports
     if (f.depth === 1 && brokenAffectedSet.has(f.affectedFile)) {
       return false;
@@ -218,7 +232,6 @@ export function classifyImpactPolicies({
   });
 
   // Assign severities and actionable recommendations to blast radius findings
-  const deletedFilesSet = new Set(deletedFileChanges);
   const prioritizedBlastRadiusFindings = rawFindings.map((f) => {
     let severity = IMPACT_SEVERITY.LOW;
     if (f.depth === 1) {
@@ -284,27 +297,6 @@ export function classifyImpactPolicies({
   const impactedCount = allImpactedFilesSet.size;
   const directCount = directDependentsSet.size;
   const transitiveCount = transitiveDependentsSet.size;
-
-  return {
-    summary: {
-      totalChanges: changes.length,
-      brokenImportsCount: brokenImportFindings.length,
-      brokenSymbolsCount: brokenSymbolFindings.length,
-      staleRenamesCount: staleRenameFindings.length,
-      impactedFilesCount: impactedCount,
-      directDependentsCount: directCount,
-      transitiveDependentsCount: transitiveCount,
-      isolatedConsumersCount: symbolBlastResult?.summary?.isolatedConsumersCount || 0,
-      criticalAlerts: brokenImportFindings.length > 0 || brokenSymbolFindings.length > 0,
-    },
-    brokenImports: brokenImportFindings,
-    brokenSymbols: brokenSymbolFindings,
-    staleRenames: staleRenameFindings,
-    blastRadius: prioritizedBlastRadiusFindings,
-    isolatedFindings: symbolBlastResult?.isolatedFindings || [],
-    addedFiles: addedFileFindings,
-    allFindings: allPrioritizedFindings,
-  };
 
   return {
     summary: {

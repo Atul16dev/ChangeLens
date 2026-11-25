@@ -127,6 +127,10 @@ export async function getGitHubUserProfile(accessToken) {
  * End-to-end verifier combining token exchange and profile retrieval
  */
 export async function verifyGitHubCode(code) {
+  if (!code || typeof code !== "string") {
+    throw new Error("Missing or invalid GitHub authorization code.");
+  }
+
   // Mock hook for unit testing and CI sandbox environments
   if (process.env.MOCK_GITHUB_OAUTH === "true" && code.startsWith("mock_gh_")) {
     return {

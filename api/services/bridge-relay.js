@@ -45,6 +45,18 @@ export function getBridgeSessionStatus(sessionCode) {
   };
 }
 
+function safeSend(ws, payload) {
+  if (!ws || ws.readyState !== WebSocket.OPEN) {
+    return false;
+  }
+  try {
+    ws.send(typeof payload === "string" ? payload : JSON.stringify(payload));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Requests uncommitted Git changes from the connected local CLI agent via WebSocket tunnel.
  */
@@ -64,12 +76,15 @@ export async function requestBridgeChanges(sessionCode, timeoutMs = 12000) {
 
     session.pendingRequests.set(requestId, { resolve, reject, timer });
 
-    session.agentWs.send(
-      JSON.stringify({
-        type: "REQUEST_CHANGES",
-        requestId,
-      })
-    );
+    const sent = safeSend(session.agentWs, {
+      type: "REQUEST_CHANGES",
+      requestId,
+    });
+    if (!sent) {
+      clearTimeout(timer);
+      session.pendingRequests.delete(requestId);
+      reject(new Error("AGENT_DISCONNECTED: Failed to send changes request to local CLI agent"));
+    }
   });
 }
 
@@ -93,18 +108,21 @@ export async function requestBridgeScan(sessionCode, { changedFiles, maxDepth = 
 
     session.pendingRequests.set(requestId, { resolve, reject, timer });
 
-    session.agentWs.send(
-      JSON.stringify({
-        type: "REQUEST_SCAN",
-        requestId,
-        changedFiles: Array.isArray(changedFiles)
-          ? changedFiles
-          : typeof changedFiles === "string"
-          ? changedFiles.split(",").map((s) => s.trim()).filter(Boolean)
-          : [],
-        maxDepth: Number(maxDepth) || 10,
-      })
-    );
+    const sent = safeSend(session.agentWs, {
+      type: "REQUEST_SCAN",
+      requestId,
+      changedFiles: Array.isArray(changedFiles)
+        ? changedFiles
+        : typeof changedFiles === "string"
+        ? changedFiles.split(",").map((s) => s.trim()).filter(Boolean)
+        : [],
+      maxDepth: Number(maxDepth) || 10,
+    });
+    if (!sent) {
+      clearTimeout(timer);
+      session.pendingRequests.delete(requestId);
+      reject(new Error("AGENT_DISCONNECTED: Failed to send scan request to local CLI agent"));
+    }
   });
 }
 
@@ -147,7 +165,7 @@ export function initBridgeRelay(httpServer) {
     const role = (parsedUrl.searchParams.get("role") || "client").trim().toLowerCase(); // "agent" | "client"
 
     if (!sessionCode) {
-      ws.send(JSON.stringify({ type: "ERROR", message: "Missing session parameter in query string" }));
+      safeSend(ws, { type: "ERROR", message: "Missing session parameter in query string" });
       ws.close(1008, "Session code required");
       return;
     }
@@ -189,14 +207,12 @@ export function initBridgeRelay(httpServer) {
           // 1. Agent Registration & Workspace Metadata
           if (msg.type === "REGISTER_AGENT") {
             session.workspace = msg.workspace || null;
-            ws.send(
-              JSON.stringify({
-                type: "AGENT_REGISTERED",
-                sessionCode,
-                status: "connected",
-                workspace: session.workspace,
-              })
-            );
+            safeSend(ws, {
+              type: "AGENT_REGISTERED",
+              sessionCode,
+              status: "connected",
+              workspace: session.workspace,
+            });
 
             // Notify all waiting browser clients that agent is online
             const broadcastMsg = JSON.stringify({
@@ -293,14 +309,12 @@ export function initBridgeRelay(httpServer) {
 
     // Immediately send current status to the connecting client
     const isAgentOnline = Boolean(session.agentWs && session.agentWs.readyState === WebSocket.OPEN);
-    ws.send(
-      JSON.stringify({
-        type: "SESSION_STATUS",
-        sessionCode,
-        agentConnected: isAgentOnline,
-        workspace: session.workspace,
-      })
-    );
+    safeSend(ws, {
+      type: "SESSION_STATUS",
+      sessionCode,
+      agentConnected: isAgentOnline,
+      workspace: session.workspace,
+    });
 
     ws.on("message", (raw) => {
       try {

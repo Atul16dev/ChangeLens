@@ -54,6 +54,35 @@ function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
+function getFrontendBaseUrl() {
+  return process.env.FRONTEND_URL || process.env.FRONTEND_ORIGIN || "http://localhost:5173";
+}
+
+function establishAuthenticatedSession(req, user, onReady, next) {
+  req.session.regenerate((err) => {
+    if (err) return next(err);
+    req.session.userId = user.id;
+    req.session.sessionIssuedAt = Date.now();
+    req.session.passwordChangedAtSnapshot = user.password_changed_at
+      ? String(user.password_changed_at)
+      : null;
+    onReady();
+  });
+}
+
+function redirectBannedOAuth(req, res, user) {
+  const frontendUrl = getFrontendBaseUrl();
+  const reason = user.ban_reason || user.banReason || "Violation of platform policies";
+  const target = `${frontendUrl}/login?error=account_banned&reason=${encodeURIComponent(reason)}`;
+  if (req.session) {
+    return req.session.destroy(() => {
+      res.clearCookie("changelens.sid");
+      return res.redirect(target);
+    });
+  }
+  return res.redirect(target);
+}
+
 export const authController = {
   /**
    * Register a new user
@@ -66,6 +95,13 @@ export const authController = {
         return res.status(400).json({
           success: false,
           error: { code: "VALIDATION_ERROR", message: "Name must be at least 2 characters long." },
+        });
+      }
+
+      if (name.trim().length > 100) {
+        return res.status(400).json({
+          success: false,
+          error: { code: "VALIDATION_ERROR", message: "Name must be at most 100 characters long." },
         });
       }
 
@@ -127,18 +163,23 @@ export const authController = {
       const otpHash = hashOtp(otp);
 
       // Store challenge in DB
-      await otpRepository.createChallenge({
+      const challenge = await otpRepository.createChallenge({
         email: cleanEmail,
         purpose: "email_verification",
         otpHash,
       });
 
-      // Send verification email
-      await sendVerificationEmail({
-        to: cleanEmail,
-        name: user.name,
-        otp,
-      });
+      // Send verification email (roll back challenge if delivery fails so user can retry immediately)
+      try {
+        await sendVerificationEmail({
+          to: cleanEmail,
+          name: user.name,
+          otp,
+        });
+      } catch (mailErr) {
+        await otpRepository.consume(challenge.id).catch(() => {});
+        throw mailErr;
+      }
 
       return res.status(201).json({
         success: true,
@@ -240,17 +281,19 @@ export const authController = {
       }
 
       // Session regeneration to prevent fixation
-      req.session.regenerate((err) => {
-        if (err) return next(err);
-        req.session.userId = updatedUser.id;
-        return res.status(200).json({
-          success: true,
-          message: "Email verified successfully.",
-          data: {
-            user: toSafeUser(updatedUser),
-          },
-        });
-      });
+      establishAuthenticatedSession(
+        req,
+        updatedUser,
+        () =>
+          res.status(200).json({
+            success: true,
+            message: "Email verified successfully.",
+            data: {
+              user: toSafeUser(updatedUser),
+            },
+          }),
+        next
+      );
     } catch (err) {
       next(err);
     }
@@ -405,17 +448,19 @@ export const authController = {
       }
 
       // Rotate session on authentication
-      req.session.regenerate((err) => {
-        if (err) return next(err);
-        req.session.userId = user.id;
-        return res.status(200).json({
-          success: true,
-          message: "Logged in successfully.",
-          data: {
-            user: toSafeUser(user),
-          },
-        });
-      });
+      establishAuthenticatedSession(
+        req,
+        user,
+        () =>
+          res.status(200).json({
+            success: true,
+            message: "Logged in successfully.",
+            data: {
+              user: toSafeUser(user),
+            },
+          }),
+        next
+      );
     } catch (err) {
       next(err);
     }
@@ -800,7 +845,12 @@ export const authController = {
    */
   async googleCallback(req, res, next) {
     try {
-      const { code, state } = req.query || {};
+      const { code, state, error: oauthError } = req.query || {};
+      const frontendUrl = getFrontendBaseUrl();
+
+      if (oauthError) {
+        return res.redirect(`${frontendUrl}/login?error=oauth_denied`);
+      }
 
       if (!state || state !== req.session?.oauthState) {
         return res.status(403).json({
@@ -811,12 +861,19 @@ export const authController = {
 
       delete req.session.oauthState;
 
+      if (!code || typeof code !== "string") {
+        return res.redirect(`${frontendUrl}/login?error=oauth_failed`);
+      }
+
       const googleProfile = await verifyGoogleCode(code);
       const cleanEmail = normalizeEmail(googleProfile.email);
 
       let user = await userRepository.findByEmail(cleanEmail);
 
       if (user) {
+        if (user.status === "banned") {
+          return redirectBannedOAuth(req, res, user);
+        }
         if (!user.google_id) {
           user = await userRepository.linkGoogleAccount(user.id, googleProfile.googleId);
         } else if (!user.is_email_verified) {
@@ -834,12 +891,12 @@ export const authController = {
         });
       }
 
-      req.session.regenerate((err) => {
-        if (err) return next(err);
-        req.session.userId = user.id;
-        const frontendUrl = process.env.FRONTEND_URL || process.env.FRONTEND_ORIGIN || "http://localhost:5173";
-        return res.redirect(`${frontendUrl}/app`);
-      });
+      establishAuthenticatedSession(
+        req,
+        user,
+        () => res.redirect(`${frontendUrl}/app`),
+        next
+      );
     } catch (err) {
       next(err);
     }
@@ -875,7 +932,12 @@ export const authController = {
    */
   async githubCallback(req, res, next) {
     try {
-      const { code, state } = req.query || {};
+      const { code, state, error: oauthError } = req.query || {};
+      const frontendUrl = getFrontendBaseUrl();
+
+      if (oauthError) {
+        return res.redirect(`${frontendUrl}/login?error=oauth_denied`);
+      }
 
       if (!state || state !== req.session?.githubOAuthState) {
         return res.status(403).json({
@@ -886,12 +948,21 @@ export const authController = {
 
       delete req.session.githubOAuthState;
 
+      if (!code || typeof code !== "string") {
+        return res.redirect(`${frontendUrl}/login?error=oauth_failed`);
+      }
+
       const githubProfile = await verifyGitHubCode(code);
       const cleanEmail = normalizeEmail(githubProfile.email);
 
-      let user = await userRepository.findByEmail(cleanEmail);
+      let user =
+        (await userRepository.findByGitHubId(githubProfile.githubId)) ||
+        (await userRepository.findByEmail(cleanEmail));
 
       if (user) {
+        if (user.status === "banned") {
+          return redirectBannedOAuth(req, res, user);
+        }
         if (!user.github_id) {
           user = await userRepository.linkGitHubAccount(
             user.id,
@@ -914,13 +985,12 @@ export const authController = {
         });
       }
 
-      req.session.regenerate((err) => {
-        if (err) return next(err);
-        req.session.userId = user.id;
-        const frontendUrl =
-          process.env.FRONTEND_URL || process.env.FRONTEND_ORIGIN || "http://localhost:5173";
-        return res.redirect(`${frontendUrl}/app`);
-      });
+      establishAuthenticatedSession(
+        req,
+        user,
+        () => res.redirect(`${frontendUrl}/app`),
+        next
+      );
     } catch (err) {
       next(err);
     }
