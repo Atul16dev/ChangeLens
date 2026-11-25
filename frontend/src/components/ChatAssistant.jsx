@@ -168,33 +168,33 @@ function MarkdownMessageContent({ content, isUser }) {
           return (
             <div
               key={idx}
-              className="overflow-x-auto my-2 rounded-lg border border-slate-700/80 bg-slate-950/70 shadow-sm"
+              className="overflow-x-auto my-2 rounded-lg border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-950/70 shadow-sm"
             >
               <table className="w-full text-left border-collapse text-[11px] font-sans">
-                <thead className="bg-slate-800/90 text-cyan-300 border-b border-slate-700">
+                <thead className="bg-slate-100 dark:bg-slate-800/90 text-cyan-800 dark:text-cyan-300 border-b border-slate-200 dark:border-slate-700">
                   <tr>
                     {b.headers.map((h, hIdx) => (
                       <th
                         key={hIdx}
-                        className="px-2.5 py-1.5 font-semibold text-slate-200 whitespace-nowrap"
+                        className="px-2.5 py-1.5 font-semibold text-slate-900 dark:text-slate-200 whitespace-nowrap"
                       >
                         {renderInlineMarkdown(h)}
                       </th>
                     ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800/70">
+                <tbody className="divide-y divide-slate-200 dark:divide-slate-800/70">
                   {b.rows.map((row, rIdx) => (
                     <tr
                       key={rIdx}
-                      className={`hover:bg-slate-800/40 transition-colors ${
-                        rIdx % 2 === 1 ? 'bg-slate-900/40' : ''
+                      className={`hover:bg-slate-100/70 dark:hover:bg-slate-800/40 transition-colors ${
+                        rIdx % 2 === 1 ? 'bg-slate-50/80 dark:bg-slate-900/40' : ''
                       }`}
                     >
                       {row.map((cell, cIdx) => (
                         <td
                           key={cIdx}
-                          className="px-2.5 py-1.5 text-slate-300 whitespace-nowrap font-sans"
+                          className="px-2.5 py-1.5 text-slate-700 dark:text-slate-300 whitespace-nowrap font-sans"
                         >
                           {renderInlineMarkdown(cell)}
                         </td>
@@ -210,7 +210,7 @@ function MarkdownMessageContent({ content, isUser }) {
           return (
             <h4
               key={idx}
-              className="font-bold text-slate-100 text-[12px] pt-1 flex items-center gap-1.5"
+              className="font-bold text-slate-900 dark:text-slate-100 text-[12px] pt-1 flex items-center gap-1.5"
             >
               {renderInlineMarkdown(b.text)}
             </h4>
@@ -220,7 +220,7 @@ function MarkdownMessageContent({ content, isUser }) {
           return (
             <blockquote
               key={idx}
-              className="border-l-2 border-cyan-500/70 pl-2.5 my-1.5 text-slate-300 text-[11px] italic bg-cyan-950/20 py-1 rounded-r"
+              className="border-l-2 border-cyan-500/70 pl-2.5 my-1.5 text-slate-700 dark:text-slate-300 text-[11px] italic bg-cyan-50/70 dark:bg-cyan-950/20 py-1 rounded-r"
             >
               {renderInlineMarkdown(b.text)}
             </blockquote>
@@ -228,16 +228,16 @@ function MarkdownMessageContent({ content, isUser }) {
         }
         if (b.type === 'bullet') {
           return (
-            <div key={idx} className="flex items-start gap-1.5 ml-1 my-0.5 text-slate-300">
-              <span className="text-cyan-400 font-bold shrink-0 leading-tight">•</span>
+            <div key={idx} className="flex items-start gap-1.5 ml-1 my-0.5 text-slate-700 dark:text-slate-300">
+              <span className="text-cyan-600 dark:text-cyan-400 font-bold shrink-0 leading-tight">•</span>
               <span className="flex-1 leading-relaxed">{renderInlineMarkdown(b.text)}</span>
             </div>
           );
         }
         if (b.type === 'numbered') {
           return (
-            <div key={idx} className="flex items-start gap-1.5 ml-1 my-0.5 text-slate-300">
-              <span className="text-cyan-400 font-mono font-semibold shrink-0 leading-tight">
+            <div key={idx} className="flex items-start gap-1.5 ml-1 my-0.5 text-slate-700 dark:text-slate-300">
+              <span className="text-cyan-600 dark:text-cyan-400 font-mono font-semibold shrink-0 leading-tight">
                 {b.num}.
               </span>
               <span className="flex-1 leading-relaxed">{renderInlineMarkdown(b.text)}</span>
@@ -273,13 +273,28 @@ export function ChatAssistant({ analysisId, selectedNodeId, isSimulating, simula
   const [copiedIndex, setCopiedIndex] = useState(null);
 
   // Window geometry state
-  const DEFAULT_WIDTH = 450;
-  const DEFAULT_HEIGHT = 580;
-  const MIN_WIDTH = 340;
-  const MIN_HEIGHT = 360;
+  const DEFAULT_WIDTH = 440;
+  const DEFAULT_HEIGHT = 540;
+  const MIN_WIDTH = 320;
+  const MIN_HEIGHT = 340;
+  const TOP_NAV_CLEARANCE = 76;
 
-  const [size, setSize] = useState({ width: DEFAULT_WIDTH, height: DEFAULT_HEIGHT });
-  const [position, setPosition] = useState(null); // { x, y }
+  const computeInitialGeometry = () => {
+    const screenWidth = typeof window !== 'undefined' ? window.innerWidth : 1200;
+    const screenHeight = typeof window !== 'undefined' ? window.innerHeight : 800;
+    const width = Math.min(DEFAULT_WIDTH, Math.max(MIN_WIDTH, screenWidth - 32));
+    const height = Math.min(DEFAULT_HEIGHT, Math.max(MIN_HEIGHT, screenHeight - TOP_NAV_CLEARANCE - 84));
+    const rightGutter = screenWidth >= 1024 ? 400 : 20;
+    const initialX = Math.max(16, Math.min(screenWidth - width - 16, screenWidth - width - rightGutter));
+    const initialY = Math.max(TOP_NAV_CLEARANCE, Math.min(screenHeight - height - 20, screenHeight - height - 72));
+    return {
+      size: { width, height },
+      position: { x: initialX, y: initialY },
+    };
+  };
+
+  const [size, setSize] = useState(() => computeInitialGeometry().size);
+  const [position, setPosition] = useState(() => computeInitialGeometry().position); // { x, y }
   const [isMaximized, setIsMaximized] = useState(false);
   const [preMaximizeState, setPreMaximizeState] = useState(null);
   const preMaximizeStateRef = useRef(null);
@@ -298,8 +313,8 @@ export function ChatAssistant({ analysisId, selectedNodeId, isSimulating, simula
   }, []);
 
   const windowRef = useRef(null);
-  const posRef = useRef({ x: 20, y: 20 });
-  const sizeRef = useRef({ width: DEFAULT_WIDTH, height: DEFAULT_HEIGHT });
+  const posRef = useRef(position);
+  const sizeRef = useRef(size);
   const rafId = useRef(null);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
@@ -315,30 +330,40 @@ export function ChatAssistant({ analysisId, selectedNodeId, isSimulating, simula
     sizeRef.current = size;
   }, [size]);
 
-  // Initialize position when first opened
+  // Ensure valid geometry when first opened (stays clear of sticky top navbar)
   useEffect(() => {
-    if (isOpen && !position) {
-      const screenWidth = typeof window !== 'undefined' ? window.innerWidth : 1200;
-      const screenHeight = typeof window !== 'undefined' ? window.innerHeight : 800;
-      const initialX = Math.max(20, screenWidth - DEFAULT_WIDTH - 460);
-      const initialY = Math.max(30, screenHeight - DEFAULT_HEIGHT - 30);
-      const initialPos = { x: initialX, y: initialY };
-      setPosition(initialPos);
-      posRef.current = initialPos;
+    if (isOpen) {
+      const next = computeInitialGeometry();
+      const maxX = Math.max(16, window.innerWidth - sizeRef.current.width - 16);
+      const maxY = Math.max(TOP_NAV_CLEARANCE, window.innerHeight - sizeRef.current.height - 16);
+      const nextWidth = Math.min(sizeRef.current.width, Math.max(MIN_WIDTH, window.innerWidth - 32));
+      const nextHeight = Math.min(sizeRef.current.height, Math.max(MIN_HEIGHT, window.innerHeight - TOP_NAV_CLEARANCE - 24));
+      const clampedX = Math.min(Math.max(16, posRef.current?.x ?? next.position.x), maxX);
+      const clampedY = Math.min(Math.max(TOP_NAV_CLEARANCE, posRef.current?.y ?? next.position.y), maxY);
+      setSize({ width: nextWidth, height: nextHeight });
+      sizeRef.current = { width: nextWidth, height: nextHeight };
+      setPosition({ x: clampedX, y: clampedY });
+      posRef.current = { x: clampedX, y: clampedY };
     }
-  }, [isOpen, position]);
+  }, [isOpen]);
 
   // Handle window resize to keep floating window within bounds
   useEffect(() => {
     const handleWindowResize = () => {
       if (isMaximized) return; // Keep maximized view intact without altering transform
-      const maxX = Math.max(10, window.innerWidth - sizeRef.current.width - 10);
-      const maxY = Math.max(10, window.innerHeight - sizeRef.current.height - 10);
-      const clampedX = Math.min(Math.max(10, posRef.current.x), maxX);
-      const clampedY = Math.min(Math.max(10, posRef.current.y), maxY);
+      const nextWidth = Math.min(sizeRef.current.width, Math.max(MIN_WIDTH, window.innerWidth - 32));
+      const nextHeight = Math.min(sizeRef.current.height, Math.max(MIN_HEIGHT, window.innerHeight - TOP_NAV_CLEARANCE - 24));
+      const maxX = Math.max(16, window.innerWidth - nextWidth - 16);
+      const maxY = Math.max(TOP_NAV_CLEARANCE, window.innerHeight - nextHeight - 16);
+      const clampedX = Math.min(Math.max(16, posRef.current.x), maxX);
+      const clampedY = Math.min(Math.max(TOP_NAV_CLEARANCE, posRef.current.y), maxY);
+      sizeRef.current = { width: nextWidth, height: nextHeight };
       posRef.current = { x: clampedX, y: clampedY };
+      setSize({ width: nextWidth, height: nextHeight });
       setPosition({ x: clampedX, y: clampedY });
       if (windowRef.current) {
+        windowRef.current.style.width = `${nextWidth}px`;
+        windowRef.current.style.height = `${nextHeight}px`;
         windowRef.current.style.transform = `translate3d(${clampedX}px, ${clampedY}px, 0)`;
       }
     };
@@ -380,12 +405,12 @@ export function ChatAssistant({ analysisId, selectedNodeId, isSimulating, simula
           const restoredWidth = preMaximizeStateRef.current?.size?.width || DEFAULT_WIDTH;
           const restoredHeight = preMaximizeStateRef.current?.size?.height || DEFAULT_HEIGHT;
           const newX = Math.max(
-            10,
-            Math.min(window.innerWidth - restoredWidth - 10, moveEvent.clientX - restoredWidth / 2)
+            16,
+            Math.min(window.innerWidth - restoredWidth - 16, moveEvent.clientX - restoredWidth / 2)
           );
           const newY = Math.max(
-            10,
-            Math.min(window.innerHeight - restoredHeight - 10, moveEvent.clientY - 20)
+            TOP_NAV_CLEARANCE,
+            Math.min(window.innerHeight - restoredHeight - 16, moveEvent.clientY - 20)
           );
 
           posRef.current = { x: newX, y: newY };
@@ -409,8 +434,8 @@ export function ChatAssistant({ analysisId, selectedNodeId, isSimulating, simula
       const currentWidth = sizeRef.current.width;
       const currentHeight = sizeRef.current.height;
 
-      const pendingX = Math.max(10, Math.min(screenWidth - currentWidth - 10, startX + deltaX));
-      const pendingY = Math.max(10, Math.min(screenHeight - currentHeight - 10, startY + deltaY));
+      const pendingX = Math.max(16, Math.min(screenWidth - currentWidth - 16, startX + deltaX));
+      const pendingY = Math.max(TOP_NAV_CLEARANCE, Math.min(screenHeight - currentHeight - 16, startY + deltaY));
 
       if (!rafId.current) {
         rafId.current = requestAnimationFrame(() => {
@@ -480,12 +505,12 @@ export function ChatAssistant({ analysisId, selectedNodeId, isSimulating, simula
 
       // Horizontal resizing
       if (direction.includes('e')) {
-        pendingWidth = Math.max(MIN_WIDTH, Math.min(screenWidth - startPosX - 10, startWidth + deltaX));
+        pendingWidth = Math.max(MIN_WIDTH, Math.min(screenWidth - startPosX - 16, startWidth + deltaX));
       } else if (direction.includes('w')) {
         const proposedWidth = startWidth - deltaX;
         if (proposedWidth >= MIN_WIDTH) {
           const proposedX = startPosX + deltaX;
-          if (proposedX >= 10) {
+          if (proposedX >= 16) {
             pendingWidth = proposedWidth;
             pendingX = proposedX;
           }
@@ -494,12 +519,12 @@ export function ChatAssistant({ analysisId, selectedNodeId, isSimulating, simula
 
       // Vertical resizing
       if (direction.includes('s')) {
-        pendingHeight = Math.max(MIN_HEIGHT, Math.min(screenHeight - startPosY - 10, startHeight + deltaY));
+        pendingHeight = Math.max(MIN_HEIGHT, Math.min(screenHeight - startPosY - 16, startHeight + deltaY));
       } else if (direction.includes('n')) {
         const proposedHeight = startHeight - deltaY;
         if (proposedHeight >= MIN_HEIGHT) {
           const proposedY = startPosY + deltaY;
-          if (proposedY >= 10) {
+          if (proposedY >= TOP_NAV_CLEARANCE) {
             pendingHeight = proposedHeight;
             pendingY = proposedY;
           }
@@ -722,7 +747,7 @@ export function ChatAssistant({ analysisId, selectedNodeId, isSimulating, simula
                   position: 'fixed',
                   left: '16px',
                   right: '16px',
-                  top: '64px',
+                  top: '76px',
                   bottom: '20px',
                   maxWidth: '1100px',
                   margin: '0 auto',
@@ -734,7 +759,7 @@ export function ChatAssistant({ analysisId, selectedNodeId, isSimulating, simula
                   position: 'fixed',
                   left: 0,
                   top: 0,
-                  transform: `translate3d(${position?.x ?? 20}px, ${position?.y ?? 20}px, 0)`,
+                  transform: `translate3d(${position?.x ?? 20}px, ${position?.y ?? 76}px, 0)`,
                   width: `${size.width}px`,
                   height: `${size.height}px`,
                   zIndex: 50,
@@ -813,27 +838,26 @@ export function ChatAssistant({ analysisId, selectedNodeId, isSimulating, simula
                 : 'Drag to move • Double-click to maximize'
             }
           >
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2.5 min-w-0 flex-1">
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-600 to-cyan-600 flex items-center justify-center shadow-md shrink-0">
                 <Bot className="w-4 h-4 text-white" />
               </div>
-              <div>
-                <div className="flex items-center gap-1.5">
-                  <span className="font-bold text-xs text-slate-900 dark:text-white">ChangeLens AI</span>
-                  <h3 className="text-xs font-bold text-slate-700 dark:text-white tracking-tight">ChangeLens Copilot</h3>
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <h3 className="text-xs font-bold text-slate-900 dark:text-white tracking-tight truncate">ChangeLens Copilot</h3>
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
                 </div>
-                <p className="text-[10px] text-slate-500 dark:text-slate-400">Context-Aware AST Assistant</p>
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">Context-Aware AST Assistant</p>
               </div>
             </div>
 
             {/* Draggable hint icon */}
-            <div className="hidden sm:flex items-center gap-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 text-[10px] font-mono pointer-events-none">
+            <div className="hidden md:flex items-center gap-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 text-[10px] font-mono pointer-events-none shrink-0">
               <Move className="w-2.5 h-2.5 text-cyan-600 dark:text-cyan-400" />
               <span>{isMaximized ? 'Maximized' : 'Drag to move'}</span>
             </div>
 
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 shrink-0">
               <button
                 type="button"
                 onClick={(e) => {
@@ -956,7 +980,7 @@ export function ChatAssistant({ analysisId, selectedNodeId, isSimulating, simula
           </div>
 
           {/* Quick Prompts Suggestions */}
-          <div className="px-3.5 py-2 bg-slate-50 dark:bg-[#0e1627] border-t border-slate-200 dark:border-slate-700/80 flex items-center gap-1.5 overflow-x-auto no-scrollbar shrink-0">
+          <div className="px-3.5 py-2 bg-slate-50 dark:bg-[#0e1627] border-t border-slate-200 dark:border-slate-700/80 flex flex-wrap items-center gap-1.5 max-h-20 overflow-y-auto shrink-0">
             {quickPrompts.map((qp, idx) => {
               const Icon = qp.icon;
               return (

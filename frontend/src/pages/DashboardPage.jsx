@@ -820,13 +820,13 @@ export function DashboardPage() {
 
         {/* Error Notification Banner (only shown directly in dashboard if Hub is closed) */}
         {error && !isProjectHubOpen && (
-          <div className="bg-rose-950/95 border-b border-rose-500/60 px-6 py-3 flex flex-wrap items-center justify-between text-rose-200 text-xs backdrop-blur-md gap-3 shadow-lg">
+          <div className="bg-rose-50 dark:bg-rose-950/95 border-b border-rose-300 dark:border-rose-500/60 px-6 py-3 flex flex-wrap items-center justify-between text-rose-900 dark:text-rose-200 text-xs backdrop-blur-md gap-3 shadow-lg">
             <div className="flex items-center gap-2.5">
-              <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+              <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" />
               <div>
-                <strong className="text-white">Analysis Error:</strong> {error}
+                <strong className="text-rose-950 dark:text-white">Analysis Error:</strong> {error}
                 {error.toLowerCase().includes('rate limit') && (
-                  <div className="text-[11px] text-rose-300/80 mt-0.5">
+                  <div className="text-[11px] text-rose-700 dark:text-rose-300/80 mt-0.5">
                     GitHub unauthenticated IP rate limit is 60 requests/hr. Supplying a Personal Access Token unlocks 5,000 requests/hr.
                   </div>
                 )}
@@ -838,7 +838,7 @@ export function DashboardPage() {
                   href="https://github.com/settings/tokens/new?description=ChangeLens&scopes=repo"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-3 py-1 bg-rose-900/80 hover:bg-rose-800 text-white rounded-lg font-medium border border-rose-600/50 flex items-center gap-1 transition-colors"
+                  className="px-3 py-1 bg-rose-100 hover:bg-rose-200 dark:bg-rose-900/80 dark:hover:bg-rose-800 text-rose-900 dark:text-white rounded-lg font-medium border border-rose-300 dark:border-rose-600/50 flex items-center gap-1 transition-colors"
                 >
                   <span>Generate Free Token (30s)</span>
                   <ExternalLink className="w-3 h-3" />
@@ -854,7 +854,7 @@ export function DashboardPage() {
               </button>
               <button
                 onClick={() => setError(null)}
-                className="text-rose-400 hover:text-white font-bold ml-2 cursor-pointer text-sm"
+                className="text-rose-600 hover:text-rose-900 dark:text-rose-400 dark:hover:text-white font-bold ml-2 cursor-pointer text-sm"
                 title="Dismiss"
               >
                 ✕

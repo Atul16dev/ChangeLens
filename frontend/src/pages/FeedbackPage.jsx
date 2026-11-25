@@ -440,17 +440,17 @@ export function FeedbackPage() {
           onClick={() => setLightboxImage(null)}
         >
           <div
-            className="relative max-w-4xl max-h-[90vh] bg-slate-900 rounded-2xl overflow-hidden shadow-2xl border border-slate-800"
+            className="relative max-w-4xl max-h-[90vh] bg-white dark:bg-slate-900 rounded-2xl overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-800"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between px-4 py-2.5 bg-slate-950/90 border-b border-slate-800 text-xs text-slate-300">
+            <div className="flex items-center justify-between px-4 py-2.5 bg-slate-50 dark:bg-slate-950/90 border-b border-slate-200 dark:border-slate-800 text-xs text-slate-800 dark:text-slate-300">
               <span className="font-medium truncate max-w-sm">
                 {lightboxImage.fileName || 'Screenshot Preview'}
               </span>
               <button
                 type="button"
                 onClick={() => setLightboxImage(null)}
-                className="p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors cursor-pointer"
+                className="p-1 rounded-lg hover:bg-slate-200/70 dark:hover:bg-slate-800 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -458,7 +458,7 @@ export function FeedbackPage() {
             <img
               src={lightboxImage.url}
               alt={lightboxImage.fileName || 'Screenshot preview'}
-              className="max-h-[80vh] w-auto object-contain mx-auto"
+              className="max-h-[80vh] w-auto object-contain mx-auto bg-slate-100 dark:bg-slate-950"
             />
           </div>
         </div>
@@ -803,12 +803,12 @@ export function FeedbackPage() {
       {/* MAIN CONTENT AREA */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         {/* Navigation Tabs (Community Feed | Submit New | My Submissions) */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-200 dark:border-slate-800">
-          <div className="flex items-center gap-1.5 sm:gap-2 p-1 rounded-full bg-slate-200/70 dark:bg-slate-800/80 border border-slate-300/60 dark:border-slate-700/60 max-w-full overflow-x-auto no-scrollbar self-start sm:self-auto shrink-0">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 sm:gap-4 pb-6 border-b border-slate-200 dark:border-slate-800">
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 p-1 rounded-2xl sm:rounded-full bg-slate-200/70 dark:bg-slate-800/80 border border-slate-300/60 dark:border-slate-700/60 max-w-full w-full sm:w-fit shrink-0">
             <button
               type="button"
               onClick={() => setActiveTab('community')}
-              className={`px-3.5 sm:px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap shrink-0 transition-all cursor-pointer ${
+              className={`px-3 sm:px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap shrink-0 transition-all cursor-pointer ${
                 activeTab === 'community'
                   ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white'
@@ -820,7 +820,7 @@ export function FeedbackPage() {
             <button
               type="button"
               onClick={() => setActiveTab('submit')}
-              className={`px-3.5 sm:px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap shrink-0 transition-all cursor-pointer flex items-center gap-1.5 ${
+              className={`px-3 sm:px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap shrink-0 transition-all cursor-pointer flex items-center gap-1.5 ${
                 activeTab === 'submit'
                   ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-xs'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white'
@@ -833,7 +833,7 @@ export function FeedbackPage() {
             <button
               type="button"
               onClick={() => setActiveTab('mine')}
-              className={`px-3.5 sm:px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap shrink-0 transition-all cursor-pointer flex items-center gap-1.5 ${
+              className={`px-3 sm:px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap shrink-0 transition-all cursor-pointer flex items-center gap-1.5 ${
                 activeTab === 'mine'
                   ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white'
@@ -846,8 +846,8 @@ export function FeedbackPage() {
 
           {/* Search & Sort Controls (only active on community tab) */}
           {activeTab === 'community' && (
-            <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap">
-              <div className="relative min-w-[200px] flex-1 sm:w-64">
+            <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap w-full lg:w-auto">
+              <div className="relative min-w-0 flex-1 sm:min-w-[200px] lg:w-64">
                 <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                   type="text"
@@ -870,7 +870,7 @@ export function FeedbackPage() {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="px-3 py-1.5 rounded-full text-xs font-medium border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-violet-500/50 cursor-pointer"
+                className="px-3 py-1.5 rounded-full text-xs font-medium border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-violet-500/50 cursor-pointer shrink-0"
               >
                 <option value="newest">Newest First</option>
                 <option value="rating">Highest Rated</option>
@@ -880,7 +880,7 @@ export function FeedbackPage() {
                 type="button"
                 onClick={loadCommunityData}
                 disabled={loadingCommunity}
-                className="p-2 rounded-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer disabled:opacity-50"
+                className="p-2 rounded-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer disabled:opacity-50 shrink-0"
                 title="Refresh feed"
               >
                 <RefreshCw
@@ -897,7 +897,7 @@ export function FeedbackPage() {
         {activeTab === 'community' && (
           <div className="mt-6 space-y-6">
             {/* Category Filter Pills */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+            <div className="flex flex-wrap items-center gap-2 pb-1">
               {[
                 { id: 'all', label: 'All Categories' },
                 { id: 'bug_report', label: 'Bug Reports 🐞' },

@@ -31,7 +31,7 @@ export function LandingPage() {
   }, [location.search, navigate, refreshUser]);
 
   return (
-    <div className="min-h-screen bg-white dark:bg-[#0b0f19] text-slate-900 dark:text-slate-100 font-sans selection:bg-cyan-500/30 selection:text-cyan-200 relative overflow-x-hidden w-full max-w-full">
+    <div className="min-h-screen bg-white dark:bg-[#0b0f19] text-slate-900 dark:text-slate-100 font-sans selection:bg-cyan-500/25 selection:text-cyan-900 dark:selection:text-cyan-200 relative overflow-x-hidden w-full max-w-full">
       {/* Permanent Ambient Background Grid & Floating Glow Orbs (contained to prevent viewport expansion) */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
         <div className="absolute inset-0 bg-grid-pattern opacity-60" />

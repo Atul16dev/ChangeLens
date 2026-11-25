@@ -80,55 +80,55 @@ npm test tests/auth.test.js
           </p>
         </ScrollReveal>
 
-        {/* Tab Controls (Smooth horizontal swipe on mobile) */}
+        {/* Tab Controls (2x2 Grid on small mobile, single bar on sm+) */}
         <ScrollReveal animation="fade-down" delay={100} duration={650} className="flex items-center justify-center mb-6 sm:mb-8 w-full">
-          <div className="inline-flex items-center p-1 sm:p-1.5 rounded-xl bg-[#101726] border border-slate-700/80 shadow-inner overflow-x-auto max-w-full gap-1 no-scrollbar">
+          <div className="grid grid-cols-2 sm:inline-flex items-center p-1 sm:p-1.5 rounded-xl bg-slate-100 dark:bg-[#101726] border border-slate-200 dark:border-slate-700/80 shadow-inner w-full sm:w-auto max-w-full gap-1">
             <button
               type="button"
               onClick={() => setActiveTab('graph')}
-              className={`flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all shrink-0 min-h-[36px] ${
+              className={`flex items-center justify-center gap-1.5 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all shrink-0 min-h-[36px] ${
                 activeTab === 'graph'
                   ? 'bg-cyan-600 text-white shadow-md shadow-cyan-600/30'
-                  : 'text-slate-400 hover:text-slate-200'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
               }`}
             >
-              <Share2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <Share2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
               <span>Blast Radius</span>
             </button>
             <button
               type="button"
               onClick={() => setActiveTab('symbols')}
-              className={`flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all shrink-0 min-h-[36px] ${
+              className={`flex items-center justify-center gap-1.5 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all shrink-0 min-h-[36px] ${
                 activeTab === 'symbols'
                   ? 'bg-cyan-600 text-white shadow-md shadow-cyan-600/30'
-                  : 'text-slate-400 hover:text-slate-200'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
               }`}
             >
-              <Binary className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <Binary className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
               <span>Symbol Isolation</span>
             </button>
             <button
               type="button"
               onClick={() => setActiveTab('ai')}
-              className={`flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all shrink-0 min-h-[36px] ${
+              className={`flex items-center justify-center gap-1.5 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all shrink-0 min-h-[36px] ${
                 activeTab === 'ai'
                   ? 'bg-cyan-600 text-white shadow-md shadow-cyan-600/30'
-                  : 'text-slate-400 hover:text-slate-200'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
               }`}
             >
-              <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
               <span>AI PR Explainer</span>
             </button>
             <button
               type="button"
               onClick={() => setActiveTab('whatif')}
-              className={`flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all shrink-0 min-h-[36px] ${
+              className={`flex items-center justify-center gap-1.5 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all shrink-0 min-h-[36px] ${
                 activeTab === 'whatif'
                   ? 'bg-cyan-600 text-white shadow-md shadow-cyan-600/30'
-                  : 'text-slate-400 hover:text-slate-200'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
               }`}
             >
-              <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
               <span>What-If Simulator</span>
             </button>
           </div>
@@ -173,14 +173,14 @@ npm test tests/auth.test.js
                 </div>
                 <div className="flex items-center gap-2.5 text-xs">
                   {/* 2D / 3D Dimension Switcher Pill */}
-                  <div className="flex items-center bg-[#090e1a] p-0.5 rounded-lg border border-slate-700/80 shadow-inner">
+                  <div className="flex items-center bg-slate-100 dark:bg-[#090e1a] p-0.5 rounded-lg border border-slate-200 dark:border-slate-700/80 shadow-inner">
                     <button
                       type="button"
                       onClick={() => setPreviewDimension('2D')}
                       className={`px-2.5 py-1 rounded-md text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
                         previewDimension === '2D'
                           ? 'bg-cyan-600 text-white shadow-sm'
-                          : 'text-slate-400 hover:text-white'
+                          : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                       }`}
                     >
                       <Layers className="w-3 h-3" />
@@ -192,12 +192,12 @@ npm test tests/auth.test.js
                       className={`px-2.5 py-1 rounded-md text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
                         previewDimension === '3D'
                           ? 'bg-gradient-to-r from-cyan-500 to-indigo-600 text-white shadow-md shadow-indigo-600/30'
-                          : 'text-slate-400 hover:text-cyan-300'
+                          : 'text-slate-600 dark:text-slate-400 hover:text-cyan-700 dark:hover:text-cyan-300'
                       }`}
                     >
-                      <Sparkles className="w-3 h-3 text-cyan-300" />
+                      <Sparkles className={`w-3 h-3 ${previewDimension === '3D' ? 'text-cyan-200' : 'text-cyan-600 dark:text-cyan-300'}`} />
                       <span>3D Galaxy</span>
-                      <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 dark:bg-cyan-400 animate-pulse" />
                     </button>
                   </div>
 

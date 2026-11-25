@@ -466,14 +466,14 @@ function GraphViewerInternal({
         />
 
         {/* TOP-LEFT TOOLBAR: CONTROLS, MODES & FILTERS */}
-        <Panel position="top-left" className="!m-2 sm:!m-4 max-w-[calc(100vw-1rem)] sm:max-w-none">
-          <div className="flex items-center gap-1.5 sm:gap-2 bg-white/95 dark:bg-[#0f172a]/95 backdrop-blur-md p-1 sm:p-1.5 rounded-xl border border-slate-200 dark:border-slate-700/80 shadow-lg dark:shadow-2xl text-slate-800 dark:text-slate-200 overflow-x-auto no-scrollbar max-w-full">
+        <Panel position="top-left" className="!m-2 sm:!m-3 !max-w-[calc(100%-1rem)] md:!max-w-[calc(100%-13rem)]">
+          <div className="flex flex-wrap items-center gap-1.5 bg-white/95 dark:bg-[#0f172a]/95 backdrop-blur-md p-1 sm:p-1.5 rounded-xl border border-slate-200 dark:border-slate-700/80 shadow-lg dark:shadow-2xl text-slate-800 dark:text-slate-200 max-w-full">
             {/* 2D / 3D Dimension Switcher */}
             <div className="flex items-center bg-slate-200/90 dark:bg-[#060b16] p-0.5 rounded-lg border border-slate-300 dark:border-slate-800 shadow-inner shrink-0">
               <button
                 type="button"
                 onClick={() => handleSetViewDimension('2D')}
-                className={`px-2.5 py-1 rounded-md text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                className={`px-2 sm:px-2.5 py-1 rounded-md text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
                   viewDimension === '2D'
                     ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-sm'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -486,7 +486,7 @@ function GraphViewerInternal({
               <button
                 type="button"
                 onClick={() => handleSetViewDimension('3D')}
-                className={`px-2.5 py-1 rounded-md text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                className={`px-2 sm:px-2.5 py-1 rounded-md text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
                   viewDimension === '3D'
                     ? 'bg-gradient-to-r from-cyan-500 to-indigo-600 text-white shadow-md shadow-indigo-600/30'
                     : 'text-slate-600 dark:text-slate-400 hover:text-cyan-600 dark:hover:text-cyan-300'
@@ -503,7 +503,7 @@ function GraphViewerInternal({
             <div className="flex items-center bg-slate-100 dark:bg-[#090e1a] p-0.5 rounded-lg border border-slate-200 dark:border-slate-800 shrink-0">
               <button
                 onClick={() => handleFilterToggle('all')}
-                className={`px-2.5 sm:px-3 py-1 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all ${
+                className={`px-2 sm:px-2.5 py-1 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all whitespace-nowrap ${
                   filterMode === 'all'
                     ? 'bg-cyan-600 text-white shadow-sm'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
@@ -511,13 +511,13 @@ function GraphViewerInternal({
                 title="Display complete repository dependency graph"
               >
                 <Eye className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Full Repository ({totalNodesCount})</span>
-                <span className="sm:hidden">Full ({totalNodesCount})</span>
+                <span className="hidden xl:inline">Full Repository ({totalNodesCount})</span>
+                <span className="xl:hidden">Full ({totalNodesCount})</span>
               </button>
 
               <button
                 onClick={() => handleFilterToggle('blast_only')}
-                className={`px-2.5 sm:px-3 py-1 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all ${
+                className={`px-2 sm:px-2.5 py-1 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all whitespace-nowrap ${
                   filterMode === 'blast_only'
                     ? 'bg-amber-600 text-white shadow-sm'
                     : 'text-slate-600 dark:text-slate-400 hover:text-amber-700 dark:hover:text-amber-300'
@@ -525,7 +525,8 @@ function GraphViewerInternal({
                 title="Focus exclusively on changed file roots and impacted dependents"
               >
                 <Flame className="w-3.5 h-3.5 text-amber-500 dark:text-amber-300" />
-                <span className="hidden sm:inline">Blast Radius Only ({impactedNodesCount})</span>
+                <span className="hidden xl:inline">Blast Radius Only ({impactedNodesCount})</span>
+                <span className="hidden sm:inline xl:hidden">Blast Only ({impactedNodesCount})</span>
                 <span className="sm:hidden">Blast ({impactedNodesCount})</span>
               </button>
             </div>
@@ -533,7 +534,7 @@ function GraphViewerInternal({
             {/* Semantic Flow Toggle */}
             <button
               onClick={handleSemanticModeToggle}
-              className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-[#090e1a] dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-xs font-medium text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white flex items-center gap-1.5 transition-colors shrink-0"
+              className="px-2 sm:px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-[#090e1a] dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-xs font-medium text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white flex items-center gap-1.5 transition-colors shrink-0 whitespace-nowrap"
               title={
                 semanticMode === 'impact'
                   ? 'Showing Change Impact Flow (Root Changes ➔ Downstream Consumers)'
@@ -541,20 +542,23 @@ function GraphViewerInternal({
               }
             >
               <ArrowRightLeft className="w-3 h-3 text-cyan-600 dark:text-cyan-400" />
-              <span className="hidden sm:inline">
+              <span className="hidden xl:inline">
                 {semanticMode === 'impact' ? 'Mode: Impact Flow (Root ➔ Consumers)' : 'Mode: Code Imports (Consumers ➔ Root)'}
               </span>
+              <span className="hidden sm:inline xl:hidden">
+                {semanticMode === 'impact' ? 'Mode: Impact' : 'Mode: Imports'}
+              </span>
               <span className="sm:hidden">
-                {semanticMode === 'impact' ? 'Impact Flow' : 'Imports'}
+                {semanticMode === 'impact' ? 'Impact' : 'Imports'}
               </span>
             </button>
 
             {/* Graph Snapshot Export (PNG & SVG) */}
-            <div className="flex items-center bg-slate-100 dark:bg-[#090e1a] p-0.5 rounded-lg border border-slate-200 dark:border-slate-800">
+            <div className="flex items-center bg-slate-100 dark:bg-[#090e1a] p-0.5 rounded-lg border border-slate-200 dark:border-slate-800 shrink-0">
               <button
                 onClick={handleExportPng}
                 disabled={isExporting}
-                className={`px-2.5 py-1 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all active:scale-95 ${
+                className={`px-2 py-1 rounded-md text-xs font-semibold flex items-center gap-1 transition-all active:scale-95 whitespace-nowrap ${
                   exportSuccess === 'png'
                     ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-bold'
                     : 'text-slate-700 dark:text-slate-300 hover:text-cyan-700 dark:hover:text-cyan-300 hover:bg-slate-200 dark:hover:bg-slate-900'
@@ -572,7 +576,7 @@ function GraphViewerInternal({
               <button
                 onClick={handleExportSvg}
                 disabled={isExporting}
-                className={`px-2.5 py-1 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all active:scale-95 border-l border-slate-200 dark:border-slate-800 ${
+                className={`px-2 py-1 rounded-md text-xs font-semibold flex items-center gap-1 transition-all active:scale-95 border-l border-slate-200 dark:border-slate-800 whitespace-nowrap ${
                   exportSuccess === 'svg'
                     ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-bold'
                     : 'text-slate-700 dark:text-slate-300 hover:text-purple-700 dark:hover:text-purple-300 hover:bg-slate-200 dark:hover:bg-slate-900'
@@ -626,10 +630,10 @@ function GraphViewerInternal({
           </div>
         </Panel>
 
-        {/* BOTTOM-LEFT: REFINED COLOR & TIER LEGEND (SHIFTED RIGHT OF ZOOM CONTROLS) */}
-        <Panel position="bottom-left" className="!mb-4 !ml-16 sm:!ml-[72px] hidden sm:block">
-          <div className="bg-white/95 dark:bg-[#0f172a]/95 backdrop-blur-md border border-slate-200 dark:border-slate-700/80 rounded-xl px-3.5 py-2 shadow-lg dark:shadow-2xl flex flex-wrap items-center gap-3.5 text-xs text-slate-700 dark:text-slate-300">
-            <span className="font-bold text-slate-800 dark:text-slate-400 flex items-center gap-1 border-r border-slate-200 dark:border-slate-800 pr-3 text-[11px]">
+        {/* BOTTOM-LEFT: REFINED COLOR & TIER LEGEND (SHIFTED RIGHT OF ZOOM CONTROLS & CLEAR OF AI CTA) */}
+        <Panel position="bottom-left" className="!mb-4 !ml-14 sm:!ml-[64px] !mr-44 lg:!mr-48 !max-w-[calc(100%-15.5rem)] hidden sm:block">
+          <div className="bg-white/95 dark:bg-[#0f172a]/95 backdrop-blur-md border border-slate-200 dark:border-slate-700/80 rounded-xl px-3 py-1.5 shadow-lg dark:shadow-2xl flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-700 dark:text-slate-300">
+            <span className="font-bold text-slate-800 dark:text-slate-400 flex items-center gap-1 border-r border-slate-200 dark:border-slate-800 pr-2.5 text-[11px]">
               <Layers className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />
               Impact Legend
             </span>
@@ -668,7 +672,7 @@ function GraphViewerInternal({
                 <button
                   type="button"
                   onClick={() => setShowMobileLegend2D(false)}
-                  className="p-1 rounded-lg text-slate-400 hover:text-white"
+                  className="p-1 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                   title="Close legend"
                 >
                   <X className="w-3.5 h-3.5" />

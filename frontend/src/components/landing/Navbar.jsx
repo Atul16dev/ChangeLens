@@ -43,7 +43,7 @@ export function Navbar() {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      className={`fixed top-0 left-0 right-0 z-50 transition-shadow duration-200 ${
         scrolled
           ? 'bg-white/95 dark:bg-[#0e1422]/95 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-2xl dark:shadow-black/60'
           : 'bg-white/80 dark:bg-[#0b0f19]/75 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800/50'
@@ -182,33 +182,33 @@ export function Navbar() {
 
       {/* Mobile & Tablet Drawer Dropdown */}
       {mobileMenuOpen && (
-        <div className="lg:hidden bg-white/95 dark:bg-slate-950/95 border-b border-slate-200 dark:border-slate-800 backdrop-blur-2xl px-4 pt-3 pb-6 space-y-3 shadow-2xl transition-all">
+        <div className="lg:hidden bg-white dark:bg-[#0b0f19] border-b border-slate-200 dark:border-slate-800 px-4 pt-3 pb-6 space-y-3 shadow-2xl">
           <nav className="flex flex-col space-y-1">
             <a
               href="#problem"
               onClick={(e) => scrollToSection(e, 'problem')}
-              className="px-3 py-2.5 min-h-[44px] flex items-center rounded-lg text-sm font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors"
+              className="px-3 py-2.5 min-h-[44px] flex items-center rounded-lg text-sm font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-cyan-600 dark:hover:text-cyan-400"
             >
               The Problem
             </a>
             <a
               href="#features"
               onClick={(e) => scrollToSection(e, 'features')}
-              className="px-3 py-2.5 min-h-[44px] flex items-center rounded-lg text-sm font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors"
+              className="px-3 py-2.5 min-h-[44px] flex items-center rounded-lg text-sm font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-cyan-600 dark:hover:text-cyan-400"
             >
               Features
             </a>
             <a
               href="#how-it-works"
               onClick={(e) => scrollToSection(e, 'how-it-works')}
-              className="px-3 py-2.5 min-h-[44px] flex items-center rounded-lg text-sm font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors"
+              className="px-3 py-2.5 min-h-[44px] flex items-center rounded-lg text-sm font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-cyan-600 dark:hover:text-cyan-400"
             >
               How It Works
             </a>
             <a
               href="#global-telemetry"
               onClick={(e) => scrollToSection(e, 'global-telemetry')}
-              className="px-3 py-2.5 min-h-[44px] rounded-lg text-sm font-semibold text-cyan-600 dark:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-cyan-950/40 transition-colors flex items-center justify-between"
+              className="px-3 py-2.5 min-h-[44px] rounded-lg text-sm font-semibold text-cyan-600 dark:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-cyan-950/40 flex items-center justify-between"
             >
               <span>3D Global Telemetry Globe</span>
               <span className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse" />
@@ -216,14 +216,14 @@ export function Navbar() {
             <a
               href="#preview"
               onClick={(e) => scrollToSection(e, 'preview')}
-              className="px-3 py-2.5 min-h-[44px] flex items-center rounded-lg text-sm font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors"
+              className="px-3 py-2.5 min-h-[44px] flex items-center rounded-lg text-sm font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-cyan-600 dark:hover:text-cyan-400"
             >
               Live Preview
             </a>
             <a
               href="#why-changelens"
               onClick={(e) => scrollToSection(e, 'why-changelens')}
-              className="px-3 py-2.5 min-h-[44px] flex items-center rounded-lg text-sm font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors"
+              className="px-3 py-2.5 min-h-[44px] flex items-center rounded-lg text-sm font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-cyan-600 dark:hover:text-cyan-400"
             >
               Why ChangeLens
             </a>
@@ -248,7 +248,7 @@ export function Navbar() {
                 <Link
                   to="/login"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="w-full min-h-[44px] flex items-center justify-center text-center text-sm font-semibold text-slate-800 dark:text-slate-200 hover:text-slate-950 dark:hover:text-white px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 transition-colors"
+                  className="w-full min-h-[44px] flex items-center justify-center text-center text-sm font-semibold text-slate-800 dark:text-slate-200 hover:text-slate-950 dark:hover:text-white px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800"
                 >
                   Sign In
                 </Link>

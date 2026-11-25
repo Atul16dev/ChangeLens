@@ -197,28 +197,30 @@ html.light .hover\:bg-\[\#223250\]:hover {
 }
 
 /* 2. Borders mapping for clean light mode */
-html.light .border-slate-800,
-html.light .border-slate-800\/40,
-html.light .border-slate-800\/60,
-html.light .border-slate-800\/80,
-html.light .border-slate-700,
-html.light .border-slate-700\/50,
-html.light .border-slate-700\/60,
-html.light .border-slate-700\/70,
-html.light .border-slate-700\/80,
-html.light .border-slate-700\/90,
-html.light .border-slate-600\/60,
-html.light .border-slate-600\/70,
-html.light .border-slate-600\/80 {
+html.light .border-slate-900:not([class*="dark:"]),
+html.light .border-slate-800:not([class*="dark:"]),
+html.light .border-slate-800\/40:not([class*="dark:"]),
+html.light .border-slate-800\/60:not([class*="dark:"]),
+html.light .border-slate-800\/80:not([class*="dark:"]),
+html.light .border-slate-700:not([class*="dark:"]),
+html.light .border-slate-700\/50:not([class*="dark:"]),
+html.light .border-slate-700\/60:not([class*="dark:"]),
+html.light .border-slate-700\/70:not([class*="dark:"]),
+html.light .border-slate-700\/80:not([class*="dark:"]),
+html.light .border-slate-700\/90:not([class*="dark:"]),
+html.light .border-slate-600\/60:not([class*="dark:"]),
+html.light .border-slate-600\/70:not([class*="dark:"]),
+html.light .border-slate-600\/80:not([class*="dark:"]) {
   border-color: #e2e8f0 !important;
 }
 
-html.light .border-slate-600 {
+html.light .border-slate-600:not([class*="dark:"]) {
   border-color: #cbd5e1 !important;
 }
 
-html.light .divide-slate-800 > :not([hidden]) ~ :not([hidden]),
-html.light .divide-slate-700 > :not([hidden]) ~ :not([hidden]) {
+html.light .divide-slate-800:not([class*="dark:"]) > :not([hidden]) ~ :not([hidden]),
+html.light .divide-slate-800\/70:not([class*="dark:"]) > :not([hidden]) ~ :not([hidden]),
+html.light .divide-slate-700:not([class*="dark:"]) > :not([hidden]) ~ :not([hidden]) {
   border-color: #e2e8f0 !important;
 }
 
@@ -226,22 +228,42 @@ html.light .ring-white\/5 {
   --tw-ring-color: rgba(15, 23, 42, 0.06) !important;
 }
 
-/* 3. Text typography for light mode */
-html.light .text-slate-100,
-html.light .text-slate-200 {
+html.light .ring-slate-950:not([class*="dark:"]) {
+  --tw-ring-color: #ffffff !important;
+}
+
+/* 3. Text typography for light mode (skip elements with explicit dark: rules) */
+html.light .text-slate-100:not([class*="dark:"]),
+html.light .text-slate-200:not([class*="dark:"]) {
   color: #0f172a !important;
 }
 
-html.light .text-slate-300 {
+html.light .text-slate-300:not([class*="dark:"]) {
   color: #334155 !important;
 }
 
-html.light .text-slate-400,
-html.light .text-slate-500 {
+html.light .text-slate-400:not([class*="dark:"]),
+html.light .text-slate-500:not([class*="dark:"]) {
   color: #64748b !important;
 }
 
-/* 4. Disappearing text-white fix: Headings, labels, strong tags on light surfaces */
+/* Light mode hover text fixes for legacy buttons/links without dark: classes */
+html.light .hover\:text-white:not([class*="dark:"]):not([class*="bg-cyan-600"]):not([class*="bg-indigo-600"]):not([class*="bg-blue-600"]):not([class*="bg-purple-600"]):not([class*="bg-rose-600"]):not([class*="bg-emerald-600"]):not([class*="bg-amber-600"]):not([class*="bg-gradient-to-"]):hover,
+html.light .hover\:text-slate-200:not([class*="dark:"]):hover,
+html.light .group:hover .group-hover\:text-slate-200:not([class*="dark:"]) {
+  color: #0f172a !important;
+}
+
+html.light .hover\:text-cyan-300:not([class*="dark:"]):hover,
+html.light .group:hover .group-hover\:text-cyan-200:not([class*="dark:"]) {
+  color: #0284c7 !important;
+}
+
+html.light .hover\:text-indigo-200:not([class*="dark:"]):hover {
+  color: #4338ca !important;
+}
+
+/* 4. Disappearing text-white fix: Headings, labels, strong, code tags on light surfaces */
 html.light h1.text-white,
 html.light h2.text-white,
 html.light h3.text-white,
@@ -252,6 +274,7 @@ html.light strong.text-white,
 html.light b.text-white,
 html.light p.text-white,
 html.light label.text-white,
+html.light code.text-white,
 html.light h1:not(button *):not([class*="text-"]):not([class*="bg-gradient-"]),
 html.light h2:not(button *):not([class*="text-"]):not([class*="bg-gradient-"]),
 html.light h3:not(button *):not([class*="text-"]),
@@ -260,6 +283,11 @@ html.light h1.text-slate-900,
 html.light h2.text-slate-900,
 html.light h3.text-slate-900,
 html.light h4.text-slate-900 {
+  color: #0f172a !important;
+}
+
+html.light code.text-white:not([class*="dark:"]) {
+  background-color: #e2e8f0 !important;
   color: #0f172a !important;
 }
 
@@ -454,20 +482,23 @@ html.light .from-indigo-950.via-slate-900.to-slate-950 {
 html.light .bg-rose-950,
 html.light .bg-rose-950\/30,
 html.light .bg-rose-950\/40,
+html.light .bg-rose-950\/50,
 html.light .bg-rose-950\/60,
 html.light .bg-rose-950\/70,
 html.light .bg-rose-950\/80,
 html.light .bg-rose-950\/90,
+html.light .bg-rose-950\/95,
 html.light .bg-rose-900\/80,
+html.light .bg-rose-600\/30,
 html.light .bg-rose-500\/10,
 html.light .bg-rose-500\/20 {
   background-color: #ffe4e6 !important;
   border-color: #fecdd3 !important;
   color: #9f1239 !important;
 }
-html.light .text-rose-200,
-html.light .text-rose-300,
-html.light .text-rose-400 {
+html.light .text-rose-200:not([class*="dark:"]),
+html.light .text-rose-300:not([class*="dark:"]),
+html.light .text-rose-400:not([class*="dark:"]) {
   color: #be123c !important;
 }
 
@@ -475,6 +506,7 @@ html.light .text-rose-400 {
 html.light .bg-amber-950,
 html.light .bg-amber-950\/30,
 html.light .bg-amber-950\/40,
+html.light .bg-amber-950\/50,
 html.light .bg-amber-950\/60,
 html.light .bg-amber-950\/70,
 html.light .bg-amber-950\/80,
@@ -486,9 +518,9 @@ html.light .bg-amber-500\/20 {
   border-color: #fde68a !important;
   color: #92400e !important;
 }
-html.light .text-amber-200,
-html.light .text-amber-300,
-html.light .text-amber-400 {
+html.light .text-amber-200:not([class*="dark:"]),
+html.light .text-amber-300:not([class*="dark:"]),
+html.light .text-amber-400:not([class*="dark:"]) {
   color: #b45309 !important;
 }
 
@@ -506,9 +538,9 @@ html.light .bg-orange-500\/20 {
   border-color: #fed7aa !important;
   color: #c2410c !important;
 }
-html.light .text-orange-200,
-html.light .text-orange-300,
-html.light .text-orange-400 {
+html.light .text-orange-200:not([class*="dark:"]),
+html.light .text-orange-300:not([class*="dark:"]),
+html.light .text-orange-400:not([class*="dark:"]) {
   color: #c2410c !important;
 }
 
@@ -526,9 +558,9 @@ html.light .bg-yellow-500\/20 {
   border-color: #fef08a !important;
   color: #854d0e !important;
 }
-html.light .text-yellow-200,
-html.light .text-yellow-300,
-html.light .text-yellow-400 {
+html.light .text-yellow-200:not([class*="dark:"]),
+html.light .text-yellow-300:not([class*="dark:"]),
+html.light .text-yellow-400:not([class*="dark:"]) {
   color: #854d0e !important;
 }
 
@@ -536,6 +568,7 @@ html.light .text-yellow-400 {
 html.light .bg-emerald-950,
 html.light .bg-emerald-950\/30,
 html.light .bg-emerald-950\/40,
+html.light .bg-emerald-950\/50,
 html.light .bg-emerald-950\/60,
 html.light .bg-emerald-950\/70,
 html.light .bg-emerald-950\/80,
@@ -547,16 +580,37 @@ html.light .bg-emerald-500\/20 {
   border-color: #a7f3d0 !important;
   color: #065f46 !important;
 }
-html.light .text-emerald-200,
-html.light .text-emerald-300,
-html.light .text-emerald-400 {
+html.light .text-emerald-200:not([class*="dark:"]),
+html.light .text-emerald-300:not([class*="dark:"]),
+html.light .text-emerald-400:not([class*="dark:"]) {
   color: #047857 !important;
+}
+
+/* Teal / CI Workflows */
+html.light .bg-teal-950,
+html.light .bg-teal-950\/40,
+html.light .bg-teal-950\/60,
+html.light .bg-teal-950\/80,
+html.light .bg-teal-900,
+html.light .bg-teal-500\/10,
+html.light .bg-teal-500\/15,
+html.light .bg-teal-500\/20 {
+  background-color: #ccfbf1 !important;
+  border-color: #99f6e4 !important;
+  color: #0f766e !important;
+}
+html.light .text-teal-200:not([class*="dark:"]),
+html.light .text-teal-300:not([class*="dark:"]),
+html.light .text-teal-400:not([class*="dark:"]) {
+  color: #0f766e !important;
 }
 
 /* Cyan / Info / Sky */
 html.light .bg-cyan-950,
+html.light .bg-cyan-950\/20,
 html.light .bg-cyan-950\/30,
 html.light .bg-cyan-950\/40,
+html.light .bg-cyan-950\/50,
 html.light .bg-cyan-950\/60,
 html.light .bg-cyan-950\/70,
 html.light .bg-cyan-950\/80,
@@ -570,9 +624,9 @@ html.light .bg-cyan-500\/20 {
   border-color: #bae6fd !important;
   color: #0369a1 !important;
 }
-html.light .text-cyan-200,
-html.light .text-cyan-300,
-html.light .text-cyan-400 {
+html.light .text-cyan-200:not([class*="dark:"]),
+html.light .text-cyan-300:not([class*="dark:"]),
+html.light .text-cyan-400:not([class*="dark:"]) {
   color: #0284c7 !important;
 }
 
@@ -580,6 +634,7 @@ html.light .text-cyan-400 {
 html.light .bg-indigo-950,
 html.light .bg-indigo-950\/30,
 html.light .bg-indigo-950\/40,
+html.light .bg-indigo-950\/50,
 html.light .bg-indigo-950\/60,
 html.light .bg-indigo-950\/70,
 html.light .bg-indigo-950\/80,
@@ -591,9 +646,9 @@ html.light .bg-indigo-500\/20 {
   border-color: #c7d2fe !important;
   color: #4338ca !important;
 }
-html.light .text-indigo-200,
-html.light .text-indigo-300,
-html.light .text-indigo-400 {
+html.light .text-indigo-200:not([class*="dark:"]),
+html.light .text-indigo-300:not([class*="dark:"]),
+html.light .text-indigo-400:not([class*="dark:"]) {
   color: #4338ca !important;
 }
 
@@ -622,13 +677,28 @@ html.light .bg-violet-500\/20 {
   border-color: #e9d5ff !important;
   color: #6b21a8 !important;
 }
-html.light .text-purple-200,
-html.light .text-purple-300,
-html.light .text-purple-400,
-html.light .text-violet-200,
-html.light .text-violet-300,
-html.light .text-violet-400 {
+html.light .text-purple-200:not([class*="dark:"]),
+html.light .text-purple-300:not([class*="dark:"]),
+html.light .text-purple-400:not([class*="dark:"]),
+html.light .text-violet-200:not([class*="dark:"]),
+html.light .text-violet-300:not([class*="dark:"]),
+html.light .text-violet-400:not([class*="dark:"]) {
   color: #6b21a8 !important;
+}
+
+/* Light mode semantic hover fills */
+html.light .hover\:bg-cyan-900\/60:hover {
+  background-color: #bae6fd !important;
+}
+html.light .hover\:bg-indigo-950\/80:hover {
+  background-color: #c7d2fe !important;
+}
+html.light .hover\:bg-purple-900:hover {
+  background-color: #e9d5ff !important;
+}
+html.light .hover\:bg-rose-900:hover,
+html.light .hover\:bg-rose-800:hover {
+  background-color: #fecdd3 !important;
 }
 
 /* ==========================================================================
@@ -650,16 +720,16 @@ html.light a[class*="bg-rose-950"] {
   color: inherit !important;
 }
 
-html.light button[class*="bg-cyan-950"] *,
-html.light button[class*="bg-indigo-950"] *,
-html.light button[class*="bg-amber-950"] *,
-html.light button[class*="bg-purple-950"] *,
-html.light button[class*="bg-rose-950"] *,
-html.light a[class*="bg-cyan-950"] *,
-html.light a[class*="bg-indigo-950"] *,
-html.light a[class*="bg-amber-950"] *,
-html.light a[class*="bg-purple-950"] *,
-html.light a[class*="bg-rose-950"] * {
+html.light button[class*="bg-cyan-950"] *:not([class*="bg-cyan-500"]):not([class*="bg-indigo-500"]):not([class*="bg-amber-500"]),
+html.light button[class*="bg-indigo-950"] *:not([class*="bg-cyan-500"]):not([class*="bg-indigo-500"]):not([class*="bg-amber-500"]),
+html.light button[class*="bg-amber-950"] *:not([class*="bg-cyan-500"]):not([class*="bg-indigo-500"]):not([class*="bg-amber-500"]),
+html.light button[class*="bg-purple-950"] *:not([class*="bg-cyan-500"]):not([class*="bg-indigo-500"]):not([class*="bg-amber-500"]),
+html.light button[class*="bg-rose-950"] *:not([class*="bg-cyan-500"]):not([class*="bg-indigo-500"]):not([class*="bg-amber-500"]),
+html.light a[class*="bg-cyan-950"] *:not([class*="bg-cyan-500"]):not([class*="bg-indigo-500"]):not([class*="bg-amber-500"]),
+html.light a[class*="bg-indigo-950"] *:not([class*="bg-cyan-500"]):not([class*="bg-indigo-500"]):not([class*="bg-amber-500"]),
+html.light a[class*="bg-amber-950"] *:not([class*="bg-cyan-500"]):not([class*="bg-indigo-500"]):not([class*="bg-amber-500"]),
+html.light a[class*="bg-purple-950"] *:not([class*="bg-cyan-500"]):not([class*="bg-indigo-500"]):not([class*="bg-amber-500"]),
+html.light a[class*="bg-rose-950"] *:not([class*="bg-cyan-500"]):not([class*="bg-indigo-500"]):not([class*="bg-amber-500"]) {
   color: inherit !important;
 }
 

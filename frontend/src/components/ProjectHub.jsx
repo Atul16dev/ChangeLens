@@ -549,7 +549,7 @@ export function ProjectHub({
           <div className="lg:col-span-5 flex flex-col items-center justify-center relative z-10">
             <div className="w-full bg-white dark:bg-[#090d16]/90 border border-slate-200 dark:border-cyan-500/40 rounded-2xl p-4 shadow-md dark:shadow-xl ring-1 ring-cyan-500/10 relative overflow-hidden font-mono text-xs hub-dag-preview">
               <div className="flex items-center justify-between flex-wrap gap-1.5 pb-3 mb-3 border-b border-slate-200 dark:border-slate-700/80 text-[11px] text-slate-700 dark:text-slate-300">
-                <span className="flex items-center gap-1.5 text-cyan-700 dark:cyan-400 font-bold">
+                <span className="flex items-center gap-1.5 text-cyan-700 dark:text-cyan-400 font-bold">
                   <Activity className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400 shrink-0" />
                   <span>Live AST Blast Radius Preview</span>
                 </span>
@@ -626,8 +626,8 @@ export function ProjectHub({
           <div
             className={`w-full rounded-2xl p-4 text-xs mb-6 text-left flex flex-col sm:flex-row items-start sm:items-center justify-between shadow-xl gap-3 transition-all ${
               isRateLimitError
-                ? 'bg-amber-950/90 border border-amber-500/60 text-amber-200'
-                : 'bg-rose-950/90 border border-rose-500/50 text-rose-300'
+                ? 'bg-amber-50 dark:bg-amber-950/90 border border-amber-300 dark:border-amber-500/60 text-amber-950 dark:text-amber-200'
+                : 'bg-rose-50 dark:bg-rose-950/90 border border-rose-300 dark:border-rose-500/50 text-rose-950 dark:text-rose-300'
             }`}
           >
             <div className="flex items-start gap-3">
@@ -639,23 +639,23 @@ export function ProjectHub({
                 {isRateLimitError ? <KeyRound className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
               </div>
               <div>
-                <div className="font-bold text-slate-100 flex items-center gap-2">
+                <div className="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2 flex-wrap">
                   <span>{isRateLimitError ? 'GitHub API Rate Limit Exceeded' : 'Analysis Request Error'}</span>
                   {isRateLimitError && (
-                    <span className="text-[10px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 font-mono">
+                    <span className="text-[10px] px-2 py-0.5 rounded bg-amber-100 dark:bg-amber-500/20 text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-500/30 font-mono">
                       60 req/hr unauthenticated limit hit
                     </span>
                   )}
                 </div>
-                <p className="mt-1 text-slate-300 leading-relaxed text-[11px]">
+                <p className="mt-1 text-slate-700 dark:text-slate-300 leading-relaxed text-[11px]">
                   {isRateLimitError
-                    ? "GitHub restricts anonymous API requests to 60 per hour per IP. Providing a free GitHub Personal Access Token (PAT) unlocks 5,000 requests/hr and instantly resolves this error."
+                    ? 'GitHub restricts anonymous API requests to 60 per hour per IP. Providing a free GitHub Personal Access Token (PAT) unlocks 5,000 requests/hr and instantly resolves this error.'
                     : effectiveError}
                 </p>
                 {isRateLimitError && (
-                  <div className="mt-2 text-[10px] text-amber-300/80 font-mono flex items-center gap-1.5 flex-wrap">
-                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                    <span>Permanent fix: Add <code className="text-white bg-slate-900 px-1.5 py-0.5 rounded border border-amber-500/30">GITHUB_TOKEN=your_token</code> in your project's <code className="text-white bg-slate-900 px-1 py-0.5 rounded">.env</code> file.</span>
+                  <div className="mt-2 text-[10px] text-amber-800 dark:text-amber-300/85 font-mono flex items-center gap-1.5 flex-wrap">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500 dark:bg-amber-400" />
+                    <span>Permanent fix: Add <code className="text-slate-900 dark:text-white bg-amber-100/90 dark:bg-slate-900 px-1.5 py-0.5 rounded border border-amber-300 dark:border-amber-500/30">GITHUB_TOKEN=your_token</code> in your project's <code className="text-slate-900 dark:text-white bg-amber-100/90 dark:bg-slate-900 px-1 py-0.5 rounded border border-amber-300 dark:border-slate-700">.env</code> file.</span>
                   </div>
                 )}
               </div>
@@ -667,7 +667,7 @@ export function ProjectHub({
                   <button
                     type="button"
                     onClick={focusTokenField}
-                    className="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-md active:scale-95 transition-all cursor-pointer flex items-center gap-1.5"
+                    className="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-md active:scale-95 transition-transform cursor-pointer flex items-center gap-1.5"
                   >
                     <KeyRound className="w-3.5 h-3.5" />
                     <span>Enter Token Below</span>
@@ -677,10 +677,10 @@ export function ProjectHub({
                     href="https://github.com/settings/tokens/new?description=ChangeLens&scopes=repo"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white font-semibold text-xs border border-slate-700 transition-colors flex items-center gap-1.5"
+                    className="px-3 py-2 rounded-xl bg-white hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 hover:text-slate-950 dark:text-slate-200 dark:hover:text-white font-semibold text-xs border border-slate-300 dark:border-slate-700 transition-colors flex items-center gap-1.5"
                   >
                     <span>Generate Free Token (30s)</span>
-                    <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
+                    <ExternalLink className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
                   </a>
                 </>
               )}
@@ -690,7 +690,7 @@ export function ProjectHub({
                   setError(null);
                   if (onClearApiError) onClearApiError();
                 }}
-                className="text-slate-400 hover:text-white font-bold p-1 cursor-pointer ml-1"
+                className="text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white font-bold p-1 cursor-pointer ml-1"
                 title="Dismiss"
               >
                 ✕
@@ -1471,7 +1471,7 @@ export function ProjectHub({
           {/* ========================================================================= */}
           {activeMode === 'demo' && (
             <div className="animate-in fade-in duration-200">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-slate-800/80 gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-slate-200 dark:border-slate-800/80 gap-4">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
                     <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-[10px] font-bold border border-emerald-500/20">

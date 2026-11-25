@@ -36,6 +36,13 @@ export function downloadJson(data, filename) {
   downloadText(jsonStr, filename, 'application/json;charset=utf-8');
 }
 
+function getActiveGraphBackground() {
+  if (typeof document !== 'undefined' && document.documentElement.classList.contains('light')) {
+    return '#f8fafc';
+  }
+  return '#020617';
+}
+
 /**
  * Captures the React Flow graph DOM node and saves it as high-res PNG image.
  */
@@ -43,7 +50,7 @@ export async function exportGraphToPng(element, filename = 'changelens-graph.png
   if (!element) throw new Error('Graph canvas element not found');
 
   const dataUrl = await toPng(element, {
-    backgroundColor: '#020617', // slate-950
+    backgroundColor: getActiveGraphBackground(),
     filter: (node) => {
       // Exclude interactive overlay UI controls from snapshot
       if (node?.classList?.contains('react-flow__panel')) return false;
@@ -65,7 +72,7 @@ export async function exportGraphToSvg(element, filename = 'changelens-graph.svg
   if (!element) throw new Error('Graph canvas element not found');
 
   const dataUrl = await toSvg(element, {
-    backgroundColor: '#020617',
+    backgroundColor: getActiveGraphBackground(),
     filter: (node) => {
       if (node?.classList?.contains('react-flow__panel')) return false;
       if (node?.classList?.contains('react-flow__controls')) return false;

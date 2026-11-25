@@ -164,7 +164,7 @@ export function AcceptInvitePage() {
           ) : (
             <div>
               {/* Invitation Header Badge */}
-              <div className="flex items-center justify-between mb-5">
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-5">
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
                   <Sparkles className="w-3.5 h-3.5" />
                   Staff Invitation
@@ -178,16 +178,16 @@ export function AcceptInvitePage() {
               </div>
 
               {/* Title & Inviter */}
-              <h2 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white mb-2">
+              <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white mb-2">
                 Join ChangeLens as a{' '}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-cyan-400 capitalize">
                   {inviteData?.role === 'superadmin' ? 'Super Admin' : 'Admin'}
                 </span>
               </h2>
 
-              <p className="text-xs text-slate-600 dark:text-slate-400 mb-6 leading-relaxed">
+              <p className="text-xs text-slate-600 dark:text-slate-400 mb-6 leading-relaxed break-words">
                 You have been invited by{' '}
-                <strong className="text-slate-800 dark:text-slate-200">
+                <strong className="text-slate-800 dark:text-slate-200 break-all">
                   {inviteData?.invited_by?.name || inviteData?.invited_by?.email || 'A Super Admin'}
                 </strong>{' '}
                 to join the ChangeLens platform management team.
@@ -195,14 +195,14 @@ export function AcceptInvitePage() {
 
               {/* Invitation Details Card */}
               <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800/80 mb-6 space-y-3">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-slate-500">Designated Email</span>
-                  <span className="font-semibold font-mono text-slate-800 dark:text-slate-200">
+                <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-1 xs:gap-3 text-xs">
+                  <span className="text-slate-500 shrink-0">Designated Email</span>
+                  <span className="font-semibold font-mono text-slate-800 dark:text-slate-200 break-all xs:text-right">
                     {inviteData?.email}
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between text-xs">
+                <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
                   <span className="text-slate-500">Role Tier</span>
                   <span
                     className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full font-bold text-[11px] ${
@@ -254,10 +254,10 @@ export function AcceptInvitePage() {
               {/* Action State Depending on Authentication */}
               {!user ? (
                 <div className="space-y-3">
-                  <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 text-xs">
-                    Please log in or register with <strong>{inviteData?.email}</strong> to claim this invitation.
+                  <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 text-xs break-words">
+                    Please log in or register with <strong className="break-all">{inviteData?.email}</strong> to claim this invitation.
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 xs:grid-cols-2 gap-3">
                     <Link
                       to={`/login?email=${encodeURIComponent(inviteData?.email || '')}`}
                       className="inline-flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs transition shadow"
@@ -275,16 +275,16 @@ export function AcceptInvitePage() {
                 </div>
               ) : !isEmailMatch ? (
                 <div className="space-y-3">
-                  <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs leading-relaxed">
-                    You are currently signed in as <strong>{user.email}</strong>, but this invitation was sent to{' '}
-                    <strong>{inviteData?.email}</strong>.
+                  <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs leading-relaxed break-words">
+                    You are currently signed in as <strong className="break-all">{user.email}</strong>, but this invitation was sent to{' '}
+                    <strong className="break-all">{inviteData?.email}</strong>.
                   </div>
                   <button
                     onClick={async () => {
                       await logout();
                       navigate(`/login?email=${encodeURIComponent(inviteData?.email || '')}`);
                     }}
-                    className="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-semibold transition"
+                    className="w-full py-2.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-semibold transition break-all"
                   >
                     Switch Account to {inviteData?.email}
                   </button>

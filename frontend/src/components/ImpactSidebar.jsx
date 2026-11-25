@@ -659,18 +659,18 @@ export function ImpactSidebar({
                     <span className="truncate">
                       {isSimulating && selectedNodeId === simulatedFile ? (
                         <span>
-                          Simulated Root: <strong className="font-mono text-white">{selectedNodeId}</strong>
+                          Simulated Root: <strong className="font-mono text-slate-900 dark:text-white">{selectedNodeId}</strong>
                         </span>
                       ) : (
                         <span>
-                          Filtered: <strong className="font-mono text-white">{selectedNodeId}</strong>
+                          Filtered: <strong className="font-mono text-slate-900 dark:text-white">{selectedNodeId}</strong>
                         </span>
                       )}
                     </span>
                   </div>
                   <button
                     onClick={() => onSelectNode(null)}
-                    className="hover:bg-cyan-900/60 p-1 rounded transition-colors ml-2"
+                    className="hover:bg-cyan-100 dark:hover:bg-cyan-900/60 p-1 rounded transition-colors ml-2 cursor-pointer"
                     title="Clear selection"
                   >
                     <X className="w-3.5 h-3.5" />
@@ -679,26 +679,26 @@ export function ImpactSidebar({
 
                 {/* What-If Simulation Trigger Card */}
                 {onSimulateNode && (
-                  <div className="p-2.5 rounded-xl bg-gradient-to-r from-purple-950/70 via-indigo-950/60 to-slate-900 border border-purple-500/40 shadow-md">
+                  <div className="p-2.5 rounded-xl bg-gradient-to-r from-purple-50 via-indigo-50 to-white dark:from-purple-950/70 dark:via-indigo-950/60 dark:to-slate-900 border border-purple-200 dark:border-purple-500/40 shadow-md">
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2 min-w-0">
-                        <Zap className="w-4 h-4 text-amber-400 shrink-0 animate-pulse" />
+                        <Zap className="w-4 h-4 text-amber-500 dark:text-amber-400 shrink-0 animate-pulse" />
                         <div className="min-w-0">
-                          <div className="text-[11px] font-bold text-white flex items-center gap-1.5">
+                          <div className="text-[11px] font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                             <span>What-If Simulator</span>
                             {selectedNodeId === simulatedFile && (
                               <span
-                                className={`text-[9px] px-1.5 py-0.2 rounded-full border ${
+                                className={`text-[9px] px-1.5 py-0.5 rounded-full border ${
                                   simulatedChangeType === 'deleted'
-                                    ? 'bg-rose-500/20 text-rose-300 border-rose-500/40'
-                                    : 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                                    ? 'bg-rose-100 dark:bg-rose-500/20 text-rose-800 dark:text-rose-300 border-rose-300 dark:border-rose-500/40'
+                                    : 'bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-500/40'
                                 }`}
                               >
                                 {simulatedChangeType === 'deleted' ? 'Deleted Mode' : 'Modified Mode'}
                               </span>
                             )}
                           </div>
-                          <div className="text-[10px] text-slate-400 truncate">
+                          <div className="text-[10px] text-slate-600 dark:text-slate-400 truncate">
                             Project blast radius before code edits
                           </div>
                         </div>
@@ -709,31 +709,31 @@ export function ImpactSidebar({
                           <>
                             <button
                               onClick={() => onSimulateNode(selectedNodeId, 'modified')}
-                              className={`px-2 py-1 text-[11px] font-semibold rounded-lg transition-all active:scale-95 flex items-center gap-1 border ${
+                              className={`px-2 py-1 text-[11px] font-semibold rounded-lg transition-all active:scale-95 flex items-center gap-1 border cursor-pointer ${
                                 simulatedChangeType === 'modified'
                                   ? 'bg-purple-600 text-white border-purple-400 shadow-sm shadow-purple-500/30 ring-1 ring-purple-400/50'
-                                  : 'bg-purple-950/60 hover:bg-purple-900 text-purple-300 border-purple-600/40'
+                                  : 'bg-purple-100 hover:bg-purple-200 dark:bg-purple-950/60 dark:hover:bg-purple-900 text-purple-800 dark:text-purple-300 border-purple-300 dark:border-purple-600/40'
                               }`}
                               title={`Simulate modifying ${selectedNodeId}`}
                             >
-                              <Zap className="w-3 h-3 text-amber-300" />
+                              <Zap className="w-3 h-3 text-amber-500 dark:text-amber-300" />
                               <span>Modify</span>
                             </button>
                             <button
                               onClick={() => onSimulateNode(selectedNodeId, 'deleted')}
-                              className={`px-2 py-1 text-[11px] font-semibold rounded-lg transition-all active:scale-95 flex items-center gap-1 border ${
+                              className={`px-2 py-1 text-[11px] font-semibold rounded-lg transition-all active:scale-95 flex items-center gap-1 border cursor-pointer ${
                                 simulatedChangeType === 'deleted'
                                   ? 'bg-rose-700 text-white border-rose-400 shadow-sm shadow-rose-500/30 ring-1 ring-rose-400/50'
-                                  : 'bg-rose-950/60 hover:bg-rose-900 text-rose-300 border-rose-600/40'
+                                  : 'bg-rose-100 hover:bg-rose-200 dark:bg-rose-950/60 dark:hover:bg-rose-900 text-rose-800 dark:text-rose-300 border-rose-300 dark:border-rose-600/40'
                               }`}
                               title={`Simulate deleting ${selectedNodeId}`}
                             >
-                              <Trash2 className="w-3 h-3 text-rose-300" />
+                              <Trash2 className="w-3 h-3 text-rose-600 dark:text-rose-300" />
                               <span>Delete</span>
                             </button>
                             <button
                               onClick={onExitSimulation}
-                              className="px-2 py-1 text-[11px] font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-600/50 transition-all active:scale-95 flex items-center gap-1"
+                              className="px-2 py-1 text-[11px] font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600/50 transition-all active:scale-95 flex items-center gap-1 cursor-pointer"
                               title="Exit simulation"
                             >
                               <X className="w-3 h-3" />
@@ -744,7 +744,7 @@ export function ImpactSidebar({
                           <>
                             <button
                               onClick={() => onSimulateNode(selectedNodeId, 'modified')}
-                              className="px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-sm transition-all active:scale-95 flex items-center gap-1 border border-purple-400/40"
+                              className="px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-sm transition-all active:scale-95 flex items-center gap-1 border border-purple-400/40 cursor-pointer"
                               title={`Simulate modifying ${selectedNodeId}`}
                             >
                               <Zap className="w-3 h-3 text-amber-300" />
@@ -752,10 +752,10 @@ export function ImpactSidebar({
                             </button>
                             <button
                               onClick={() => onSimulateNode(selectedNodeId, 'deleted')}
-                              className="px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-rose-950/90 hover:bg-rose-900 text-rose-200 border border-rose-500/50 hover:border-rose-400 transition-all active:scale-95 flex items-center gap-1"
+                              className="px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-rose-100 hover:bg-rose-200 dark:bg-rose-950/90 dark:hover:bg-rose-900 text-rose-800 dark:text-rose-200 border border-rose-300 dark:border-rose-500/50 hover:border-rose-400 transition-all active:scale-95 flex items-center gap-1 cursor-pointer"
                               title={`Simulate deleting ${selectedNodeId}`}
                             >
-                              <Trash2 className="w-3 h-3 text-rose-400" />
+                              <Trash2 className="w-3 h-3 text-rose-600 dark:text-rose-400" />
                               <span>Delete</span>
                             </button>
                           </>
@@ -1165,10 +1165,10 @@ export function ImpactSidebar({
 
                 <button
                   onClick={handlePrintPDF}
-                  className="px-2.5 py-1 rounded-lg bg-[#182338] hover:bg-[#1f2d48] text-slate-200 border border-slate-600/80 text-[11px] font-medium flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                  className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-[#182338] dark:hover:bg-[#1f2d48] text-slate-700 hover:text-slate-950 dark:text-slate-200 border border-slate-300 dark:border-slate-600/80 text-[11px] font-medium flex items-center gap-1 transition-all active:scale-95 shadow-sm cursor-pointer"
                   title="Print or save report as PDF"
                 >
-                  <Printer className="w-3 h-3 text-emerald-400" />
+                  <Printer className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
                   <span>PDF / Print</span>
                 </button>
               </div>

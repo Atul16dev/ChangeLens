@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTheme } from '../context/ThemeContext.jsx';
 import {
   ShieldAlert,
   AlertTriangle,
@@ -65,6 +66,7 @@ export function RiskGauge({
   size = 'md',
   showBreakdown = true,
 }) {
+  const { isDark } = useTheme();
   const [isBreakdownExpanded, setIsBreakdownExpanded] = useState(true);
   const [showFormulaModal, setShowFormulaModal] = useState(false);
 
@@ -93,7 +95,7 @@ export function RiskGauge({
             <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">
               Explainable Risk Gauge
             </span>
-            <span className="px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20">
+            <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-cyan-500/10 text-cyan-700 dark:text-cyan-400 border border-cyan-500/20">
               Deterministic
             </span>
           </div>
@@ -109,9 +111,9 @@ export function RiskGauge({
         </div>
 
         {/* SVG Speedometer Gauge */}
-        <div className="relative flex flex-col items-center justify-center -mt-2">
+        <div className="relative flex flex-col items-center justify-center -mt-1">
           <svg
-            viewBox="0 0 200 115"
+            viewBox="0 -6 200 122"
             className="w-full max-w-[240px] overflow-visible drop-shadow-sm select-none"
           >
             <defs>
@@ -127,14 +129,13 @@ export function RiskGauge({
               </filter>
             </defs>
 
-            {/* Background Track (Muted Grey Arc) */}
+            {/* Background Track (Theme-aware soft grey in Light Mode, slate-800 in Dark Mode) */}
             <path
               d="M 28 90 A 72 72 0 0 1 172 90"
               fill="none"
-              stroke="currentColor"
+              stroke={isDark ? '#1e293b' : '#e2e8f0'}
               strokeWidth={strokeWidth}
               strokeLinecap="round"
-              className="text-slate-200 dark:text-slate-800"
             />
 
             {/* Colored Segment Reference Dots */}
@@ -178,14 +179,14 @@ export function RiskGauge({
               <circle cx="0" cy="0" r="3" fill="#ffffff" />
             </g>
 
-            {/* Min / Max Labels */}
-            <text x="25" y="108" className="text-[9px] font-bold fill-slate-400" textAnchor="middle">
+            {/* Min / Mid / Max Labels positioned cleanly outside the arc */}
+            <text x="25" y="109" fill={isDark ? '#94a3b8' : '#475569'} className="text-[9px] font-bold" textAnchor="middle">
               0
             </text>
-            <text x="100" y="24" className="text-[9px] font-bold fill-slate-400" textAnchor="middle">
+            <text x="100" y="6" fill={isDark ? '#94a3b8' : '#475569'} className="text-[9px] font-bold" textAnchor="middle">
               50
             </text>
-            <text x="175" y="108" className="text-[9px] font-bold fill-slate-400" textAnchor="middle">
+            <text x="175" y="109" fill={isDark ? '#94a3b8' : '#475569'} className="text-[9px] font-bold" textAnchor="middle">
               100
             </text>
           </svg>

@@ -142,47 +142,47 @@ export const ImpactEdge = memo(({
 
           {/* Detailed Floating Tooltip on Hover */}
           {isHovered && (
-            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-72 p-2.5 rounded-xl bg-slate-900 border border-slate-700 shadow-2xl text-left text-xs pointer-events-none select-text z-50">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-1.5 mb-1.5">
-                <span className="font-bold text-slate-200 flex items-center gap-1 text-[11px]">
-                  <Info className="w-3.5 h-3.5 text-cyan-400" />
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-72 p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-2xl text-left text-xs pointer-events-none select-text z-50">
+              <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-1.5 mb-1.5">
+                <span className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1 text-[11px]">
+                  <Info className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />
                   {mode === 'impact' ? 'Impact Propagation' : 'Code Dependency'}
                 </span>
-                <span className={`text-[9px] font-bold px-1.5 py-0.2 rounded border ${labelBadgeBg}`}>
+                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded border ${labelBadgeBg}`}>
                   {severity !== 'NONE' ? severity : 'CLEAN'}
                 </span>
               </div>
 
-              <div className="space-y-1 font-mono text-[11px] text-slate-300">
+              <div className="space-y-1 font-mono text-[11px] text-slate-700 dark:text-slate-300">
                 <div className="flex items-center gap-1.5 truncate">
                   <span className="text-slate-500">From:</span>
-                  <strong className="text-amber-300 truncate" title={mode === 'impact' ? imported : importer}>
+                  <strong className="text-amber-700 dark:text-amber-300 truncate" title={mode === 'impact' ? imported : importer}>
                     {mode === 'impact' ? importedBasename : importerBasename}
                   </strong>
                 </div>
 
                 <div className="flex items-center gap-1.5 truncate">
                   <span className="text-slate-500">To:</span>
-                  <strong className="text-cyan-300 truncate" title={mode === 'impact' ? importer : imported}>
+                  <strong className="text-cyan-700 dark:text-cyan-300 truncate" title={mode === 'impact' ? importer : imported}>
                     {mode === 'impact' ? importerBasename : importedBasename}
                   </strong>
                 </div>
 
                 {specifier && (
-                  <div className="pt-1 text-[10px] text-slate-400 border-t border-slate-800/80">
+                  <div className="pt-1 text-[10px] text-slate-600 dark:text-slate-400 border-t border-slate-200 dark:border-slate-800/80">
                     <span className="text-slate-500">Specifier: </span>
-                    <code className="text-slate-200 bg-slate-950 px-1 py-0.5 rounded">{specifier}</code>
+                    <code className="text-slate-800 dark:text-slate-200 bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 px-1 py-0.5 rounded">{specifier}</code>
                   </div>
                 )}
 
                 {data.importedNames && data.importedNames.length > 0 && (
-                  <div className="pt-1 text-[10px] text-slate-400 border-t border-slate-800/80">
+                  <div className="pt-1 text-[10px] text-slate-600 dark:text-slate-400 border-t border-slate-200 dark:border-slate-800/80">
                     <span className="text-slate-500">Symbols: </span>
-                    <span className="text-indigo-300 font-semibold">{data.importedNames.join(', ')}</span>
+                    <span className="text-indigo-700 dark:text-indigo-300 font-semibold">{data.importedNames.join(', ')}</span>
                   </div>
                 )}
 
-                <div className="pt-1 text-[10px] text-slate-400 leading-tight">
+                <div className="pt-1 text-[10px] text-slate-500 dark:text-slate-400 leading-tight">
                   {mode === 'impact'
                     ? `Change in ${importedBasename} affects ${importerBasename} because ${importerBasename} imports it.`
                     : `${importerBasename} imports ${importedBasename}.`}

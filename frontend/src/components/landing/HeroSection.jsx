@@ -212,7 +212,7 @@ export function HeroSection() {
               </div>
 
               {/* Demo Scenario Tabs */}
-              <div className="flex items-center gap-1 bg-[#090e1a] p-0.5 sm:p-1 rounded-lg border border-slate-700/80 text-[11px] sm:text-xs">
+              <div className="flex items-center gap-1 bg-slate-100 dark:bg-[#090e1a] p-0.5 sm:p-1 rounded-lg border border-slate-200 dark:border-slate-700/80 text-[11px] sm:text-xs">
                 {DEMO_PRESETS.map((preset) => (
                   <button
                     key={preset.id}
@@ -220,8 +220,8 @@ export function HeroSection() {
                     onClick={() => setActiveDemo(preset)}
                     className={`px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md font-medium transition-all ${
                       activeDemo.id === preset.id
-                        ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm font-semibold'
-                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                        ? 'bg-cyan-100 dark:bg-cyan-500/20 text-cyan-800 dark:text-cyan-300 border border-cyan-300 dark:border-cyan-500/40 shadow-sm font-semibold'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-200/70 dark:hover:bg-slate-800/50'
                     }`}
                   >
                     {preset.lang}

@@ -74,14 +74,14 @@ export function FeaturesGrid() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1.5 bg-[#0a0f1d] p-1 rounded-xl border border-slate-700/80">
+                <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-[#0a0f1d] p-1 rounded-xl border border-slate-200 dark:border-slate-700/80">
                   <button
                     type="button"
                     onClick={() => setActiveAstTab('js')}
                     className={`px-3 py-1 rounded-lg text-xs font-mono font-medium transition-all ${
                       activeAstTab === 'js'
                         ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30 font-bold'
-                        : 'text-slate-400 hover:text-slate-200'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                     }`}
                   >
                     TS / JS
@@ -92,7 +92,7 @@ export function FeaturesGrid() {
                     className={`px-3 py-1 rounded-lg text-xs font-mono font-medium transition-all ${
                       activeAstTab === 'py'
                         ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30 font-bold'
-                        : 'text-slate-400 hover:text-slate-200'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                     }`}
                   >
                     Python
@@ -103,7 +103,7 @@ export function FeaturesGrid() {
                     className={`px-3 py-1 rounded-lg text-xs font-mono font-medium transition-all ${
                       activeAstTab === 'go'
                         ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30 font-bold'
-                        : 'text-slate-400 hover:text-slate-200'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                     }`}
                   >
                     Go
@@ -361,14 +361,14 @@ export function FeaturesGrid() {
               </p>
             </div>
 
-            <div className="mt-6 pt-4 border-t border-slate-700/80">
-              <div className="p-3 rounded-xl bg-[#0a0f1d] border border-slate-700/80 font-mono text-xs space-y-1.5 text-slate-300 shadow-inner">
-                <div className="text-[11px] text-cyan-400 flex items-center justify-between border-b border-slate-800 pb-1">
+            <div className="mt-6 pt-4 border-t border-slate-200 dark:border-slate-700/80">
+              <div className="p-3 rounded-xl bg-slate-50 dark:bg-[#0a0f1d] border border-slate-200 dark:border-slate-700/80 font-mono text-xs space-y-1.5 text-slate-700 dark:text-slate-300 shadow-inner">
+                <div className="text-[11px] text-cyan-700 dark:text-cyan-400 flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-1">
                   <span>ChangeLens Copilot • Active Graph Context</span>
-                  <span className="text-emerald-400 font-semibold">Online</span>
+                  <span className="text-emerald-700 dark:text-emerald-400 font-semibold">Online</span>
                 </div>
-                <p className="text-[11px] text-slate-300 pt-1">
-                  "Target <code className="text-white bg-slate-800 px-1 rounded">models/user.js</code> directly impacts 3 controllers and route <code className="text-cyan-300">/api/v1/users</code>. Run <code className="text-amber-300">npm test tests/auth.test.js</code> before merging."
+                <p className="text-[11px] text-slate-700 dark:text-slate-300 pt-1">
+                  "Target <code className="text-slate-900 dark:text-white bg-slate-200 dark:bg-slate-800 px-1 rounded">models/user.js</code> directly impacts 3 controllers and route <code className="text-cyan-700 dark:text-cyan-300 bg-cyan-50 dark:bg-transparent px-1 rounded">/api/v1/users</code>. Run <code className="text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-transparent px-1 rounded">npm test tests/auth.test.js</code> before merging."
                 </p>
               </div>
             </div>
@@ -379,37 +379,37 @@ export function FeaturesGrid() {
             animation="fade-up"
             delay={200}
             duration={700}
-            className="col-span-1 md:col-span-1 lg:col-span-6 p-7 sm:p-8 rounded-2xl bg-[#101726] border border-teal-500/30 hover:border-teal-500/60 shadow-xl shadow-teal-950/20 transition-all duration-300 relative group flex flex-col justify-between overflow-hidden"
+            className="col-span-1 md:col-span-1 lg:col-span-6 p-7 sm:p-8 rounded-2xl bg-white dark:bg-[#101726] border border-teal-200 dark:border-teal-500/30 hover:border-teal-400 dark:hover:border-teal-500/60 shadow-xl shadow-teal-950/10 dark:shadow-teal-950/20 transition-all duration-300 relative group flex flex-col justify-between overflow-hidden"
           >
             <div>
               <div className="flex items-center justify-between mb-5 flex-wrap gap-2">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-teal-500/15 border border-teal-500/30 flex items-center justify-center text-teal-400 group-hover:scale-105 transition-transform">
+                  <div className="w-12 h-12 rounded-xl bg-teal-50 dark:bg-teal-500/15 border border-teal-200 dark:border-teal-500/30 flex items-center justify-center text-teal-600 dark:text-teal-400 group-hover:scale-105 transition-transform">
                     <Terminal className="w-6 h-6" />
                   </div>
                   <div>
-                    <span className="text-[10px] font-mono uppercase tracking-wider font-bold px-2 py-0.5 rounded bg-teal-500/20 text-teal-300 border border-teal-500/30">
+                    <span className="text-[10px] font-mono uppercase tracking-wider font-bold px-2 py-0.5 rounded bg-teal-100 dark:bg-teal-500/20 text-teal-800 dark:text-teal-300 border border-teal-200 dark:border-teal-500/30">
                       GitHub Actions CI
                     </span>
-                    <h3 className="text-lg font-bold text-white mt-1">
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mt-1">
                       Automated CI Quality Gate & PR Comments
                     </h3>
                   </div>
                 </div>
-                <span className="text-xs font-mono text-teal-400 bg-teal-950/80 px-2.5 py-1 rounded-full border border-teal-800/60">
+                <span className="text-xs font-mono text-teal-800 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/80 px-2.5 py-1 rounded-full border border-teal-200 dark:border-teal-800/60">
                   .github/workflows/changelens.yml
                 </span>
               </div>
 
-              <p className="text-sm text-slate-300 leading-relaxed">
-                Generate production GitHub Actions CI workflows with 1-click. Block merges on <strong className="text-white">CRITICAL broken exports</strong> or configurable risk thresholds, and automatically post rich Markdown blast radius reviews directly into PR discussions.
+              <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                Generate production GitHub Actions CI workflows with 1-click. Block merges on <strong className="text-slate-900 dark:text-white">CRITICAL broken exports</strong> or configurable risk thresholds, and automatically post rich Markdown blast radius reviews directly into PR discussions.
               </p>
             </div>
 
-            <div className="mt-6 pt-4 border-t border-slate-700/80">
-              <div className="font-mono text-[11px] text-teal-300 bg-[#0a0f1d] p-3 rounded-lg border border-slate-700/80 flex items-center justify-between shadow-inner">
+            <div className="mt-6 pt-4 border-t border-slate-200 dark:border-slate-700/80">
+              <div className="font-mono text-[11px] text-teal-800 dark:text-teal-300 bg-slate-50 dark:bg-[#0a0f1d] p-3 rounded-lg border border-slate-200 dark:border-slate-700/80 flex items-center justify-between shadow-inner">
                 <span>Guard Policy: failOnCritical: true, failOnHigh: false</span>
-                <span className="text-emerald-400 font-bold">✓ CI Merge Gate Active</span>
+                <span className="text-emerald-700 dark:text-emerald-400 font-bold">✓ CI Merge Gate Active</span>
               </div>
             </div>
           </ScrollReveal>

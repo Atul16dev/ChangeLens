@@ -126,31 +126,31 @@ export function HistoryDrawer({ isOpen, onClose, onLoadAnalysis, currentAnalysis
           className="w-screen max-w-xl bg-white dark:bg-[#101726] border-l border-slate-200 dark:border-slate-700/80 shadow-2xl flex flex-col relative z-10"
         >
           {/* Header */}
-          <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-200 dark:border-slate-700/80 bg-white dark:bg-[#0c1220]/95 backdrop-blur-md flex items-center justify-between gap-3 sm:gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-cyan-100 dark:bg-cyan-500/10 border border-cyan-200 dark:border-cyan-500/20 flex items-center justify-center text-cyan-700 dark:text-cyan-400">
+          <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-200 dark:border-slate-700/80 bg-white dark:bg-[#0c1220]/95 backdrop-blur-md flex items-start sm:items-center justify-between gap-2.5 sm:gap-4">
+            <div className="flex items-start sm:items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
+              <div className="w-9 h-9 rounded-lg bg-cyan-100 dark:bg-cyan-500/10 border border-cyan-200 dark:border-cyan-500/20 flex items-center justify-center text-cyan-700 dark:text-cyan-400 shrink-0">
                 <History className="w-5 h-5" />
               </div>
-              <div>
-                <h2 id="history-drawer-title" className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <div className="min-w-0 flex-1">
+                <h2 id="history-drawer-title" className="text-sm sm:text-base font-bold text-slate-900 dark:text-white flex flex-wrap items-center gap-1.5 sm:gap-2">
                   <span>Analysis History</span>
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-cyan-100 dark:bg-cyan-950 text-cyan-800 dark:text-cyan-400 border border-cyan-200 dark:border-cyan-800/40 font-semibold">
+                  <span className="text-[11px] sm:text-xs px-2 py-0.5 rounded-full bg-cyan-100 dark:bg-cyan-950 text-cyan-800 dark:text-cyan-400 border border-cyan-200 dark:border-cyan-800/40 font-semibold shrink-0">
                     {total} Total
                   </span>
                   {pinnedCount > 0 && (
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-violet-100 dark:bg-violet-950 text-violet-800 dark:text-violet-300 border border-violet-200 dark:border-violet-800/40 flex items-center gap-1 font-semibold">
+                    <span className="text-[11px] sm:text-xs px-2 py-0.5 rounded-full bg-violet-100 dark:bg-violet-950 text-violet-800 dark:text-violet-300 border border-violet-200 dark:border-violet-800/40 flex items-center gap-1 font-semibold shrink-0">
                       <BookmarkCheck className="w-3 h-3 text-violet-600 dark:text-violet-400" />
                       {pinnedCount} Saved
                     </span>
                   )}
                 </h2>
-                <p className="text-xs text-slate-600 dark:text-slate-400">
+                <p className="text-[11px] sm:text-xs text-slate-600 dark:text-slate-400 truncate mt-0.5">
                   Cloud-persisted blast radius graphs in MongoDB Atlas
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 sm:gap-2 shrink-0">
               <button
                 type="button"
                 onClick={() => fetchHistory()}
@@ -232,29 +232,29 @@ export function HistoryDrawer({ isOpen, onClose, onLoadAnalysis, currentAnalysis
             {loading && analyses.length === 0 ? (
               <div className="space-y-3">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="animate-pulse bg-slate-950/60 border border-slate-800 rounded-xl p-4 h-28" />
+                  <div key={i} className="animate-pulse bg-slate-100 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 rounded-xl p-4 h-28" />
                 ))}
               </div>
             ) : error ? (
-              <div className="p-4 bg-rose-950/30 border border-rose-800/40 rounded-xl text-center space-y-2">
-                <AlertTriangle className="w-6 h-6 text-rose-400 mx-auto" />
-                <p className="text-xs text-rose-200">{error}</p>
+              <div className="p-4 bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800/40 rounded-xl text-center space-y-2">
+                <AlertTriangle className="w-6 h-6 text-rose-600 dark:text-rose-400 mx-auto" />
+                <p className="text-xs text-rose-800 dark:text-rose-200">{error}</p>
                 <button
                   type="button"
                   onClick={() => fetchHistory()}
-                  className="px-3 py-1 bg-rose-600/30 hover:bg-rose-600/50 text-rose-200 rounded text-xs transition-colors"
+                  className="px-3 py-1 bg-rose-100 hover:bg-rose-200 dark:bg-rose-600/30 dark:hover:bg-rose-600/50 text-rose-800 dark:text-rose-200 rounded text-xs font-medium transition-colors cursor-pointer"
                 >
                   Retry
                 </button>
               </div>
             ) : analyses.length === 0 ? (
               <div className="text-center py-12 px-4 space-y-3">
-                <div className="w-12 h-12 rounded-full bg-slate-800/60 flex items-center justify-center text-slate-500 mx-auto">
+                <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800/60 flex items-center justify-center text-slate-500 mx-auto">
                   <FolderGit2 className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-semibold text-slate-300">No Saved Analyses Found</h3>
-                  <p className="text-xs text-slate-500 max-w-xs mx-auto mt-1">
+                  <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-300">No Saved Analyses Found</h3>
+                  <p className="text-xs text-slate-600 dark:text-slate-500 max-w-xs mx-auto mt-1">
                     {search
                       ? `No analysis matched "${search}". Try clearing the search filter.`
                       : 'Run a blast radius scan in the workspace and it will automatically appear here.'}
@@ -267,7 +267,7 @@ export function HistoryDrawer({ isOpen, onClose, onLoadAnalysis, currentAnalysis
                       setSearch('');
                       fetchHistory('');
                     }}
-                    className="text-xs text-cyan-400 hover:text-cyan-300 underline"
+                    className="text-xs text-cyan-700 dark:text-cyan-400 hover:text-cyan-800 dark:hover:text-cyan-300 underline cursor-pointer"
                   >
                     Clear search filter
                   </button>
@@ -417,7 +417,7 @@ export function HistoryDrawer({ isOpen, onClose, onLoadAnalysis, currentAnalysis
 
                     {/* Metric pills */}
                     <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-700/60 flex items-center justify-between gap-2 flex-wrap">
-                      <div className="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300">
+                      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs text-slate-700 dark:text-slate-300">
                         <span className="bg-slate-100 dark:bg-[#0a0f1d] px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700/80 font-medium">
                           <strong className="text-slate-900 dark:text-white">{item.summary?.affectedFilesCount ?? 0}</strong> impacted
                         </span>

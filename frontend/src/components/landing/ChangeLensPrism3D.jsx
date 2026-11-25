@@ -1096,8 +1096,10 @@ export function ChangeLensPrism3D() {
       }
     });
 
+    renderer.render(scene, camera);
+
     if (reducedMotion) {
-      renderer.render(scene, camera);
+      // Static initial frame rendered above
     } else if (isVisible) {
       animationFrameId = requestAnimationFrame(animate);
     }
@@ -1138,7 +1140,7 @@ export function ChangeLensPrism3D() {
   return (
     <div
       ref={cardRef}
-      className="relative w-full rounded-3xl bg-white/95 dark:bg-[#0c1424]/95 backdrop-blur-xl border border-slate-200 dark:border-cyan-500/30 p-3.5 sm:p-6 shadow-xl shadow-slate-200/50 dark:shadow-2xl dark:shadow-cyan-950/20 overflow-hidden group transition-all"
+      className="relative w-full rounded-3xl bg-white/95 dark:bg-[#0c1424]/95 backdrop-blur-xl border border-slate-200 dark:border-cyan-500/30 p-3.5 sm:p-6 shadow-xl shadow-slate-200/50 dark:shadow-2xl dark:shadow-cyan-950/20 overflow-hidden group transition-shadow"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => {
         setIsHovered(false);

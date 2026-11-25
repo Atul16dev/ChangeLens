@@ -469,10 +469,10 @@ export function GitHubConnectorModal({
                       <h4 className="text-sm font-bold text-slate-900 dark:text-white leading-snug">
                         {inspectedPR.title}
                       </h4>
-                      <p className="text-xs text-slate-400 flex items-center gap-2">
+                      <p className="text-xs text-slate-600 dark:text-slate-400 flex items-center gap-2">
                         <span>by <strong>{inspectedPR.author.login}</strong></span>
                         <span>•</span>
-                        <span className="font-mono text-cyan-400">{inspectedPR.base.ref} ← {inspectedPR.head.ref}</span>
+                        <span className="font-mono text-cyan-700 dark:text-cyan-400">{inspectedPR.base.ref} ← {inspectedPR.head.ref}</span>
                       </p>
                     </div>
 
@@ -480,7 +480,7 @@ export function GitHubConnectorModal({
                       href={inspectedPR.htmlUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-1.5 text-slate-400 hover:text-white rounded-lg bg-[#0a0f1d] border border-slate-700/80 transition-colors"
+                      className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-lg bg-white dark:bg-[#0a0f1d] border border-slate-200 dark:border-slate-700/80 transition-colors"
                       title="Open PR on GitHub"
                     >
                       <ExternalLink className="w-4 h-4" />
@@ -489,50 +489,50 @@ export function GitHubConnectorModal({
 
                   {/* Metrics Bar */}
                   <div className="grid grid-cols-3 gap-2 text-center text-xs pt-1">
-                    <div className="p-2 rounded-lg bg-[#0a0f1d] border border-slate-700/80 shadow-inner">
-                      <span className="text-slate-400 block text-[10px] uppercase font-bold">Files Changed</span>
-                      <strong className="text-sm text-cyan-400 font-mono">{inspectedPR.changedFilesCount}</strong>
+                    <div className="p-2 rounded-lg bg-white dark:bg-[#0a0f1d] border border-slate-200 dark:border-slate-700/80 shadow-inner">
+                      <span className="text-slate-500 dark:text-slate-400 block text-[10px] uppercase font-bold">Files Changed</span>
+                      <strong className="text-sm text-cyan-700 dark:text-cyan-400 font-mono">{inspectedPR.changedFilesCount}</strong>
                     </div>
-                    <div className="p-2 rounded-lg bg-[#0a0f1d] border border-slate-700/80 shadow-inner">
-                      <span className="text-slate-400 block text-[10px] uppercase font-bold">Additions</span>
-                      <strong className="text-sm text-emerald-400 font-mono">+{inspectedPR.additions}</strong>
+                    <div className="p-2 rounded-lg bg-white dark:bg-[#0a0f1d] border border-slate-200 dark:border-slate-700/80 shadow-inner">
+                      <span className="text-slate-500 dark:text-slate-400 block text-[10px] uppercase font-bold">Additions</span>
+                      <strong className="text-sm text-emerald-700 dark:text-emerald-400 font-mono">+{inspectedPR.additions}</strong>
                     </div>
-                    <div className="p-2 rounded-lg bg-[#0a0f1d] border border-slate-700/80 shadow-inner">
-                      <span className="text-slate-400 block text-[10px] uppercase font-bold">Deletions</span>
-                      <strong className="text-sm text-rose-400 font-mono">-{inspectedPR.deletions}</strong>
+                    <div className="p-2 rounded-lg bg-white dark:bg-[#0a0f1d] border border-slate-200 dark:border-slate-700/80 shadow-inner">
+                      <span className="text-slate-500 dark:text-slate-400 block text-[10px] uppercase font-bold">Deletions</span>
+                      <strong className="text-sm text-rose-700 dark:text-rose-400 font-mono">-{inspectedPR.deletions}</strong>
                     </div>
                   </div>
 
                   {/* Modified Files List Preview */}
                   {prFiles.length > 0 && (
                     <div className="space-y-1.5 pt-2">
-                      <span className="text-xs font-semibold text-slate-200 flex items-center justify-between">
+                      <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 flex items-center justify-between">
                         <span>Modified Files for Blast Radius Traversal</span>
-                        <span className="text-[10px] text-slate-400 font-mono">{prFiles.length} detected</span>
+                        <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">{prFiles.length} detected</span>
                       </span>
                       <div className="max-h-40 overflow-y-auto space-y-1 font-mono text-xs pr-1">
                         {prFiles.map((file) => (
                           <div
                             key={file.path}
-                            className="p-2 rounded-lg bg-[#0a0f1d] border border-slate-700/70 flex items-center justify-between gap-2"
+                            className="p-2 rounded-lg bg-white dark:bg-[#0a0f1d] border border-slate-200 dark:border-slate-700/70 flex items-center justify-between gap-2"
                           >
                             <div className="flex items-center gap-2 truncate">
                               <span
                                 className={`w-4 h-4 rounded text-[9px] font-bold flex items-center justify-center shrink-0 ${
                                   file.status === 'added'
-                                    ? 'bg-emerald-500/20 text-emerald-300'
+                                    ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300'
                                     : file.status === 'removed'
-                                    ? 'bg-rose-500/20 text-rose-300'
-                                    : 'bg-amber-500/20 text-amber-300'
+                                    ? 'bg-rose-100 dark:bg-rose-500/20 text-rose-800 dark:text-rose-300'
+                                    : 'bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300'
                                 }`}
                               >
                                 {file.statusCode}
                               </span>
-                              <span className="text-slate-200 truncate">{file.path}</span>
+                              <span className="text-slate-800 dark:text-slate-200 truncate">{file.path}</span>
                             </div>
-                            <span className="text-[11px] text-slate-400 shrink-0">
-                              <span className="text-emerald-400">+{file.additions}</span>{' '}
-                              <span className="text-rose-400">-{file.deletions}</span>
+                            <span className="text-[11px] text-slate-500 dark:text-slate-400 shrink-0">
+                              <span className="text-emerald-700 dark:text-emerald-400">+{file.additions}</span>{' '}
+                              <span className="text-rose-700 dark:text-rose-400">-{file.deletions}</span>
                             </span>
                           </div>
                         ))}
@@ -570,11 +570,11 @@ export function GitHubConnectorModal({
           {activeTab === 'ci' && (
             <div className="space-y-4">
               <div className="space-y-1">
-                <h4 className="text-sm font-bold text-white flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                <h4 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                   <span>Automate ChangeLens in GitHub Actions CI</span>
                 </h4>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-slate-600 dark:text-slate-400">
                   Block dangerous PR merges and automatically post ChangeLens blast radius reports to every pull request.
                 </p>
               </div>

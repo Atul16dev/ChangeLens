@@ -88,7 +88,7 @@ export function UserProfileMenu({ compact = false }) {
         >
           <div className="relative shrink-0">
             {/* Circular Avatar Container with Refined Indigo Border */}
-            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-indigo-400/40 shadow-sm overflow-hidden bg-slate-900 flex items-center justify-center">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-indigo-400/50 dark:border-indigo-400/40 shadow-sm overflow-hidden bg-slate-100 dark:bg-slate-900 flex items-center justify-center">
               {user.avatar ? (
                 <img
                   src={user.avatar}
@@ -96,19 +96,19 @@ export function UserProfileMenu({ compact = false }) {
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                 />
               ) : (
-                <div className="w-full h-full bg-gradient-to-br from-indigo-950 via-slate-900 to-slate-950 flex items-center justify-center text-xs font-bold text-indigo-200 tracking-wider group-hover:scale-105 transition-transform">
+                <div className="w-full h-full bg-gradient-to-br from-indigo-100 via-indigo-50 to-white dark:from-indigo-950 dark:via-slate-900 dark:to-slate-950 flex items-center justify-center text-xs font-bold text-indigo-700 dark:text-indigo-200 tracking-wider group-hover:scale-105 transition-transform">
                   {initials}
                 </div>
               )}
             </div>
 
             {/* Green Online Status Dot */}
-            <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-400 ring-2 ring-slate-950 shadow-sm" />
+            <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 dark:bg-emerald-400 ring-2 ring-white dark:ring-slate-950 shadow-sm" />
           </div>
 
           {!compact && (
             <ChevronDown
-              className={`w-3.5 h-3.5 text-slate-400 group-hover:text-slate-200 transition-transform hidden sm:block ${
+              className={`w-3.5 h-3.5 text-slate-500 dark:text-slate-400 group-hover:text-slate-800 dark:group-hover:text-slate-200 transition-transform hidden sm:block ${
                 dropdownOpen ? 'rotate-180' : ''
               }`}
             />

@@ -16,7 +16,7 @@ export function ThemeToggle({
     <button
       type="button"
       onClick={toggleTheme}
-      className={`relative inline-flex items-center justify-center gap-1.5 rounded-full transition-all duration-200 active:scale-95 cursor-pointer select-none ${
+      className={`relative inline-flex items-center justify-center gap-1.5 rounded-full transition-transform duration-150 active:scale-95 cursor-pointer select-none ${
         isDock
           ? isDark
             ? 'p-2 text-amber-300 hover:text-amber-200 hover:bg-slate-800/90'

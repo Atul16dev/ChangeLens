@@ -210,39 +210,39 @@ export function ConnectionGuideModal({
 
   const theme = isLocal
     ? {
-        iconBox: 'bg-amber-950 border border-amber-800/60 text-amber-400',
-        badge: 'bg-amber-500/10 text-amber-300 border border-amber-500/20',
+        iconBox: 'bg-amber-100 dark:bg-amber-950 border border-amber-300 dark:border-amber-800/60 text-amber-700 dark:text-amber-400',
+        badge: 'bg-amber-100 dark:bg-amber-500/10 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-500/20',
         progress: 'bg-gradient-to-r from-amber-500 to-orange-500',
-        stepCircle: 'bg-amber-500/10 border border-amber-500/30 text-amber-400',
-        exampleText: 'text-amber-300',
-        tipBox: 'bg-amber-950/30 border border-amber-800/30 text-amber-300',
-        activeStepBtn: 'bg-amber-950/70 border-amber-500/60 text-white font-semibold shadow-sm',
+        stepCircle: 'bg-amber-100 dark:bg-amber-500/10 border border-amber-300 dark:border-amber-500/30 text-amber-700 dark:text-amber-400',
+        exampleText: 'text-amber-800 dark:text-amber-300',
+        tipBox: 'bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/30 text-amber-900 dark:text-amber-300',
+        activeStepBtn: 'bg-amber-50 dark:bg-amber-950/70 border-amber-400 dark:border-amber-500/60 text-amber-950 dark:text-white font-semibold shadow-sm',
         activeStepBadge: 'bg-amber-500 text-slate-950',
         nextBtn: 'bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 shadow-amber-500/20',
         actionBtn: 'bg-gradient-to-r from-amber-600 via-orange-600 to-amber-500 hover:from-amber-500 hover:to-orange-500 shadow-amber-500/20',
       }
     : isPR
     ? {
-        iconBox: 'bg-indigo-950 border border-indigo-800/60 text-indigo-400',
-        badge: 'bg-indigo-500/10 text-indigo-300 border border-indigo-500/20',
+        iconBox: 'bg-indigo-100 dark:bg-indigo-950 border border-indigo-300 dark:border-indigo-800/60 text-indigo-700 dark:text-indigo-400',
+        badge: 'bg-indigo-100 dark:bg-indigo-500/10 text-indigo-800 dark:text-indigo-300 border border-indigo-300 dark:border-indigo-500/20',
         progress: 'bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-400',
-        stepCircle: 'bg-indigo-500/10 border border-indigo-500/30 text-indigo-400',
-        exampleText: 'text-indigo-300',
-        tipBox: 'bg-indigo-950/30 border border-indigo-800/30 text-indigo-300',
-        activeStepBtn: 'bg-indigo-950/70 border-indigo-500/60 text-white font-semibold shadow-sm',
-        activeStepBadge: 'bg-indigo-500 text-white',
+        stepCircle: 'bg-indigo-100 dark:bg-indigo-500/10 border border-indigo-300 dark:border-indigo-500/30 text-indigo-700 dark:text-indigo-400',
+        exampleText: 'text-indigo-800 dark:text-indigo-300',
+        tipBox: 'bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800/30 text-indigo-900 dark:text-indigo-300',
+        activeStepBtn: 'bg-indigo-50 dark:bg-indigo-950/70 border-indigo-400 dark:border-indigo-500/60 text-indigo-950 dark:text-white font-semibold shadow-sm',
+        activeStepBadge: 'bg-indigo-600 dark:bg-indigo-500 text-white',
         nextBtn: 'bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-500 hover:from-indigo-500 hover:to-purple-500 shadow-indigo-500/20',
         actionBtn: 'bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-500 hover:from-indigo-500 hover:to-purple-500 shadow-indigo-500/20',
       }
     : {
-        iconBox: 'bg-cyan-950 border border-cyan-800/60 text-cyan-400',
-        badge: 'bg-cyan-500/10 text-cyan-300 border border-cyan-500/20',
+        iconBox: 'bg-cyan-100 dark:bg-cyan-950 border border-cyan-300 dark:border-cyan-800/60 text-cyan-700 dark:text-cyan-400',
+        badge: 'bg-cyan-100 dark:bg-cyan-500/10 text-cyan-800 dark:text-cyan-300 border border-cyan-300 dark:border-cyan-500/20',
         progress: 'bg-gradient-to-r from-cyan-500 to-blue-500',
-        stepCircle: 'bg-cyan-500/10 border border-cyan-500/30 text-cyan-400',
-        exampleText: 'text-cyan-300',
-        tipBox: 'bg-cyan-950/30 border border-cyan-800/30 text-cyan-300',
-        activeStepBtn: 'bg-cyan-950/70 border-cyan-500/60 text-white font-semibold shadow-sm',
-        activeStepBadge: 'bg-cyan-500 text-slate-950',
+        stepCircle: 'bg-cyan-100 dark:bg-cyan-500/10 border border-cyan-300 dark:border-cyan-500/30 text-cyan-700 dark:text-cyan-400',
+        exampleText: 'text-cyan-800 dark:text-cyan-300',
+        tipBox: 'bg-cyan-50 dark:bg-cyan-950/30 border border-cyan-200 dark:border-cyan-800/30 text-cyan-900 dark:text-cyan-300',
+        activeStepBtn: 'bg-cyan-50 dark:bg-cyan-950/70 border-cyan-400 dark:border-cyan-500/60 text-cyan-950 dark:text-white font-semibold shadow-sm',
+        activeStepBadge: 'bg-cyan-600 dark:bg-cyan-500 text-white',
         nextBtn: 'bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 shadow-cyan-500/20',
         actionBtn: 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 shadow-emerald-500/20',
       };
@@ -387,7 +387,7 @@ export function ConnectionGuideModal({
                         ? theme.activeStepBtn
                         : isPassed
                         ? 'bg-slate-100 dark:bg-slate-950/40 border-slate-200 dark:border-slate-800/60 text-slate-700 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
-                        : 'bg-slate-50 dark:bg-slate-950/20 border-slate-200 dark:border-slate-850 text-slate-600 dark:text-slate-500 hover:text-slate-800 dark:hover:text-slate-400'
+                        : 'bg-slate-50 dark:bg-slate-950/20 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-500 hover:text-slate-800 dark:hover:text-slate-400'
                     }`}
                   >
                     <span
@@ -415,7 +415,7 @@ export function ConnectionGuideModal({
             type="button"
             onClick={() => setActiveStep((prev) => Math.max(0, prev - 1))}
             disabled={activeStep === 0}
-            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-750 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
+            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
           >
             <ChevronLeft className="w-3.5 h-3.5" />
             <span>Previous</span>

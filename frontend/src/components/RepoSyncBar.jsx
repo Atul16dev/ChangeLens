@@ -68,11 +68,11 @@ export function RepoSyncBar({
   const latestCommit = commits.length > 0 ? commits[0] : null;
 
   return (
-    <div className="relative z-30 bg-[#0d1527]/95 border-b border-cyan-900/40 px-4 py-2 flex flex-wrap items-center justify-between gap-3 text-xs backdrop-blur-md shrink-0 shadow-sm transition-all">
+    <div className="relative z-30 bg-white/95 dark:bg-[#0d1527]/95 border-b border-slate-200 dark:border-cyan-900/40 px-4 py-2 flex flex-wrap items-center justify-between gap-3 text-xs backdrop-blur-md shrink-0 shadow-sm transition-all">
       {/* Left: Connected Repository Identity & Branch */}
       <div className="flex items-center gap-2.5 min-w-0">
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-cyan-950/80 text-cyan-300 border border-cyan-800/60 font-semibold font-mono shadow-inner">
-          <svg className="w-3.5 h-3.5 fill-cyan-400 shrink-0" viewBox="0 0 24 24">
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-cyan-50 dark:bg-cyan-950/80 text-cyan-800 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800/60 font-semibold font-mono shadow-inner">
+          <svg className="w-3.5 h-3.5 fill-cyan-600 dark:fill-cyan-400 shrink-0" viewBox="0 0 24 24">
             <path
               fillRule="evenodd"
               clipRule="evenodd"
@@ -82,33 +82,33 @@ export function RepoSyncBar({
           <span className="truncate">{repoInfo.fullName || `${repoInfo.owner}/${repoInfo.repo}`}</span>
         </span>
 
-        <span className="hidden sm:inline-flex items-center gap-1 text-[11px] text-slate-400 bg-slate-800/80 px-2 py-0.5 rounded border border-slate-700 font-mono">
-          <GitBranch className="w-3 h-3 text-cyan-400" />
+        <span className="hidden sm:inline-flex items-center gap-1 text-[11px] text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800/80 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700 font-mono">
+          <GitBranch className="w-3 h-3 text-cyan-600 dark:text-cyan-400" />
           {repoInfo.defaultBranch || 'main'}
         </span>
 
         {/* Sync Status Badge */}
         {unSyncedCount > 0 ? (
-          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium bg-amber-500/10 text-amber-400 border border-amber-500/30 animate-pulse">
-            <AlertCircle className="w-3 h-3 text-amber-400" />
+          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium bg-amber-50 dark:bg-amber-500/10 text-amber-800 dark:text-amber-400 border border-amber-300 dark:border-amber-500/30 animate-pulse">
+            <AlertCircle className="w-3 h-3 text-amber-600 dark:text-amber-400" />
             <span>{unSyncedCount} new pushes since last check</span>
           </span>
         ) : (
-          <span className="hidden md:inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-            <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+          <span className="hidden md:inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 dark:bg-emerald-500/10 text-emerald-800 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-500/30">
+            <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
             <span>Up to date ({lastSyncedSha ? lastSyncedSha.slice(0, 7) : 'Synced'})</span>
           </span>
         )}
       </div>
 
       {/* Right: Dual Sync Action Buttons + Commit Dropdown */}
-      <div className="flex items-center gap-2 shrink-0">
+      <div className="flex flex-wrap items-center gap-2 shrink-0 max-w-full">
         {/* OPTION 1: Sync ALL Pushes (Cumulative diff since last check) */}
         <button
           type="button"
           onClick={onSyncAllPushes}
           disabled={loading}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-cyan-600 via-indigo-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white shadow-sm shadow-cyan-500/20 active:scale-95 disabled:opacity-50 transition-all cursor-pointer"
+          className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-cyan-600 via-indigo-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white shadow-sm shadow-cyan-500/20 active:scale-95 disabled:opacity-50 transition-all cursor-pointer"
           title="Compute combined blast radius for all commits since your previous check"
         >
           {loading ? (
@@ -126,50 +126,45 @@ export function RepoSyncBar({
           type="button"
           onClick={onSyncLatestPush}
           disabled={loading}
-          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-750 text-slate-200 hover:text-white border border-slate-700/80 transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
+          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 hover:text-slate-950 dark:text-slate-200 dark:hover:text-white border border-slate-300 dark:border-slate-700/80 transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
           title="Compute blast radius for only the single latest commit"
         >
-          <GitCommit className="w-3.5 h-3.5 text-cyan-400" />
+          <GitCommit className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />
           <span className="hidden sm:inline">Sync Latest Only</span>
           <span className="sm:hidden">Latest</span>
         </button>
 
         {/* Commit History Dropdown */}
-        <div className="relative" ref={dropdownRef}>
+        <div className="static sm:relative" ref={dropdownRef}>
           <button
             type="button"
             onClick={() => setShowCommitDropdown((prev) => !prev)}
             className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-all cursor-pointer ${
               showCommitDropdown
-                ? 'bg-slate-750 text-white border-cyan-500/60 ring-1 ring-cyan-500/30'
-                : 'bg-slate-800/80 hover:bg-slate-750 text-slate-300 hover:text-white border-slate-700/80'
+                ? 'bg-cyan-50 dark:bg-slate-700 text-cyan-800 dark:text-white border-cyan-500/60 ring-1 ring-cyan-500/30'
+                : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700 text-slate-700 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white border-slate-300 dark:border-slate-700/80'
             }`}
             title="Inspect a specific commit from history"
           >
-            <Clock className="w-3.5 h-3.5 text-slate-400" />
+            <Clock className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
             <ChevronDown
-              className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${
-                showCommitDropdown ? 'rotate-180 text-cyan-400' : ''
+              className={`w-3.5 h-3.5 text-slate-500 dark:text-slate-400 transition-transform duration-200 ${
+                showCommitDropdown ? 'rotate-180 text-cyan-600 dark:text-cyan-400' : ''
               }`}
             />
           </button>
 
           {showCommitDropdown && (
-            <div
-              className="absolute right-0 mt-2 w-80 bg-[#0f172a] border border-slate-700/90 rounded-xl shadow-2xl p-2.5 z-50 animate-in fade-in zoom-in-95"
-              style={{
-                boxShadow: '0 20px 35px -5px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.08)',
-              }}
-            >
-              <div className="flex items-center justify-between px-2 py-1.5 border-b border-slate-800 mb-1.5 text-[11px] font-semibold text-slate-400">
-                <div className="flex items-center gap-1.5 text-cyan-400">
+            <div className="absolute left-3 right-3 sm:left-auto sm:right-0 mt-2 sm:w-80 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700/90 rounded-xl shadow-2xl p-2.5 z-50">
+              <div className="flex items-center justify-between px-2 py-1.5 border-b border-slate-200 dark:border-slate-800 mb-1.5 text-[11px] font-semibold text-slate-600 dark:text-slate-400">
+                <div className="flex items-center gap-1.5 text-cyan-700 dark:text-cyan-400">
                   <Clock className="w-3.5 h-3.5" />
                   <span>Recent Commits ({commits.length})</span>
                 </div>
                 <button
                   type="button"
                   onClick={() => setShowCommitDropdown(false)}
-                  className="p-1 rounded text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+                  className="p-1 rounded text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                   title="Close dropdown"
                 >
                   <X className="w-3.5 h-3.5" />
@@ -195,25 +190,25 @@ export function RepoSyncBar({
                         }}
                         className={`w-full text-left px-2.5 py-2 rounded-lg transition-all flex flex-col gap-1 group cursor-pointer border ${
                           isLastSynced
-                            ? 'bg-cyan-950/40 border-cyan-800/60 hover:bg-cyan-900/50'
-                            : 'border-transparent hover:bg-slate-800/80 hover:border-slate-700'
+                            ? 'bg-cyan-50 dark:bg-cyan-950/40 border-cyan-300 dark:border-cyan-800/60 hover:bg-cyan-100/80 dark:hover:bg-cyan-900/50'
+                            : 'border-transparent hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:border-slate-200 dark:hover:border-slate-700'
                         }`}
                       >
                         <div className="flex items-center justify-between">
-                          <span className="font-mono text-cyan-400 text-[11px] font-bold flex items-center gap-1.5">
-                            <GitCommit className="w-3 h-3 text-cyan-400 shrink-0" />
+                          <span className="font-mono text-cyan-700 dark:text-cyan-400 text-[11px] font-bold flex items-center gap-1.5">
+                            <GitCommit className="w-3 h-3 text-cyan-600 dark:text-cyan-400 shrink-0" />
                             {c.shortSha || c.sha?.slice(0, 7)}
                           </span>
                           {isLastSynced && (
-                            <span className="text-[9px] px-1.5 py-0.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded font-semibold font-mono">
+                            <span className="text-[9px] px-1.5 py-0.5 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-500/30 rounded font-semibold font-mono">
                               Current
                             </span>
                           )}
                         </div>
-                        <span className="text-xs text-slate-200 line-clamp-1 group-hover:text-cyan-200 font-medium">
+                        <span className="text-xs text-slate-800 dark:text-slate-200 line-clamp-1 group-hover:text-cyan-700 dark:group-hover:text-cyan-200 font-medium">
                           {c.message}
                         </span>
-                        <span className="text-[10px] text-slate-500">
+                        <span className="text-[10px] text-slate-500 dark:text-slate-400">
                           by {authorName}
                         </span>
                       </button>
@@ -233,15 +228,15 @@ export function RepoSyncBar({
             disabled={loading || isTracked}
             className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-all cursor-pointer ${
               isTracked
-                ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30 cursor-default'
-                : 'bg-slate-800 hover:bg-indigo-950/80 text-slate-200 hover:text-indigo-200 border-slate-700/80 hover:border-indigo-500/50 active:scale-95'
+                ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-500/30 cursor-default'
+                : 'bg-slate-100 hover:bg-indigo-50 dark:bg-slate-800 dark:hover:bg-indigo-950/80 text-slate-800 hover:text-indigo-700 dark:text-slate-200 dark:hover:text-indigo-200 border-slate-300 dark:border-slate-700/80 hover:border-indigo-400 dark:hover:border-indigo-500/50 active:scale-95'
             }`}
             title={isTracked ? 'Saved in your Tracked Repositories Hub' : 'Bookmark this repository to your Tracked Hub'}
           >
             {isTracked ? (
-              <BookmarkCheck className="w-3.5 h-3.5 text-emerald-400" />
+              <BookmarkCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
             ) : (
-              <Bookmark className="w-3.5 h-3.5 text-indigo-400" />
+              <Bookmark className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
             )}
             <span className="hidden md:inline">{isTracked ? 'Tracked' : 'Track Repo'}</span>
           </button>
@@ -252,7 +247,7 @@ export function RepoSyncBar({
           <button
             type="button"
             onClick={onDisconnect}
-            className="text-slate-400 hover:text-rose-400 p-1.5 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
+            className="text-slate-500 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
             title="Disconnect repository and return to Project Hub"
           >
             <X className="w-3.5 h-3.5" />
