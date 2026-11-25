@@ -6,6 +6,7 @@ import { existsSync } from "node:fs";
 import { performAnalysis } from "../controllers/analyses.controller.js";
 import { formatPRMarkdownComment, calculateRiskLevel } from "../../analyzer/ai-explainer.js";
 import { analysesStore } from "../store.js";
+import { repoRepository } from "../db/repo-repository.js";
 import { executeGit, maskGitCredentials } from "../../analyzer/local-git.js";
 
 const execAsync = promisify(exec);
@@ -270,6 +271,18 @@ export async function analyzeGitHubPR({ prUrl, token, repoPath, maxDepth = 10, u
   // Re-save updated analysis with GitHub metadata
   await analysesStore.save(analysisRecord.analysisId, analysisRecord, userId);
 
+  if (userId) {
+    await repoRepository
+      .updateLastAnalysis({
+        userId,
+        fullName: `${parsed.owner}/${parsed.repo}`,
+        analysisId: analysisRecord.analysisId,
+        riskScore: analysisRecord.riskScore ?? analysisRecord.detailedRisk?.score ?? analysisRecord.summary?.riskScore ?? null,
+        riskLevel: analysisRecord.summary?.riskLevel ?? null,
+      })
+      .catch(() => {});
+  }
+
   return {
     analysisId: analysisRecord.analysisId,
     prDetails,
@@ -455,6 +468,7 @@ export async function fetchRepositoryDetails({ owner, repo, token }) {
     fullName: data.full_name,
     description: data.description || "",
     defaultBranch: data.default_branch || "main",
+    language: data.language || null,
     stars: data.stargazers_count || 0,
     forks: data.forks_count || 0,
     openIssues: data.open_issues_count || 0,
@@ -463,6 +477,54 @@ export async function fetchRepositoryDetails({ owner, repo, token }) {
     pushedAt: data.pushed_at,
     updatedAt: data.updated_at,
   };
+}
+
+/**
+ * Fetches open (or filtered) pull requests for a GitHub repository.
+ */
+export async function fetchOpenPullRequests({ owner, repo, token, state = "open", perPage = 10 }) {
+  const query = new URLSearchParams({
+    state,
+    per_page: String(perPage),
+    sort: "updated",
+    direction: "desc",
+  });
+  const apiUrl = `https://api.github.com/repos/${owner}/${repo}/pulls?${query.toString()}`;
+  const response = await fetch(apiUrl, {
+    headers: buildGitHubHeaders(token),
+  });
+
+  if (!response.ok) {
+    if (response.status === 404) {
+      throw new Error(`GitHub repository not found: "${owner}/${repo}".`);
+    }
+    if (response.status === 403 || response.status === 429) {
+      throw new Error("GitHub API rate limit exceeded or access forbidden. Please provide a GitHub Personal Access Token.");
+    }
+    const errText = await response.text();
+    throw new Error(`Failed to fetch pull requests for ${owner}/${repo} (${response.status}): ${errText}`);
+  }
+
+  const rawPulls = await response.json();
+  if (!Array.isArray(rawPulls)) {
+    return [];
+  }
+
+  return rawPulls.map((pr) => ({
+    number: pr.number,
+    title: pr.title,
+    state: pr.state,
+    htmlUrl: pr.html_url,
+    draft: Boolean(pr.draft),
+    createdAt: pr.created_at,
+    updatedAt: pr.updated_at,
+    headRef: pr.head?.ref || "",
+    baseRef: pr.base?.ref || "",
+    author: {
+      login: pr.user?.login || "anonymous",
+      avatarUrl: pr.user?.avatar_url || null,
+    },
+  }));
 }
 
 /**
@@ -796,6 +858,18 @@ export async function analyzeRepositorySync({
 
   // Save updated analysis record
   await analysesStore.save(analysisRecord.analysisId, analysisRecord, userId);
+
+  if (userId) {
+    await repoRepository
+      .updateLastAnalysis({
+        userId,
+        fullName: `${owner}/${repo}`,
+        analysisId: analysisRecord.analysisId,
+        riskScore: analysisRecord.riskScore ?? analysisRecord.detailedRisk?.score ?? analysisRecord.summary?.riskScore ?? null,
+        riskLevel: analysisRecord.summary?.riskLevel ?? null,
+      })
+      .catch(() => {});
+  }
 
   return {
     analysisId: analysisRecord.analysisId,

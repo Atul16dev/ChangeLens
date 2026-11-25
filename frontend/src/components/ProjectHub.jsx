@@ -29,6 +29,7 @@ import { FriendlyValidationModal } from './FriendlyValidationModal.jsx';
 import { LocalWorkshopSection } from './LocalWorkshopSection.jsx';
 import { ProjectHubBackdrop3D } from './ProjectHubBackdrop3D.jsx';
 import { GreetingMascot3D } from './GreetingMascot3D.jsx';
+import { TrackedReposHub } from './TrackedReposHub.jsx';
 import {
   inspectGitHubPR,
   getGitHubWorkflowTemplate,
@@ -54,6 +55,11 @@ export function ProjectHub({
   onLaunchDemo,
   recentAnalyses = [],
   onLoadSavedAnalysis,
+  trackedRepos = [],
+  loadingTrackedRepos = false,
+  onTrackRepo,
+  onTogglePinRepo,
+  onRemoveTrackedRepo,
   loading = false,
   apiError = null,
   onClearApiError,
@@ -106,6 +112,7 @@ export function ProjectHub({
   const [githubUrl, setGithubUrl] = useState('');
   const [repoToken, setRepoToken] = useState('');
   const [showRepoToken, setShowRepoToken] = useState(false);
+  const [saveRepoToHub, setSaveRepoToHub] = useState(true);
 
   // Form states - GitHub Pull Request (persists subtab in localStorage)
   const [prSubTab, setPrSubTabState] = useState(() => {
@@ -352,6 +359,7 @@ export function ProjectHub({
     onConnectGitHubRepo({
       repoUrl: trimmed,
       token: repoToken.trim() || undefined,
+      saveToHub: saveRepoToHub,
     });
   };
 
@@ -929,6 +937,23 @@ export function ProjectHub({
                       {p.name}
                     </button>
                   ))}
+                </div>
+
+                {/* Save to Hub Toggle + Submit Action Button */}
+                <div className="pt-1 flex items-center gap-2">
+                  <input
+                    id="save-repo-to-hub"
+                    type="checkbox"
+                    checked={saveRepoToHub}
+                    onChange={(e) => setSaveRepoToHub(e.target.checked)}
+                    className="w-3.5 h-3.5 rounded border-slate-300 dark:border-slate-600 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                  />
+                  <label
+                    htmlFor="save-repo-to-hub"
+                    className="text-[11px] font-medium text-slate-700 dark:text-slate-300 cursor-pointer select-none"
+                  >
+                    Save repository to <span className="font-bold text-indigo-700 dark:text-cyan-400">Tracked Repositories Hub</span> for 1-click commit sync & PR checks
+                  </label>
                 </div>
 
                 {/* Submit Action Button */}
@@ -1535,6 +1560,19 @@ export function ProjectHub({
             </div>
           )}
         </div>
+
+        {/* TRACKED REPOSITORIES HUB SECTION (Phase 8 & 10) */}
+        <TrackedReposHub
+          repos={trackedRepos}
+          loadingRepos={loadingTrackedRepos}
+          onTrackRepo={onTrackRepo}
+          onTogglePin={onTogglePinRepo}
+          onRemoveRepo={onRemoveTrackedRepo}
+          onConnectRepo={onConnectGitHubRepo}
+          onAnalyzePR={onAnalyzeGitHubPR}
+          onLoadSavedAnalysis={onLoadSavedAnalysis}
+          analysisLoading={loading}
+        />
 
         {/* RECENT CONNECTED PROJECTS SECTION */}
         <div className="w-full text-left mt-8 pt-6 border-t border-slate-200 dark:border-slate-800/80">

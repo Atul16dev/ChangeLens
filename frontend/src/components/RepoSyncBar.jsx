@@ -11,6 +11,8 @@ import {
   ChevronDown,
   X,
   ExternalLink,
+  Bookmark,
+  BookmarkCheck,
 } from 'lucide-react';
 
 export function RepoSyncBar({
@@ -19,6 +21,8 @@ export function RepoSyncBar({
   lastSyncedSha = null,
   currentSha = null,
   loading = false,
+  isTracked = false,
+  onSaveToTrackedHub = null,
   onSyncAllPushes,
   onSyncLatestPush,
   onSelectSpecificCommit,
@@ -220,6 +224,28 @@ export function RepoSyncBar({
             </div>
           )}
         </div>
+
+        {/* Save to Tracked Repositories Hub Button */}
+        {onSaveToTrackedHub && (
+          <button
+            type="button"
+            onClick={onSaveToTrackedHub}
+            disabled={loading || isTracked}
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-all cursor-pointer ${
+              isTracked
+                ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30 cursor-default'
+                : 'bg-slate-800 hover:bg-indigo-950/80 text-slate-200 hover:text-indigo-200 border-slate-700/80 hover:border-indigo-500/50 active:scale-95'
+            }`}
+            title={isTracked ? 'Saved in your Tracked Repositories Hub' : 'Bookmark this repository to your Tracked Hub'}
+          >
+            {isTracked ? (
+              <BookmarkCheck className="w-3.5 h-3.5 text-emerald-400" />
+            ) : (
+              <Bookmark className="w-3.5 h-3.5 text-indigo-400" />
+            )}
+            <span className="hidden md:inline">{isTracked ? 'Tracked' : 'Track Repo'}</span>
+          </button>
+        )}
 
         {/* Disconnect Repo Button */}
         {onDisconnect && (

@@ -521,6 +521,67 @@ export async function getAnalysisRating(analysisId) {
   return data.data;
 }
 
+// =========================================================================
+// TRACKED REPOSITORIES HUB ENDPOINTS (Phase 8 & 10)
+// =========================================================================
+
+export async function getTrackedRepositories() {
+  const res = await fetchWithRetry(`${API_BASE}/repos`);
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error?.message || 'Failed to fetch tracked repositories');
+  }
+  return data.data?.repositories || [];
+}
+
+export async function trackRepository({ repoUrl, token, isPinned = false, metadata = null }) {
+  const res = await fetchWithRetry(`${API_BASE}/repos`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ repoUrl, token, isPinned, metadata }),
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error?.message || 'Failed to track repository');
+  }
+  return data.data;
+}
+
+export async function togglePinTrackedRepository(id) {
+  const res = await fetchWithRetry(`${API_BASE}/repos/${encodeURIComponent(id)}/pin`, {
+    method: 'PATCH',
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error?.message || 'Failed to toggle repository pin');
+  }
+  return data.data?.repository;
+}
+
+export async function removeTrackedRepository(id) {
+  const res = await fetchWithRetry(`${API_BASE}/repos/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error?.message || 'Failed to remove tracked repository');
+  }
+  return data.data;
+}
+
+export async function getTrackedRepositoryPulls(id, { token, state = 'open', perPage = 10 } = {}) {
+  const params = new URLSearchParams({ state, perPage: String(perPage) });
+  if (token) params.set('token', token);
+
+  const res = await fetchWithRetry(`${API_BASE}/repos/${encodeURIComponent(id)}/pulls?${params.toString()}`);
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error?.message || 'Failed to fetch open pull requests');
+  }
+  return data.data;
+}
+
+
 
 
 

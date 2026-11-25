@@ -22,6 +22,10 @@ import {
   getGitHubRepositoryCommits,
   analyzeGitHubPR,
   getAnalysisHistory,
+  getTrackedRepositories,
+  trackRepository,
+  togglePinTrackedRepository,
+  removeTrackedRepository,
 } from '../services/api.js';
 import { AlertCircle, ShieldAlert, Network } from 'lucide-react';
 
@@ -79,6 +83,10 @@ export function DashboardPage() {
   // Recent analyses cache for Project Hub quick resume
   const [recentAnalyses, setRecentAnalyses] = useState([]);
 
+  // Tracked Repositories Hub state (Phase 8 & 10)
+  const [trackedRepos, setTrackedRepos] = useState([]);
+  const [loadingTrackedRepos, setLoadingTrackedRepos] = useState(false);
+
   // Connected GitHub Repository state (with Cumulative & Single Push tracking)
   const [connectedRepo, setConnectedRepo] = useState(null);
 
@@ -103,6 +111,44 @@ export function DashboardPage() {
       console.warn('Failed to refresh recent analyses:', err);
     }
   }, []);
+
+  // Fetch and refresh user's Tracked Repositories Hub
+  const refreshTrackedRepos = useCallback(async () => {
+    setLoadingTrackedRepos(true);
+    try {
+      const list = await getTrackedRepositories();
+      setTrackedRepos(Array.isArray(list) ? list : []);
+    } catch (err) {
+      console.warn('Failed to load tracked repositories:', err);
+    } finally {
+      setLoadingTrackedRepos(false);
+    }
+  }, []);
+
+  const handleTrackRepo = useCallback(
+    async ({ repoUrl, token, isPinned = false, metadata = null }) => {
+      const result = await trackRepository({ repoUrl, token, isPinned, metadata });
+      await refreshTrackedRepos();
+      return result;
+    },
+    [refreshTrackedRepos]
+  );
+
+  const handleTogglePinRepo = useCallback(
+    async (id) => {
+      await togglePinTrackedRepository(id);
+      await refreshTrackedRepos();
+    },
+    [refreshTrackedRepos]
+  );
+
+  const handleRemoveTrackedRepo = useCallback(
+    async (id) => {
+      await removeTrackedRepository(id);
+      setTrackedRepos((prev) => prev.filter((r) => r.id !== id));
+    },
+    []
+  );
 
   // Synchronize active analysisId with browser URL query parameter without triggering full reload
   const updateUrlAnalysisId = useCallback((analysisId, isDemo = false) => {
@@ -256,7 +302,7 @@ export function DashboardPage() {
 
   // Connect a GitHub repository and run baseline audit
   const handleConnectGitHubRepo = useCallback(
-    async ({ repoUrl, token }) => {
+    async ({ repoUrl, token, saveToHub = false }) => {
       setActiveHubTab('repo');
       try {
         localStorage.setItem('changelens_active_tab', 'repo');
@@ -268,6 +314,10 @@ export function DashboardPage() {
       try {
         const data = await connectGitHubRepository({ repoUrl, token });
         const latestSha = data.currentSha;
+
+        if (saveToHub) {
+          trackRepository({ repoUrl, token, metadata: data.repo }).catch(() => {});
+        }
 
         // Perform initial sync on latest push
         setLoadingMessage('Scanning Repository ASTs & Calculating Blast Radius...');
@@ -293,6 +343,7 @@ export function DashboardPage() {
         if (loaded) {
           setIsProjectHubOpen(false);
           refreshRecentAnalyses();
+          refreshTrackedRepos();
         }
       } catch (err) {
         console.error('Failed to connect GitHub repository:', err);
@@ -301,7 +352,7 @@ export function DashboardPage() {
         setLoading(false);
       }
     },
-    [loadSavedAnalysis, refreshRecentAnalyses]
+    [loadSavedAnalysis, refreshRecentAnalyses, refreshTrackedRepos]
   );
 
   // Directly analyze a GitHub PR from Project Hub
@@ -322,6 +373,7 @@ export function DashboardPage() {
         if (loaded) {
           setIsProjectHubOpen(false);
           refreshRecentAnalyses();
+          refreshTrackedRepos();
         }
       } catch (err) {
         console.error('Failed to analyze GitHub PR:', err);
@@ -330,7 +382,7 @@ export function DashboardPage() {
         setLoading(false);
       }
     },
-    [loadSavedAnalysis, refreshRecentAnalyses]
+    [loadSavedAnalysis, refreshRecentAnalyses, refreshTrackedRepos]
   );
 
   // Sync ALL pushes cumulatively between lastSyncedSha and currentSha
@@ -578,6 +630,7 @@ export function DashboardPage() {
         if (!isCancelled) {
           setBackendStatus('online');
           refreshRecentAnalyses();
+          refreshTrackedRepos();
         }
       } catch (err) {
         console.warn('Backend not responding yet:', err.message);
@@ -617,14 +670,15 @@ export function DashboardPage() {
     return () => {
       isCancelled = true;
     };
-  }, [loadSavedAnalysis, refreshRecentAnalyses, updateUrlAnalysisId]);
+  }, [loadSavedAnalysis, refreshRecentAnalyses, refreshTrackedRepos, updateUrlAnalysisId]);
 
-  // Auto-refresh Recent Analyses whenever returning to or opening the Project Hub
+  // Auto-refresh Recent Analyses & Tracked Repos whenever returning to or opening the Project Hub
   useEffect(() => {
     if (isProjectHubOpen) {
       refreshRecentAnalyses();
+      refreshTrackedRepos();
     }
-  }, [isProjectHubOpen, refreshRecentAnalyses]);
+  }, [isProjectHubOpen, refreshRecentAnalyses, refreshTrackedRepos]);
 
   // Compact Validation Popup Modal state for unexpected validation errors in dashboard
   const [validationModal, setValidationModal] = useState({
@@ -727,6 +781,18 @@ export function DashboardPage() {
             lastSyncedSha={connectedRepo.lastSyncedSha}
             currentSha={connectedRepo.currentSha}
             loading={loading}
+            isTracked={trackedRepos.some(
+              (r) =>
+                r.fullName?.toLowerCase() ===
+                (connectedRepo.repo?.fullName || `${connectedRepo.repo?.owner}/${connectedRepo.repo?.repo}`).toLowerCase()
+            )}
+            onSaveToTrackedHub={() =>
+              handleTrackRepo({
+                repoUrl: connectedRepo.repoUrl,
+                token: connectedRepo.token,
+                metadata: connectedRepo.repo,
+              })
+            }
             onSyncAllPushes={handleSyncAllPushes}
             onSyncLatestPush={handleSyncLatestPush}
             onSelectSpecificCommit={handleSelectSpecificCommit}
@@ -795,6 +861,11 @@ export function DashboardPage() {
             onLaunchDemo={handleLaunchDemo}
             recentAnalyses={recentAnalyses}
             onLoadSavedAnalysis={handleOpenSavedReport}
+            trackedRepos={trackedRepos}
+            loadingTrackedRepos={loadingTrackedRepos}
+            onTrackRepo={handleTrackRepo}
+            onTogglePinRepo={handleTogglePinRepo}
+            onRemoveTrackedRepo={handleRemoveTrackedRepo}
             loading={loading}
             apiError={error}
             onClearApiError={() => setError(null)}
