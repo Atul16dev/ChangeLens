@@ -1,0 +1,26 @@
+# Dependencies & local build artifacts
+node_modules/
+frontend/node_modules/
+frontend/dist/
+dist/
+build/
+
+# Secrets & local environment
+.env
+.env.*
+!.env.example
+
+# Git & editor files
+.git/
+.github/
+.vscode/
+.idea/
+
+# Runtime caches & test outputs
+.changelens-cache/
+*.log
+*.db
+*.db-*
+coverage/
+tests/*.js
+docs/

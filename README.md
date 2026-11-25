@@ -1,6 +1,11 @@
 # ChangeLens — Code Change Impact Intelligence Platform
 
-ChangeLens is an enterprise-grade code change blast radius analysis and static intelligence platform. It parses source trees deterministically using offline Tree-Sitter WASM, generates reverse dependency blast-radius graphs, isolates impacted symbols, flags broken imports, and provides AI-powered pull request risk reviews.
+[![ChangeLens CI/CD Pipeline](https://github.com/Atul16dev/ChangeLens/actions/workflows/ci.yml/badge.svg)](https://github.com/Atul16dev/ChangeLens/actions/workflows/ci.yml)
+![Node.js](https://img.shields.io/badge/Node.js-22%2B-339933?logo=nodedotjs&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-Compose%20Ready-2496ED?logo=docker&logoColor=white)
+![Tests](https://img.shields.io/badge/Automated%20Tests-261%20Passing-brightgreen)
+
+ChangeLens is an enterprise-grade code change blast radius analysis and static intelligence platform. It parses source trees deterministically using offline Tree-Sitter WASM, generates reverse dependency blast-radius graphs, isolates impacted symbols, flags broken imports, scores risk deterministically (0–100), and provides AI-powered pull request risk reviews.
 
 ---
 
@@ -14,15 +19,15 @@ ChangeLens is an enterprise-grade code change blast radius analysis and static i
    - Secure Argon2id password hashing with OWASP-recommended parameters.
    - 6-digit Email OTP Verification with 5-minute expiry, server-side cooldown, and attempt limits.
    - Transactional email delivery via Nodemailer (SMTP with HTML/plain-text templates and in-memory test adapter).
-   - "Continue with Google" OAuth2 / OpenID Connect authorization code flow with cryptographic state checks.
+   - "Continue with Google" & "Continue with GitHub" OAuth2 authorization code flows with cryptographic CSRF state checks.
    - Persistent MongoDB Atlas cloud database with Mongoose schemas and connection pooling.
    - HttpOnly, SameSite, Secure session cookies with session rotation on login/verification.
    - Two-step Password Reset via 6-digit OTP challenge, single-use reset authorization token, and multi-device session invalidation.
    - Brute-force IP rate limiting and timing-safe authentication error envelopes.
-6. **Cloud-Persisted Analysis History & Saved Reports (MongoDB CRUD)**:
+6. **Cloud-Persisted Analysis History & Tracked Repositories Hub (MongoDB CRUD)**:
    - Automated persistence of blast radius graph topologies, broken symbol diagnostics, and AI reviews in MongoDB Atlas.
-   - User-scoped history drawer with real-time text search, pagination, and ownership enforcement.
-   - Instant one-click workspace rehydration to reload any previous analysis without re-parsing files.
+   - Tracked Repositories Hub (`Repository` model) to bookmark favorite GitHub repositories, pin workspaces, sync latest commits, and trigger 1-click PR analysis without re-pasting URLs.
+   - Asynchronous Background Job Queue (`QUEUED -> PROCESSING -> COMPLETED`) with live SSE/polling updates and a deterministic 0–100 Explainable Risk Scoring Engine.
 
 ---
 
@@ -63,18 +68,25 @@ npm run frontend:dev
 ```
 Open [http://localhost:5173](http://localhost:5173) in your browser.
 
-### 5. Running the Automated Test Suite
+### 5. Running with Docker (1-Command Full-Stack Deployment)
+Build and launch the full ChangeLens stack (Express API + Compiled React SPA + MongoDB + Redis) in one command:
+```bash
+docker compose up --build
+```
+Open [http://localhost:5000](http://localhost:5000) in your browser. Health check is available at `/api/v1/health`.
+
+### 6. Running the Automated Test Suite
 ```powershell
 npm test
 ```
 The test suite validates:
 - AST Parsing & Import Resolution (JS/TS/Python/Go)
-- Symbol-Level Impact & Blast Radius Calculation
-- Graph Layout & What-If Simulation
-- Full Authentication Flow (Registration, OTP verification, Rate Limiting, Session Rotation, Reset Password)
-- CI Runner & REST API Endpoints
+- Symbol-Level Impact, Explainable 0–100 Risk Scoring & Predictive Test Selection
+- Async Analysis Queue & Graph Layout / What-If Simulation
+- Full Authentication Flow (Argon2id, Email OTP, Google & GitHub OAuth, Rate Limiting, Session Rotation, RBAC Admin)
+- Tracked Repositories Hub, CI Runner & REST API Endpoints
 
-All 135 tests execute synchronously in under 2.5 seconds with zero external network dependencies.
+All **261 automated tests** execute cleanly with zero external network or database dependencies.
 
 ---
 
@@ -93,14 +105,23 @@ All 135 tests execute synchronously in under 2.5 seconds with zero external netw
 | `POST` | `/api/v1/auth/reset-password` | Update password with reset token; invalidates active sessions | Public (Rate-limited) |
 | `GET` | `/api/v1/auth/google` | Initiate Google OAuth 2.0 authorization code flow | Public |
 | `GET` | `/api/v1/auth/google/callback` | Validate OAuth state and code, issue authenticated session | Public |
+| `GET` | `/api/v1/auth/github` | Initiate GitHub OAuth authorization code flow | Public |
+| `GET` | `/api/v1/auth/github/callback` | Validate GitHub OAuth state/code, link/create user & rotate session | Public |
 
 ---
 
-## Analysis & History API Reference
+## Analysis, Jobs & Tracked Repositories API Reference
 
 | Method | Endpoint | Description | Guard |
 | :--- | :--- | :--- | :--- |
-| `POST` | `/api/v1/analyze` | Trigger repository scan & AST blast radius analysis | Public (Session-attributed) |
+| `POST` | `/api/v1/analyze` | Trigger repository scan & AST blast radius analysis (sync or `?async=true`) | Public (Session-attributed) |
+| `GET` | `/api/v1/jobs/:jobId` | Poll asynchronous background analysis job progress & status | Public |
+| `GET` | `/api/v1/jobs/:jobId/events` | Stream live job progress via Server-Sent Events (SSE) | Public |
+| `GET` | `/api/v1/repos` | List user's saved repositories in Tracked Repositories Hub | `requireAuth` |
+| `POST` | `/api/v1/repos` | Save/track a GitHub repository with metadata & telemetry | `requireAuth` |
+| `PATCH` | `/api/v1/repos/:id/pin` | Pin or unpin a tracked repository | `requireAuth` (Owner only) |
+| `DELETE` | `/api/v1/repos/:id` | Remove a repository from Tracked Repositories Hub | `requireAuth` (Owner only) |
+| `GET` | `/api/v1/repos/:id/pulls` | Fetch live open Pull Requests for 1-click PR blast radius checks | `requireAuth` (Owner only) |
 | `GET` | `/api/v1/analyses/history` | List user's saved analysis reports (search & pagination) | `requireAuth` |
 | `DELETE` | `/api/v1/analyses/:id` | Remove a saved analysis run from MongoDB | `requireAuth` (Owner only) |
 | `GET` | `/api/v1/analyses/:id/graph` | Return ELK layered React Flow visual graph nodes and edges | Public |

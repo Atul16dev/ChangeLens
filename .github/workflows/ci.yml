@@ -1,0 +1,79 @@
+name: ChangeLens CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend-tests:
+    name: Backend & AST Engine Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: "package-lock.json"
+
+      - name: Install Root Dependencies
+        run: npm ci
+
+      - name: Warm Tree-Sitter WASM Parsers
+        run: npm run parsers:warm
+
+      - name: Run Full Automated Test Suite
+        env:
+          NODE_ENV: test
+          SESSION_SECRET: ci-test-session-secret-entropy-32-chars
+          OTP_SECRET: ci-test-otp-secret-entropy-32-chars
+        run: npm test
+
+  frontend-build:
+    name: Frontend Lint & Production Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: "frontend/package-lock.json"
+
+      - name: Install Frontend Dependencies
+        run: npm ci --prefix frontend
+
+      - name: Run Oxlint Check
+        run: npm run lint --prefix frontend
+
+      - name: Build Production Frontend Bundle
+        run: npm run build --prefix frontend
+
+  docker-build:
+    name: Docker Image Verification
+    needs: [backend-tests, frontend-build]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Build Production Docker Image
+        run: docker build -t changelens:ci .
