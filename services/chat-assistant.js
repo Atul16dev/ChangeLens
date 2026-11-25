@@ -836,7 +836,7 @@ I cannot verify or answer questions outside the scope of this repository's archi
 
 You can ask:
 - 🔀 *"Who imports server/models/user.js?"*
-- 📦 *"Kon kisko import kar raha hai?"*
+- 📦 *"Who imports what?"*
 - ⚡ *"What is the difference between direct and transitive consumers?"*
 - 🚨 *"Are there any broken imports?"*
 - 🧪 *"What tests should I run for this PR?"*`;
@@ -1325,7 +1325,7 @@ function handleGeneralReportExplanation(evidence, { isHindi }) {
 - **Broken Imports:** ${summary.brokenImportsCount || 0}
 
 *Tip: You can ask:*
-- 🔀 *"Which file imports which?"* or *"Kon kisko import kar raha hai?"*
+- 🔀 *"Who imports what?"*
 - ⚡ *"What is the difference between direct and transitive consumers?"*
 - 🧪 *"What tests should I run for this PR?"*`;
 }

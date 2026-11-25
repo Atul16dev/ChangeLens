@@ -522,7 +522,7 @@ export async function getAnalysisRating(analysisId) {
 }
 
 // =========================================================================
-// TRACKED REPOSITORIES HUB ENDPOINTS (Phase 8 & 10)
+// Tracked Repositories Hub Endpoints
 // =========================================================================
 
 export async function getTrackedRepositories() {

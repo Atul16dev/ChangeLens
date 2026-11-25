@@ -1,5 +1,6 @@
 import { exec } from "node:child_process";
 import { promisify } from "node:util";
+import os from "node:os";
 import path from "node:path";
 import fs from "node:fs/promises";
 import { existsSync } from "node:fs";
@@ -656,6 +657,27 @@ function withRepoSyncLock(lockKey, fn) {
   return next;
 }
 
+async function resolveRepoCacheDir() {
+  if (process.env.CHANGELENS_CACHE_DIR && process.env.CHANGELENS_CACHE_DIR.trim()) {
+    const customDir = path.resolve(process.env.CHANGELENS_CACHE_DIR.trim(), "repos");
+    await fs.mkdir(customDir, { recursive: true });
+    return customDir;
+  }
+
+  const localCache = path.resolve(process.cwd(), ".changelens-cache", "repos");
+  try {
+    await fs.mkdir(localCache, { recursive: true });
+    return localCache;
+  } catch (err) {
+    if (err && ["EACCES", "EROFS", "EPERM"].includes(err.code)) {
+      const tmpCache = path.join(os.tmpdir(), "changelens-cache", "repos");
+      await fs.mkdir(tmpCache, { recursive: true });
+      return tmpCache;
+    }
+    throw err;
+  }
+}
+
 /**
  * Ensures a remote GitHub repository is cloned or synced in the local cache.
  * Uses shallow depth 1 clone with mutex locking and never persists PAT credentials on disk.
@@ -663,7 +685,7 @@ function withRepoSyncLock(lockKey, fn) {
 export async function ensureGitHubRepositoryCached({ owner, repo, branch, commitSha, token }) {
   const lockKey = `${owner}/${repo}`.toLowerCase();
   return withRepoSyncLock(lockKey, async () => {
-    const cacheBase = path.resolve(process.cwd(), ".changelens-cache", "repos");
+    const cacheBase = await resolveRepoCacheDir();
     const targetDir = path.resolve(cacheBase, `${owner}_${repo}`);
     const cleanRemoteUrl = `https://github.com/${owner}/${repo}.git`;
 
@@ -678,8 +700,6 @@ export async function ensureGitHubRepositoryCached({ owner, repo, branch, commit
           `http.extraheader=AUTHORIZATION: basic ${Buffer.from(`x-access-token:${effectiveToken}`).toString("base64")}`,
         ]
       : [];
-
-    await fs.mkdir(cacheBase, { recursive: true });
 
     let isCloned = false;
     try {

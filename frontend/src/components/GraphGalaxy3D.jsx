@@ -4,7 +4,7 @@ import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
-import { useTheme } from '../context/ThemeContext.jsx';
+import { useTheme } from '../context/theme-context.js';
 import {
   disposeThreeResources,
   getOptimalPixelRatio,
@@ -183,10 +183,6 @@ export function GraphGalaxy3D({
   simulatedChangeType = 'modified',
   filterMode = 'all',
   onFilterToggle,
-  semanticMode = 'impact',
-  onSemanticModeToggle,
-  viewDimension = '3D',
-  onToggleDimension,
   onExitSimulation,
   isFullscreen,
   onToggleFullscreen,
@@ -208,6 +204,11 @@ export function GraphGalaxy3D({
   const selectedIdRef = useRef(null);
   const searchQueryRef = useRef('');
   const autoRotateRef = useRef(false);
+  const onSelectNodeRef = useRef(onSelectNode);
+
+  useEffect(() => {
+    onSelectNodeRef.current = onSelectNode;
+  }, [onSelectNode]);
 
   useEffect(() => {
     hoveredIdRef.current = hoveredNode?.id || null;
@@ -225,17 +226,20 @@ export function GraphGalaxy3D({
     autoRotateRef.current = autoRotate;
   }, [autoRotate]);
 
-  // Sync external selection prop
-  useEffect(() => {
-    if (!graphData?.nodes) return;
-    if (selectedNodeId) {
-      const m = graphData.nodes.find((n) => n.id === selectedNodeId);
-      if (m) setActiveSelectedNode(m);
-    } else {
-      setActiveSelectedNode(null);
-      setIsIsolated(false);
+  const [prevSyncSelection, setPrevSyncSelection] = useState(`${selectedNodeId || ''}:${graphData?.nodes?.length || 0}`);
+  const currentSyncSelection = `${selectedNodeId || ''}:${graphData?.nodes?.length || 0}`;
+  if (currentSyncSelection !== prevSyncSelection) {
+    setPrevSyncSelection(currentSyncSelection);
+    if (graphData?.nodes) {
+      if (selectedNodeId) {
+        const m = graphData.nodes.find((n) => n.id === selectedNodeId);
+        if (m) setActiveSelectedNode(m);
+      } else {
+        setActiveSelectedNode(null);
+        setIsIsolated(false);
+      }
     }
-  }, [selectedNodeId, graphData]);
+  }
 
   // Source data resolution
   const sourceNodes = useMemo(() => {
@@ -785,9 +789,9 @@ export function GraphGalaxy3D({
         const hits = ray.intersectObjects(hitMeshes);
         if (hits.length > 0) {
           const clicked = hits[0].object.userData?.node;
-          if (clicked) { setActiveSelectedNode(clicked); if (onSelectNode) onSelectNode(clicked.id); }
+          if (clicked) { setActiveSelectedNode(clicked); if (onSelectNodeRef.current) onSelectNodeRef.current(clicked.id); }
         } else {
-          setActiveSelectedNode(null); if (onSelectNode) onSelectNode(null);
+          setActiveSelectedNode(null); if (onSelectNodeRef.current) onSelectNodeRef.current(null);
         }
       }
       isDown = false; mode = 'none'; dragMesh = null;
@@ -802,7 +806,7 @@ export function GraphGalaxy3D({
         const tn = hits[0].object.userData?.node;
         const p = posMap.get(tn?.id);
         if (p) {
-          setActiveSelectedNode(tn); if (onSelectNode) onSelectNode(tn.id);
+          setActiveSelectedNode(tn); if (onSelectNodeRef.current) onSelectNodeRef.current(tn.id);
           const dir = camera.position.clone().sub(cameraTarget).normalize();
           tween(p.clone().add(dir.multiplyScalar(14)), p);
         }
@@ -873,11 +877,11 @@ export function GraphGalaxy3D({
           const clicked = hits[0].object.userData?.node;
           if (clicked) {
             setActiveSelectedNode(clicked);
-            if (onSelectNode) onSelectNode(clicked.id);
+            if (onSelectNodeRef.current) onSelectNodeRef.current(clicked.id);
           }
         } else {
           setActiveSelectedNode(null);
-          if (onSelectNode) onSelectNode(null);
+          if (onSelectNodeRef.current) onSelectNodeRef.current(null);
         }
       }
 
@@ -1286,18 +1290,18 @@ export function GraphGalaxy3D({
 
           <div className="w-full h-px bg-slate-200 dark:bg-slate-700/80 my-0.5" />
 
-          {/* 1. Fit All Nodes (2D ReactFlow 4-Corner Viewframe Icon) */}
+          {/* 1. Fit All Nodes */}
           <button type="button" onClick={() => camRef.current.fit?.()}
             className="p-2 rounded-xl hover:bg-cyan-50 dark:hover:bg-cyan-950/40 text-cyan-600 dark:text-cyan-400 transition-colors cursor-pointer"
-            title="Fit View (Screen pe Fit Karein)">
+            title="Fit all nodes in view">
             <FitView2DIcon className="w-3.5 h-3.5" />
           </button>
 
-          {/* 2. Cover Whole Screen (YouTube Style Fullscreen - Maximize2 / Minimize2) */}
+          {/* 2. Fullscreen Toggle (Maximize2 / Minimize2) */}
           {onToggleFullscreen && (
             <button type="button" onClick={onToggleFullscreen}
               className="p-2 rounded-xl hover:bg-cyan-50 dark:hover:bg-cyan-950/40 text-cyan-600 dark:text-cyan-400 transition-colors cursor-pointer"
-              title={isFullscreen ? 'Exit Fullscreen (Esc)' : 'Cover Whole Screen (YouTube Style)'}>
+              title={isFullscreen ? 'Exit Fullscreen (Esc)' : 'Expand to Fullscreen'}>
               {isFullscreen ? (
                 <Minimize2 className="w-3.5 h-3.5 text-cyan-500" />
               ) : (
@@ -1432,7 +1436,7 @@ export function GraphGalaxy3D({
                 ['Shift + Drag / Right Drag', 'Pan the canvas'],
                 ['Scroll Wheel', 'Zoom in / out'],
                 ['Fit View [ ]', 'Fit all nodes on screen'],
-                ['Fullscreen', 'Cover entire display (YouTube style)'],
+                ['Fullscreen', 'Expand canvas to fullscreen'],
                 ['Click node', 'Select & highlight edges'],
                 ['Double-click node', 'Focus camera on node'],
                 ['Drag node', 'Reposition in 3D'],

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext.jsx';
+import { Link } from 'react-router-dom';
+import { useAuth } from '../../context/auth-context.js';
 import {
   Menu,
   X,
@@ -12,8 +12,7 @@ import { BrandLogo } from '../BrandLogo.jsx';
 import { ThemeToggle } from '../ThemeToggle.jsx';
 
 export function Navbar() {
-  const { user, isAuthenticated } = useAuth();
-  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 

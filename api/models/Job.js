@@ -6,7 +6,6 @@ const JobSchema = new mongoose.Schema(
       type: String,
       required: true,
       unique: true,
-      index: true,
     },
     user: {
       type: mongoose.Schema.Types.ObjectId,

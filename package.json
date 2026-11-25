@@ -8,7 +8,8 @@
   },
   "scripts": {
     "test": "node --test",
-    "start": "node --watch api/server.js",
+    "start": "node api/server.js",
+    "build": "npm install --prefix frontend --no-audit --no-fund && npm run frontend:build",
     "dev": "node scripts/dev.js",
     "dev:frontend": "npm run dev --prefix frontend",
     "dev:api": "node --watch api/server.js",

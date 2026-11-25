@@ -307,7 +307,7 @@ export const feedbackRepository = {
   },
 
   /**
-   * Compute aggregate 5-star rating & category breakdown across all feedback (Flipkart-style).
+   * Compute aggregate 5-star rating & category breakdown across all feedback.
    */
   async getStats() {
     const dbReady = await ensureDbReady();

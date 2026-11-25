@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import {
-  GitCompare,
   Code2,
   Binary,
   Share2,
@@ -10,19 +9,9 @@ import {
   Zap,
   Terminal,
   Database,
-  CheckCircle2,
-  ArrowRight,
-  ShieldCheck,
-  Cpu,
   Layers,
-  FileCheck,
-  Check,
   BookmarkCheck,
-  GitPullRequest,
-  GitBranch,
-  FolderGit2,
   Bot,
-  Play,
 } from 'lucide-react';
 import { ScrollReveal } from './ScrollReveal.jsx';
 
@@ -357,7 +346,7 @@ export function FeaturesGrid() {
               </div>
 
               <p className="text-sm text-slate-300 leading-relaxed">
-                Docked floating copilot directly inside the graph workspace. Ask natural language questions like "Kon kisko import kar raha hai?", "Why is this classified as high risk?", or "What specific test commands to run?".
+                Docked floating copilot directly inside the graph workspace. Ask natural language questions like "Who imports what?", "Why is this classified as high risk?", or "What specific test commands to run?".
               </p>
             </div>
 

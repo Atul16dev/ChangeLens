@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { FileCode, AlertOctagon, AlertTriangle, Flame, Folder, Trash2 } from 'lucide-react';
-import { useTheme } from '../context/ThemeContext.jsx';
+import { useTheme } from '../context/theme-context.js';
 
 function getSeverityConfig(severity, isChanged, isDeleted, isDark = true) {
   if (isDeleted || severity === 'DELETED') {

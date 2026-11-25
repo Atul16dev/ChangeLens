@@ -1,18 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import {
   X,
-  CheckCircle2,
-  ExternalLink,
   Copy,
   Check,
   ChevronRight,
   ChevronLeft,
   ArrowRight,
-  GitPullRequest,
-  Terminal,
-  ShieldCheck,
-  Folder,
-  Layers,
   Sparkles,
 } from 'lucide-react';
 
@@ -24,6 +17,13 @@ export function ConnectionGuideModal({
 }) {
   const [activeStep, setActiveStep] = useState(0);
   const [copiedText, setCopiedText] = useState(false);
+  const resetKey = `${guideType}:${isOpen}`;
+  const [prevResetKey, setPrevResetKey] = useState(resetKey);
+
+  if (prevResetKey !== resetKey) {
+    setPrevResetKey(resetKey);
+    setActiveStep(0);
+  }
 
   // Close on Escape key press
   useEffect(() => {
@@ -34,11 +34,6 @@ export function ConnectionGuideModal({
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
-
-  // Reset step when guideType changes
-  useEffect(() => {
-    setActiveStep(0);
-  }, [guideType, isOpen]);
 
   if (!isOpen) return null;
 

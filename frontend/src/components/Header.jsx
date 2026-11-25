@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Play,
@@ -16,7 +16,7 @@ import {
   Crown,
   Activity,
 } from 'lucide-react';
-import { useAuth } from '../context/AuthContext.jsx';
+import { useAuth } from '../context/auth-context.js';
 import { UserProfileMenu } from './UserProfileMenu.jsx';
 import { BrandLogo } from './BrandLogo.jsx';
 import { ThemeToggle } from './ThemeToggle.jsx';
@@ -31,9 +31,7 @@ export function Header({
   simulatedFile,
   onExitSimulation,
   onOpenHistory,
-  onOpenGitHub,
   onOpenProjectHub,
-  onOpenFeedback,
   isDemoMode = false,
   isProjectHubOpen = false,
   activeHubTab = 'repo',
@@ -52,6 +50,7 @@ export function Header({
   const [isAdjusting, setIsAdjusting] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const repoPathInputRef = useRef(null);
+  const [prevTargetContext, setPrevTargetContext] = useState(null);
 
   // Compact Validation Popup Modal state
   const [validationModal, setValidationModal] = useState({
@@ -70,16 +69,15 @@ export function Header({
     setValidationModal((prev) => ({ ...prev, isOpen: false }));
 
   // Sync inputs whenever activeTargetContext updates from a previous analysis
-  useEffect(() => {
-    if (activeTargetContext) {
-      if (activeTargetContext.repoPath) {
-        setRepoPath(activeTargetContext.repoPath);
-      }
-      if (Array.isArray(activeTargetContext.changedFiles)) {
-        setChangedFile(activeTargetContext.changedFiles.join(', '));
-      }
+  if (activeTargetContext && activeTargetContext !== prevTargetContext) {
+    setPrevTargetContext(activeTargetContext);
+    if (activeTargetContext.repoPath) {
+      setRepoPath(activeTargetContext.repoPath);
     }
-  }, [activeTargetContext]);
+    if (Array.isArray(activeTargetContext.changedFiles)) {
+      setChangedFile(activeTargetContext.changedFiles.join(', '));
+    }
+  }
 
   const handleToggleAdjust = () => {
     if (!isAdjusting) {

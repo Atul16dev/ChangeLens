@@ -3,10 +3,9 @@ import {
   BaseEdge,
   EdgeLabelRenderer,
   getBezierPath,
-  MarkerType,
 } from '@xyflow/react';
-import { ArrowRight, Info, ShieldAlert, Sparkles } from 'lucide-react';
-import { useTheme } from '../context/ThemeContext.jsx';
+import { Info } from 'lucide-react';
+import { useTheme } from '../context/theme-context.js';
 
 export const ImpactEdge = memo(({
   id,
@@ -21,7 +20,6 @@ export const ImpactEdge = memo(({
   style = {},
   data = {},
   markerEnd,
-  selected,
 }) => {
   const [isHovered, setIsHovered] = useState(false);
 

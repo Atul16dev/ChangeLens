@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, AlertTriangle, ShieldAlert, Check } from 'lucide-react';
+import { X, AlertTriangle, ShieldAlert } from 'lucide-react';
 import { banUser } from '../../services/adminApi.js';
 
 const PRESET_REASONS = [

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext.jsx';
+import { useAuth } from '../context/auth-context.js';
 import { Mail, Lock, Eye, EyeOff, AlertCircle, ArrowRight, RefreshCw } from 'lucide-react';
 import { AuthSplitLayout } from '../components/AuthSplitLayout.jsx';
 
@@ -15,6 +15,7 @@ export function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [unverifiedEmail, setUnverifiedEmail] = useState(null);
+  const [prevSearch, setPrevSearch] = useState(null);
 
   const from = location.state?.from?.pathname && location.state.from.pathname !== '/'
     ? location.state.from.pathname
@@ -26,7 +27,8 @@ export function LoginPage() {
     }
   }, [isAuthenticated, navigate, from]);
 
-  useEffect(() => {
+  if (location.search !== prevSearch) {
+    setPrevSearch(location.search);
     const params = new URLSearchParams(location.search);
     const oauthError = params.get('error');
     const reason = params.get('reason');
@@ -37,7 +39,7 @@ export function LoginPage() {
     } else if (oauthError === 'oauth_failed') {
       setError('Authentication could not be completed. Please try again.');
     }
-  }, [location.search]);
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();

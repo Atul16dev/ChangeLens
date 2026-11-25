@@ -1,19 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   X,
-  User,
-  Shield,
-  Crown,
-  CheckCircle2,
   AlertTriangle,
   Clock,
   Activity,
   FileCode,
   MessageSquare,
-  Plus,
   Send,
-  Calendar,
-  Lock,
 } from 'lucide-react';
 import { getUserActivity, addUserNote } from '../../services/adminApi.js';
 
@@ -24,7 +17,7 @@ export function UserActivityModal({ isOpen, onClose, userId }) {
   const [submittingNote, setSubmittingNote] = useState(false);
   const [error, setError] = useState('');
 
-  const loadActivity = async () => {
+  const loadActivity = useCallback(async () => {
     if (!userId) return;
     try {
       setLoading(true);
@@ -36,16 +29,19 @@ export function UserActivityModal({ isOpen, onClose, userId }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId]);
 
   useEffect(() => {
     if (isOpen && userId) {
-      loadActivity();
-    } else {
-      setData(null);
-      setNoteText('');
+      let active = true;
+      Promise.resolve().then(() => {
+        if (active) loadActivity();
+      });
+      return () => {
+        active = false;
+      };
     }
-  }, [isOpen, userId]);
+  }, [isOpen, userId, loadActivity]);
 
   if (!isOpen) return null;
 

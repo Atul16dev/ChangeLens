@@ -309,7 +309,7 @@ export async function getMyFeedback(req, res, next) {
 
 /**
  * GET /api/v1/feedback/public
- * Returns community feedback/reports (privacy-safe) + Flipkart-style rating summary.
+ * Returns community feedback/reports (privacy-safe) and a 5-star rating summary.
  */
 export async function getPublicFeedback(req, res, next) {
   try {

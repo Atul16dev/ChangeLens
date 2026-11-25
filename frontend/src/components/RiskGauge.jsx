@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useTheme } from '../context/ThemeContext.jsx';
+import { useTheme } from '../context/theme-context.js';
 import {
   ShieldAlert,
   AlertTriangle,
@@ -11,8 +11,6 @@ import {
   ChevronDown,
   ChevronUp,
   Activity,
-  ArrowRight,
-  Info,
 } from 'lucide-react';
 
 const TIER_CONFIG = {
@@ -63,7 +61,6 @@ export function RiskGauge({
   label = null,
   factors = [],
   recommendation = '',
-  size = 'md',
   showBreakdown = true,
 }) {
   const { isDark } = useTheme();

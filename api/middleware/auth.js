@@ -1,4 +1,5 @@
 import { userRepository, toSafeUser } from "../db/user-repository.js";
+import { clearSessionCookie } from "../utils/session-cookie.js";
 
 /**
  * Middleware that hydrates req.user if a session contains userId
@@ -14,7 +15,7 @@ export async function hydrateUser(req, res, next) {
     if (!rawUser) {
       // User was deleted or no longer exists
       req.session.destroy(() => {
-        res.clearCookie("changelens.sid");
+        clearSessionCookie(res);
         req.user = null;
         next();
       });
@@ -26,7 +27,7 @@ export async function hydrateUser(req, res, next) {
       const currentSnapshot = rawUser.password_changed_at ? String(rawUser.password_changed_at) : null;
       if (currentSnapshot !== req.session.passwordChangedAtSnapshot) {
         req.session.destroy(() => {
-          res.clearCookie("changelens.sid");
+          clearSessionCookie(res);
           req.user = null;
           next();
         });
@@ -35,7 +36,7 @@ export async function hydrateUser(req, res, next) {
     } else if (rawUser.password_changed_at && req.session.sessionIssuedAt) {
       if (new Date(rawUser.password_changed_at).getTime() > req.session.sessionIssuedAt) {
         req.session.destroy(() => {
-          res.clearCookie("changelens.sid");
+          clearSessionCookie(res);
           req.user = null;
           next();
         });

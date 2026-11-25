@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { forgotPassword } from '../services/authApi.js';
 import { BrandLogo } from '../components/BrandLogo.jsx';
 import { ThemeToggle } from '../components/ThemeToggle.jsx';
-import { Lock, Mail, AlertCircle, ArrowLeft, RefreshCw } from 'lucide-react';
+import { Mail, AlertCircle, ArrowLeft, RefreshCw } from 'lucide-react';
 
 export function ForgotPasswordPage() {
   const navigate = useNavigate();

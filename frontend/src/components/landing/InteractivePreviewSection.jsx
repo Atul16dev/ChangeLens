@@ -6,7 +6,6 @@ import {
   Zap,
   Activity,
   FileCode2,
-  AlertTriangle,
   CheckCircle2,
   ChevronRight,
   Copy,
@@ -14,7 +13,7 @@ import {
   Layers,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext.jsx';
+import { useAuth } from '../../context/auth-context.js';
 import { ScrollReveal } from './ScrollReveal.jsx';
 import { GraphGalaxy3D } from '../GraphGalaxy3D.jsx';
 

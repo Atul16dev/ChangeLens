@@ -6,18 +6,14 @@ import {
   ShieldAlert,
   Layers,
   CheckCircle2,
-  ChevronRight,
   Filter,
   X,
   Code,
   ArrowRight,
-  ArrowLeft,
   Sparkles,
   Copy,
   Check,
   GitPullRequest,
-  ShieldCheck,
-  FileText,
   Zap,
   Download,
   Printer,
@@ -25,7 +21,6 @@ import {
   Trash2,
   ChevronsLeft,
   ChevronsRight,
-  GripVertical,
   Search,
   LayoutGrid,
   List,
@@ -33,8 +28,6 @@ import {
   Minimize2,
   FlaskConical,
   Terminal,
-  Activity,
-  Sliders,
 } from 'lucide-react';
 import { downloadText, downloadJson, printOrSavePDF } from '../utils/export.js';
 import { AnalysisRatingBar } from './AnalysisRatingBar.jsx';
@@ -107,7 +100,9 @@ export function ImpactSidebar({
 
   const asideRef = useRef(null);
   const widthRef = useRef(sidebarWidth);
-  widthRef.current = sidebarWidth;
+  useEffect(() => {
+    widthRef.current = sidebarWidth;
+  }, [sidebarWidth]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -545,7 +540,7 @@ export function ImpactSidebar({
               title={
                 isExpanded
                   ? 'Collapse to Standard View (420px)'
-                  : 'Panel Bada Karein / Wide View (120+ findings aasaani se padhne ke liye)'
+                  : 'Expand to Wide View (easier to inspect 120+ findings)'
               }
             >
               {isExpanded ? (

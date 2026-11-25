@@ -83,7 +83,7 @@ export function DashboardPage() {
   // Recent analyses cache for Project Hub quick resume
   const [recentAnalyses, setRecentAnalyses] = useState([]);
 
-  // Tracked Repositories Hub state (Phase 8 & 10)
+  // Tracked Repositories Hub state
   const [trackedRepos, setTrackedRepos] = useState([]);
   const [loadingTrackedRepos, setLoadingTrackedRepos] = useState(false);
 
@@ -692,10 +692,16 @@ export function DashboardPage() {
 
   // Auto-refresh Recent Analyses & Tracked Repos whenever returning to or opening the Project Hub
   useEffect(() => {
-    if (isProjectHubOpen) {
+    if (!isProjectHubOpen) return;
+    let active = true;
+    Promise.resolve().then(() => {
+      if (!active) return;
       refreshRecentAnalyses();
       refreshTrackedRepos();
-    }
+    });
+    return () => {
+      active = false;
+    };
   }, [isProjectHubOpen, refreshRecentAnalyses, refreshTrackedRepos]);
 
   // Compact Validation Popup Modal state for unexpected validation errors in dashboard
@@ -714,8 +720,11 @@ export function DashboardPage() {
   const closeValidationModal = () =>
     setValidationModal((prev) => ({ ...prev, isOpen: false }));
 
+  const [prevDashboardError, setPrevDashboardError] = useState(null);
+
   // Catch API validation errors when in Dashboard and show compact modal
-  useEffect(() => {
+  if (error !== prevDashboardError) {
+    setPrevDashboardError(error);
     if (
       error &&
       !isProjectHubOpen &&
@@ -747,7 +756,7 @@ export function DashboardPage() {
         },
       });
     }
-  }, [error, isProjectHubOpen, handleLaunchDemo]);
+  }
 
   return (
     <div className="flex flex-col h-screen h-[100dvh] w-full max-w-full bg-white dark:bg-[#0b0f19] text-slate-900 dark:text-slate-100 overflow-hidden font-sans">

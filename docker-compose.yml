@@ -13,7 +13,6 @@ services:
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5000}
       FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:-http://localhost:5000}
       MONGODB_URI: ${MONGODB_URI:-mongodb://mongodb:27017/changelens}
-      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
       SESSION_SECRET: ${SESSION_SECRET:-changelens-docker-session-secret-change-in-prod-32chars}
       OTP_SECRET: ${OTP_SECRET:-changelens-docker-otp-secret-change-in-prod-32chars}
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
@@ -30,8 +29,6 @@ services:
       SMTP_PASS: ${SMTP_PASS:-}
     depends_on:
       mongodb:
-        condition: service_healthy
-      redis:
         condition: service_healthy
     volumes:
       - changelens_repo_cache:/app/.changelens-cache
@@ -52,21 +49,6 @@ services:
       start_period: 10s
     restart: unless-stopped
 
-  redis:
-    image: redis:7-alpine
-    container_name: changelens-redis
-    ports:
-      - "6379:6379"
-    volumes:
-      - changelens_redis_data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    restart: unless-stopped
-
 volumes:
   changelens_mongo_data:
-  changelens_redis_data:
   changelens_repo_cache:

@@ -8,7 +8,6 @@ import {
   UserPlus,
   RefreshCw,
   Search,
-  Filter,
   CheckCircle2,
   Clock,
   Trash2,
@@ -16,17 +15,13 @@ import {
   Copy,
   Check,
   ArrowLeft,
-  ExternalLink,
   MessageSquare,
   AlertTriangle,
-  ChevronRight,
   Sparkles,
-  SlidersHorizontal,
   Ban,
   Eye,
-  ShieldAlert,
 } from 'lucide-react';
-import { useAuth } from '../context/AuthContext.jsx';
+import { useAuth } from '../context/auth-context.js';
 import {
   listAdminUsers,
   listAdminInvites,
@@ -56,7 +51,7 @@ export function AdminPage() {
   const [userStats, setUserStats] = useState({ total: 0, active: 0, banned: 0 });
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [roleFilter, setRoleFilter] = useState('');
+  const [roleFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
 
   // Modals state
@@ -103,7 +98,13 @@ export function AdminPage() {
   }, [searchTerm, roleFilter, statusFilter]);
 
   useEffect(() => {
-    fetchData();
+    let active = true;
+    Promise.resolve().then(() => {
+      if (active) fetchData();
+    });
+    return () => {
+      active = false;
+    };
   }, [fetchData]);
 
   // Derived KPI statistics
@@ -567,7 +568,6 @@ export function AdminPage() {
                   const isPending = inv.status === 'pending';
                   const isAccepted = inv.status === 'accepted';
                   const isRevoked = inv.status === 'revoked';
-                  const isExpired = inv.status === 'expired';
 
                   return (
                     <div

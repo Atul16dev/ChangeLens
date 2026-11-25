@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { GitBranch, Layers, Sparkles, SlidersHorizontal, RotateCcw } from 'lucide-react';
-import { useTheme } from '../../context/ThemeContext.jsx';
+import { useTheme } from '../../context/theme-context.js';
 import {
   disposeThreeResources,
   getOptimalPixelRatio,

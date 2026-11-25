@@ -7,8 +7,6 @@ import {
   Clock,
   Flame,
   ShieldAlert,
-  ArrowRight,
-  Sparkles,
 } from 'lucide-react';
 import { ScrollReveal } from './ScrollReveal.jsx';
 

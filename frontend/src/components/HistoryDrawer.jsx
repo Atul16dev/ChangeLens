@@ -7,17 +7,14 @@ import {
   Trash2,
   ExternalLink,
   ShieldAlert,
-  ShieldCheck,
   AlertTriangle,
   FolderGit2,
   Calendar,
   Layers,
-  FileCode,
   CheckCircle2,
   Bookmark,
   BookmarkCheck,
   Clock,
-  Pin,
 } from 'lucide-react';
 import { getAnalysisHistory, deleteAnalysis, togglePinAnalysis } from '../services/api.js';
 
@@ -31,10 +28,12 @@ export function HistoryDrawer({ isOpen, onClose, onLoadAnalysis, currentAnalysis
   const [deletingId, setDeletingId] = useState(null);
   const [loadingId, setLoadingId] = useState(null);
   const [pinningId, setPinningId] = useState(null);
+  const [nowMs, setNowMs] = useState(() => Date.now());
 
   const fetchHistory = useCallback(async (query = search) => {
     setLoading(true);
     setError(null);
+    setNowMs(Date.now());
     try {
       const data = await getAnalysisHistory({ search: query, limit: 30 });
       setAnalyses(data.analyses || []);
@@ -49,7 +48,13 @@ export function HistoryDrawer({ isOpen, onClose, onLoadAnalysis, currentAnalysis
 
   useEffect(() => {
     if (isOpen) {
-      fetchHistory();
+      let active = true;
+      Promise.resolve().then(() => {
+        if (active) fetchHistory();
+      });
+      return () => {
+        active = false;
+      };
     }
   }, [isOpen, fetchHistory]);
 
@@ -299,9 +304,9 @@ export function HistoryDrawer({ isOpen, onClose, onLoadAnalysis, currentAnalysis
                     })
                   : 'Recent';
 
-                const createdAtTime = item.createdAt ? new Date(item.createdAt).getTime() : Date.now();
+                const createdAtTime = item.createdAt ? new Date(item.createdAt).getTime() : nowMs;
                 const expireTime = item.expireAt ? new Date(item.expireAt).getTime() : (createdAtTime + 30 * 24 * 60 * 60 * 1000);
-                const daysLeft = Math.max(1, Math.ceil((expireTime - Date.now()) / (24 * 60 * 60 * 1000)));
+                const daysLeft = Math.max(1, Math.ceil((expireTime - nowMs) / (24 * 60 * 60 * 1000)));
 
                 return (
                   <div

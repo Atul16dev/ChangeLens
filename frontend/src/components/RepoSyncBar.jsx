@@ -7,10 +7,8 @@ import {
   CheckCircle2,
   AlertCircle,
   Clock,
-  Layers,
   ChevronDown,
   X,
-  ExternalLink,
   Bookmark,
   BookmarkCheck,
 } from 'lucide-react';
@@ -64,8 +62,6 @@ export function RepoSyncBar({
     const lastIndex = commits.findIndex((c) => c.sha === lastSyncedSha);
     unSyncedCount = lastIndex > 0 ? lastIndex : commits.length;
   }
-
-  const latestCommit = commits.length > 0 ? commits[0] : null;
 
   return (
     <div className="relative z-30 bg-white/95 dark:bg-[#0d1527]/95 border-b border-slate-200 dark:border-cyan-900/40 px-4 py-2 flex flex-wrap items-center justify-between gap-3 text-xs backdrop-blur-md shrink-0 shadow-sm transition-all">

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
   X,
   GitPullRequest,
-  FileCode2,
   ExternalLink,
   RefreshCw,
   Check,

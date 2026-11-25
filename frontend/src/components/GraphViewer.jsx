@@ -10,7 +10,6 @@ import {
   useEdgesState,
   useReactFlow,
   ReactFlowProvider,
-  MarkerType,
 } from '@xyflow/react';
 import { FileNode } from './FileNode.jsx';
 import { ImpactEdge } from './ImpactEdge.jsx';
@@ -21,11 +20,8 @@ import {
   Layers,
   Maximize2,
   Minimize2,
-  Filter,
   ArrowRightLeft,
   Sparkles,
-  Network,
-  HelpCircle,
   Zap,
   X,
   Camera,
@@ -34,7 +30,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { exportGraphToPng, exportGraphToSvg } from '../utils/export.js';
-import { useTheme } from '../context/ThemeContext.jsx';
+import { useTheme } from '../context/theme-context.js';
 import { GraphGalaxy3D } from './GraphGalaxy3D.jsx';
 
 function GraphViewerInternal({
@@ -296,9 +292,14 @@ function GraphViewerInternal({
     [graphData, filterMode, semanticMode, setNodes, setEdges, fitView]
   );
 
+  const runLayoutRef = useRef(() => runLayout(filterMode, semanticMode));
+  useEffect(() => {
+    runLayoutRef.current = () => runLayout(filterMode, semanticMode);
+  }, [runLayout, filterMode, semanticMode]);
+
   // Initial layout on data arrival
   useEffect(() => {
-    runLayout(filterMode, semanticMode);
+    runLayoutRef.current();
   }, [graphData]); // Only re-run when new graphData arrives
 
   // Handlers for filter / mode changes
@@ -311,10 +312,6 @@ function GraphViewerInternal({
     const nextMode = semanticMode === 'impact' ? 'dependency' : 'impact';
     setSemanticMode(nextMode);
     runLayout(filterMode, nextMode);
-  };
-
-  const handleResetLayout = () => {
-    runLayout(filterMode, semanticMode);
   };
 
   // Node Click: Toggle selection
@@ -427,7 +424,7 @@ function GraphViewerInternal({
         >
           <ControlButton
             onClick={toggleFullscreen}
-            title={isFullscreen ? 'Exit Fullscreen (Esc)' : 'Cover Whole Screen (YouTube Style)'}
+            title={isFullscreen ? 'Exit Fullscreen (Esc)' : 'Expand to Fullscreen'}
             aria-label={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
           >
             {isFullscreen ? (

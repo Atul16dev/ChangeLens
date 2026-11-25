@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import * as THREE from 'three';
-import { useTheme } from '../../context/ThemeContext.jsx';
+import { useTheme } from '../../context/theme-context.js';
 import {
   disposeThreeResources,
   getOptimalPixelRatio,

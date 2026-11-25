@@ -23,7 +23,7 @@ import {
   Workflow,
   Search,
 } from 'lucide-react';
-import { useAuth } from '../context/AuthContext.jsx';
+import { useAuth } from '../context/auth-context.js';
 import { ConnectionGuideModal } from './ConnectionGuideModal.jsx';
 import { FriendlyValidationModal } from './FriendlyValidationModal.jsx';
 import { LocalWorkshopSection } from './LocalWorkshopSection.jsx';
@@ -170,8 +170,11 @@ export function ProjectHub({
   const closeValidationModal = () =>
     setValidationModal((prev) => ({ ...prev, isOpen: false }));
 
+  const [prevApiError, setPrevApiError] = useState(null);
+
   // Catch API-level validation errors automatically and present them in the compact modal
-  useEffect(() => {
+  if (apiError !== prevApiError) {
+    setPrevApiError(apiError);
     if (
       apiError &&
       (apiError.toLowerCase().includes('invalid') ||
@@ -199,7 +202,7 @@ export function ProjectHub({
         },
       });
     }
-  }, [apiError, activeMode, onClearApiError]);
+  }
 
   const effectiveError = error || apiError;
   const isRateLimitError =
@@ -1561,7 +1564,7 @@ export function ProjectHub({
           )}
         </div>
 
-        {/* TRACKED REPOSITORIES HUB SECTION (Phase 8 & 10) */}
+        {/* Tracked Repositories Hub Section */}
         <TrackedReposHub
           repos={trackedRepos}
           loadingRepos={loadingTrackedRepos}

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { useAuth } from '../context/AuthContext.jsx';
+import { useAuth } from '../context/auth-context.js';
 import {
   X,
   User,
@@ -26,9 +26,12 @@ export function ProfileModal({ isOpen, onClose }) {
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const fileInputRef = useRef(null);
+  const syncKey = isOpen && user ? `${user.id || ''}:${user.name || ''}:${user.avatar || ''}` : 'closed';
+  const [prevSyncKey, setPrevSyncKey] = useState(syncKey);
 
   // Sync state whenever modal opens or user updates
-  useEffect(() => {
+  if (prevSyncKey !== syncKey) {
+    setPrevSyncKey(syncKey);
     if (isOpen && user) {
       setName(user.name || '');
       setAvatar(user.avatar || null);
@@ -36,7 +39,7 @@ export function ProfileModal({ isOpen, onClose }) {
       setErrorMsg('');
       setSuccessMsg('');
     }
-  }, [isOpen, user]);
+  }
 
   // Close on Escape key and lock body scroll while modal is active
   useEffect(() => {

@@ -18,15 +18,20 @@ export function AnalysisRatingBar({ analysisId }) {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState(null);
+  const [prevAnalysisId, setPrevAnalysisId] = useState(analysisId);
 
-  useEffect(() => {
-    if (!analysisId) return;
-    let cancelled = false;
+  if (analysisId !== prevAnalysisId) {
+    setPrevAnalysisId(analysisId);
     setRating(0);
     setNote('');
     setShowNoteBox(false);
     setSaved(false);
     setError(null);
+  }
+
+  useEffect(() => {
+    if (!analysisId) return;
+    let cancelled = false;
 
     getAnalysisRating(analysisId)
       .then((res) => {

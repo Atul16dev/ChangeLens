@@ -3,8 +3,10 @@ import { Link } from 'react-router-dom';
 import { ArrowUp } from 'lucide-react';
 import { BrandLogo } from '../BrandLogo.jsx';
 
+const CURRENT_YEAR = new Date().getFullYear();
+
 export function Footer() {
-  const currentYear = new Date().getFullYear();
+  const currentYear = CURRENT_YEAR;
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });

@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext.jsx';
+import { useAuth } from '../context/auth-context.js';
 import { Navbar } from '../components/landing/Navbar.jsx';
 import { HeroSection } from '../components/landing/HeroSection.jsx';
 import { ProblemSection } from '../components/landing/ProblemSection.jsx';

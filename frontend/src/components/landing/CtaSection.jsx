@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext.jsx';
+import { useAuth } from '../../context/auth-context.js';
 import { ArrowRight, LayoutDashboard, ShieldCheck, Sparkles, Terminal } from 'lucide-react';
 import { ScrollReveal } from './ScrollReveal.jsx';
 

@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext.jsx';
+import { useAuth } from '../context/auth-context.js';
 import { resendVerificationOtp } from '../services/authApi.js';
 import { BrandLogo } from '../components/BrandLogo.jsx';
 import { ThemeToggle } from '../components/ThemeToggle.jsx';
-import { ShieldCheck, Mail, AlertCircle, CheckCircle2, RefreshCw, ArrowLeft } from 'lucide-react';
+import { Mail, AlertCircle, CheckCircle2, RefreshCw, ArrowLeft } from 'lucide-react';
 
 export function VerifyEmailPage() {
   const [searchParams] = useSearchParams();

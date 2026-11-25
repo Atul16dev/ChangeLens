@@ -489,7 +489,7 @@ export function TrackedReposHub({
                         const targetUrl = pr.htmlUrl;
                         const tok = prModalToken.trim() || undefined;
                         setPrModalRepo(null);
-                        onAnalyzePR && onAnalyzePR({ prUrl: targetUrl, token: tok });
+                        if (onAnalyzePR) onAnalyzePR({ prUrl: targetUrl, token: tok });
                       }}
                       className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-500 hover:to-cyan-500 disabled:opacity-50 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition-all cursor-pointer shrink-0"
                     >

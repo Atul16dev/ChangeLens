@@ -1,11 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext.jsx';
+import { useAuth } from '../context/auth-context.js';
 import {
   User, Mail, Lock, Eye, EyeOff,
   AlertCircle, CheckCircle2, XCircle, RefreshCw, ArrowRight
 } from 'lucide-react';
 import { AuthSplitLayout } from '../components/AuthSplitLayout.jsx';
+
+function Criterion({ met, label }) {
+  return (
+    <span className={`flex items-center gap-1 text-[11px] font-medium transition-colors ${met ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-500'}`}>
+      {met
+        ? <CheckCircle2 className="w-3 h-3 shrink-0" />
+        : <XCircle className="w-3 h-3 shrink-0" />}
+      {label}
+    </span>
+  );
+}
 
 export function RegisterPage() {
   const { register, isAuthenticated } = useAuth();
@@ -52,15 +63,6 @@ export function RegisterPage() {
 
   const handleGoogleSignup = () => { window.location.href = '/api/v1/auth/google'; };
   const handleGitHubSignup = () => { window.location.href = '/api/v1/auth/github'; };
-
-  const Criterion = ({ met, label }) => (
-    <span className={`flex items-center gap-1 text-[11px] font-medium transition-colors ${met ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-500'}`}>
-      {met
-        ? <CheckCircle2 className="w-3 h-3 shrink-0" />
-        : <XCircle className="w-3 h-3 shrink-0" />}
-      {label}
-    </span>
-  );
 
   return (
     <AuthSplitLayout

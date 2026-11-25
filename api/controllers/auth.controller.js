@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 import { userRepository, toSafeUser, normalizeEmail } from "../db/user-repository.js";
+import { clearSessionCookie } from "../utils/session-cookie.js";
 import { otpRepository } from "../db/otp-repository.js";
 import { adminInvitationRepository } from "../db/admin-invitation-repository.js";
 import { hashPassword, verifyPassword } from "../services/hash.js";
@@ -76,7 +77,7 @@ function redirectBannedOAuth(req, res, user) {
   const target = `${frontendUrl}/login?error=account_banned&reason=${encodeURIComponent(reason)}`;
   if (req.session) {
     return req.session.destroy(() => {
-      res.clearCookie("changelens.sid");
+      clearSessionCookie(res);
       return res.redirect(target);
     });
   }
@@ -472,7 +473,7 @@ export const authController = {
   async logout(req, res, next) {
     try {
       if (!req.session) {
-        res.clearCookie("changelens.sid");
+        clearSessionCookie(res);
         return res.status(200).json({ success: true, message: "Logged out successfully." });
       }
 
@@ -480,7 +481,7 @@ export const authController = {
         if (err) {
           console.error("[Auth] Session destroy error:", err);
         }
-        res.clearCookie("changelens.sid");
+        clearSessionCookie(res);
         return res.status(200).json({
           success: true,
           message: "Logged out successfully.",

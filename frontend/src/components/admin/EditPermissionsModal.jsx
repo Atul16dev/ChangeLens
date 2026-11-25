@@ -1,19 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import { X, Shield, Crown, Check, AlertCircle, Save } from 'lucide-react';
+import React, { useState } from 'react';
+import { X, Shield, Crown, AlertCircle, Save } from 'lucide-react';
 import { updateUserAccess } from '../../services/adminApi.js';
 
 export function EditPermissionsModal({ isOpen, onClose, targetUser, onUpdated }) {
-  const [role, setRole] = useState('admin');
+  const [role, setRole] = useState(targetUser?.role || 'admin');
   const [permissions, setPermissions] = useState({
-    canModerateFeedback: false,
-    canViewAnalytics: false,
-    canManageUsers: false,
-    canPurgeCache: false,
+    canModerateFeedback: Boolean(targetUser?.permissions?.canModerateFeedback),
+    canViewAnalytics: Boolean(targetUser?.permissions?.canViewAnalytics),
+    canManageUsers: Boolean(targetUser?.permissions?.canManageUsers),
+    canPurgeCache: Boolean(targetUser?.permissions?.canPurgeCache),
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [prevTargetId, setPrevTargetId] = useState(targetUser?.id || null);
 
-  useEffect(() => {
+  if ((targetUser?.id || null) !== prevTargetId) {
+    setPrevTargetId(targetUser?.id || null);
     if (targetUser) {
       setRole(targetUser.role || 'admin');
       setPermissions({
@@ -24,7 +26,7 @@ export function EditPermissionsModal({ isOpen, onClose, targetUser, onUpdated })
       });
       setError('');
     }
-  }, [targetUser]);
+  }
 
   if (!isOpen || !targetUser) return null;
 

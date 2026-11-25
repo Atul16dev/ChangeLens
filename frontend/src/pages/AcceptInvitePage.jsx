@@ -12,7 +12,7 @@ import {
   UserCheck,
   RefreshCw,
 } from 'lucide-react';
-import { useAuth } from '../context/AuthContext.jsx';
+import { useAuth } from '../context/auth-context.js';
 import { verifyAdminInviteToken, acceptAdminInvite } from '../services/adminApi.js';
 import { ThemeToggle } from '../components/ThemeToggle.jsx';
 import { BrandLogo } from '../components/BrandLogo.jsx';
@@ -24,15 +24,15 @@ export function AcceptInvitePage() {
   const { user, loading: authLoading, refreshUser, logout } = useAuth();
 
   const [inviteData, setInviteData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(Boolean(token));
+  const [error, setError] = useState(
+    token ? '' : 'No invitation token provided. Please check the link from your invitation email.'
+  );
   const [accepting, setAccepting] = useState(false);
   const [acceptedSuccess, setAcceptedSuccess] = useState(false);
 
   useEffect(() => {
     if (!token) {
-      setError('No invitation token provided. Please check the link from your invitation email.');
-      setLoading(false);
       return;
     }
 
@@ -54,7 +54,9 @@ export function AcceptInvitePage() {
       }
     }
 
-    verify();
+    Promise.resolve().then(() => {
+      if (isMounted) verify();
+    });
     return () => {
       isMounted = false;
     };

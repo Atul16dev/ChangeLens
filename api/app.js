@@ -7,6 +7,7 @@ import cookieParser from "cookie-parser";
 import session from "express-session";
 import MongoStore from "connect-mongo";
 import { hydrateUser } from "./middleware/auth.js";
+import { parseAllowedOrigins, getSessionCookieOptions } from "./utils/session-cookie.js";
 import { healthRoutes } from "./routes/health.routes.js";
 import { analysesRoutes } from "./routes/analyses.routes.js";
 import { authRoutes } from "./routes/auth.routes.js";
@@ -44,28 +45,18 @@ export function createApp({ sessionSecret, sessionStore } = {}) {
 
   const store = sessionStore || defaultStore;
 
-  // CORS configuration supporting credentialed cookies
-  const allowedOrigins = [
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-    "http://localhost:5000",
-    "http://127.0.0.1:5000",
-  ];
-  if (process.env.FRONTEND_ORIGIN) {
-    allowedOrigins.push(process.env.FRONTEND_ORIGIN);
-  }
-  if (process.env.FRONTEND_URL && !allowedOrigins.includes(process.env.FRONTEND_URL)) {
-    allowedOrigins.push(process.env.FRONTEND_URL);
-  }
+  // CORS configuration supporting credentialed cookies (local + split-domain Vercel/Render)
+  const allowedOrigins = parseAllowedOrigins();
 
   app.use(
     cors({
       origin: (origin, callback) => {
+        const cleanOrigin = origin ? origin.replace(/\/+$/, "") : origin;
         if (
-          !origin ||
-          allowedOrigins.includes(origin) ||
-          origin.startsWith("http://localhost:") ||
-          origin.startsWith("http://127.0.0.1:")
+          !cleanOrigin ||
+          allowedOrigins.includes(cleanOrigin) ||
+          cleanOrigin.startsWith("http://localhost:") ||
+          cleanOrigin.startsWith("http://127.0.0.1:")
         ) {
           return callback(null, true);
         }
@@ -86,12 +77,7 @@ export function createApp({ sessionSecret, sessionStore } = {}) {
       secret,
       resave: false,
       saveUninitialized: false,
-      cookie: {
-        httpOnly: true,
-        secure: process.env.COOKIE_SECURE !== "false" && process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      },
+      cookie: getSessionCookieOptions(),
     })
   );
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
-import { useTheme } from '../../context/ThemeContext.jsx';
+import { useTheme } from '../../context/theme-context.js';
 import {
   disposeThreeResources,
   getOptimalPixelRatio,
@@ -9,14 +9,8 @@ import {
   wrapCurveProgress,
 } from '../../utils/threeHelpers.js';
 import {
-  Globe,
   Radio,
-  Zap,
   ShieldCheck,
-  GitBranch,
-  Terminal,
-  Activity,
-  Sparkles,
   RotateCw,
 } from 'lucide-react';
 
@@ -278,17 +272,14 @@ export function GlobalTelemetryGlobe3D() {
 
     // --- 6. DRAG AND HOVER INTERACTION (SCOPED TO BOX) ---
     let isPointerDown = false;
-    let isHoveringBox = false;
     let prevMousePos = { x: 0, y: 0 };
     let rotationVelocity = { x: 0, y: 0 };
 
     const handleMouseEnter = () => {
-      isHoveringBox = true;
       setIsHovered(true);
     };
 
     const handleMouseLeave = () => {
-      isHoveringBox = false;
       isPointerDown = false;
       setIsHovered(false);
       setIsDragging(false);

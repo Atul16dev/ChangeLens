@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Star,
   Bug,
@@ -7,37 +7,30 @@ import {
   MessageSquare,
   Sparkles,
   Paperclip,
-  Image as ImageIcon,
   Film,
-  Trash2,
   Maximize2,
   X,
   Send,
   CheckCircle2,
   ArrowLeft,
-  Filter,
   ThumbsUp,
   Search,
   RefreshCw,
   Clock,
   ShieldCheck,
-  TrendingUp,
   BarChart3,
   Layers,
   ChevronRight,
-  ExternalLink,
-  Laptop,
   Menu,
 } from 'lucide-react';
 import { BrandLogo } from '../components/BrandLogo.jsx';
 import { ThemeToggle } from '../components/ThemeToggle.jsx';
 import { FriendlyValidationModal } from '../components/FriendlyValidationModal.jsx';
-import { useAuth } from '../context/AuthContext.jsx';
+import { useAuth } from '../context/auth-context.js';
 import {
   submitFeedback,
   getPublicFeedback,
   getMyFeedback,
-  getFeedbackStats,
 } from '../services/api.js';
 
 const CATEGORIES = [
@@ -113,12 +106,6 @@ const MAX_VIDEO_BYTES = 12 * 1024 * 1024; // 12 MB
 const ALLOWED_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/gif'];
 const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/quicktime'];
 
-function formatBytes(bytes) {
-  if (!bytes || bytes <= 0) return '0 KB';
-  if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
-
 function readFileAsDataUrl(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -145,7 +132,6 @@ function timeAgo(dateString) {
 
 export function FeedbackPage() {
   const { user } = useAuth();
-  const navigate = useNavigate();
 
   // Navigation tab: 'community' | 'submit' | 'mine'
   const [activeTab, setActiveTab] = useState('community');
@@ -174,7 +160,7 @@ export function FeedbackPage() {
   const [includeContext, setIncludeContext] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedSuccess, setSubmittedSuccess] = useState(false);
-  const [submissionCount, setSubmissionCount] = useState(0);
+  const [, setSubmissionCount] = useState(0);
 
   // Helpful reaction counts (optimistic state)
   const [reactions, setReactions] = useState(() => {
@@ -206,7 +192,7 @@ export function FeedbackPage() {
     setValidationModal((prev) => ({ ...prev, isOpen: false }));
 
   // Load Community data & Stats
-  const loadCommunityData = async () => {
+  const loadCommunityData = useCallback(async () => {
     setLoadingCommunity(true);
     try {
       const data = await getPublicFeedback({
@@ -223,21 +209,39 @@ export function FeedbackPage() {
     } finally {
       setLoadingCommunity(false);
     }
-  };
+  }, [typeFilter, starFilter]);
 
   useEffect(() => {
-    loadCommunityData();
-  }, [typeFilter, starFilter]);
+    let active = true;
+    Promise.resolve().then(() => {
+      if (active) loadCommunityData();
+    });
+    return () => {
+      active = false;
+    };
+  }, [loadCommunityData]);
 
   // Load user submissions if logged in and tab is 'mine'
   useEffect(() => {
-    if (activeTab === 'mine') {
+    if (activeTab !== 'mine') return;
+    let active = true;
+    Promise.resolve().then(() => {
+      if (!active) return;
       setLoadingMine(true);
       getMyFeedback(30)
-        .then((data) => setMyItems(data?.feedback || []))
-        .catch(() => setMyItems([]))
-        .finally(() => setLoadingMine(false));
-    }
+        .then((data) => {
+          if (active) setMyItems(data?.feedback || []);
+        })
+        .catch(() => {
+          if (active) setMyItems([]);
+        })
+        .finally(() => {
+          if (active) setLoadingMine(false);
+        });
+    });
+    return () => {
+      active = false;
+    };
   }, [activeTab]);
 
   // Handle reaction click
@@ -641,7 +645,7 @@ export function FeedbackPage() {
             </p>
           </div>
 
-          {/* ELEGANT COLUMN-WISE FLIPKART-STYLE RATINGS & PLATFORM PULSE CARD */}
+          {/* COLUMN-WISE 5-STAR RATINGS & PLATFORM PULSE CARD */}
           <div className="mt-6 p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#121929]/95 border border-slate-200 dark:border-slate-800/90 shadow-sm hover:shadow-md transition-shadow">
             <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-center">
               {/* Column 1 (3 of 12 cols): Overall Rating & Satisfaction */}
@@ -674,7 +678,7 @@ export function FeedbackPage() {
                 </span>
               </div>
 
-              {/* Column 2 (6 of 12 cols): Flipkart-Style 5-Star Progress Bars */}
+              {/* Column 2 (6 of 12 cols): 5-Star Progress Bars */}
               <div className="md:col-span-6 px-1 sm:px-2">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">

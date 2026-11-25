@@ -6,7 +6,6 @@ import {
   RefreshCw,
   Folder,
   GitBranch,
-  FileCode,
   ShieldCheck,
   Zap,
   Sliders,
@@ -14,7 +13,6 @@ import {
   AlertCircle,
   CheckCircle2,
   ExternalLink,
-  Laptop,
 } from 'lucide-react';
 import { checkBridgeStatus, getBridgeChanges, runBridgeScan } from '../services/api.js';
 import { AstBlastLoaderOverlay } from './AstScannerLoader3D.jsx';
@@ -179,7 +177,7 @@ export function LocalWorkshopSection({ onComplete, onFocusGuide }) {
           setWorkspaceInfo(null);
         }
       }
-    } catch (err) {
+    } catch {
       if (isSilent) {
         missedHeartbeatsRef.current += 1;
         if (missedHeartbeatsRef.current >= 3) {
@@ -196,10 +194,16 @@ export function LocalWorkshopSection({ onComplete, onFocusGuide }) {
 
   // Auto-check on mount if session code is present
   useEffect(() => {
-    if (sessionCode.trim()) {
-      checkStatus(sessionCode.trim(), false);
-    }
-  }, []);
+    const trimmed = sessionCode.trim();
+    if (!trimmed) return;
+    let active = true;
+    Promise.resolve().then(() => {
+      if (active) checkStatus(trimmed, false);
+    });
+    return () => {
+      active = false;
+    };
+  }, [sessionCode, checkStatus]);
 
   // Periodic heartbeat poll (every 4 seconds) - SILENT background check
   useEffect(() => {

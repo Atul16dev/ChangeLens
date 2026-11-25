@@ -183,7 +183,7 @@ export function FeedbackModal({
   const [submittedRecord, setSubmittedRecord] = useState(null);
   const [apiError, setApiError] = useState(null);
 
-  // Community tab state (Flipkart-style ratings + public feed)
+  // Community tab state (5-star rating breakdown + public feed)
   const [communityItems, setCommunityItems] = useState([]);
   const [communityStats, setCommunityStats] = useState(null);
   const [communityTypeFilter, setCommunityTypeFilter] = useState('all');
@@ -207,12 +207,20 @@ export function FeedbackModal({
 
   const messageRef = useRef(null);
   const fileInputRef = useRef(null);
+  const openCategoryKey = isOpen ? `${initialCategory || 'general_feedback'}` : 'closed';
+  const [prevOpenCategoryKey, setPrevOpenCategoryKey] = useState(openCategoryKey);
+
+  if (openCategoryKey !== prevOpenCategoryKey) {
+    setPrevOpenCategoryKey(openCategoryKey);
+    if (isOpen) {
+      setCategory(initialCategory || 'general_feedback');
+      setSubmittedRecord(null);
+      setApiError(null);
+    }
+  }
 
   useEffect(() => {
     if (!isOpen) return;
-    setCategory(initialCategory || 'general_feedback');
-    setSubmittedRecord(null);
-    setApiError(null);
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') {
         if (lightboxImage) {
@@ -224,32 +232,35 @@ export function FeedbackModal({
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, initialCategory, onClose, validationPopup.isOpen, lightboxImage]);
+  }, [isOpen, onClose, validationPopup.isOpen, lightboxImage]);
 
   // Load Community stats & public feed
   useEffect(() => {
     if (!isOpen || activeView !== 'community') return;
     let cancelled = false;
-    setLoadingCommunity(true);
-    getPublicFeedback({
-      type: communityTypeFilter,
-      rating: communityStarFilter || '',
-      limit: 30,
-    })
-      .then((data) => {
-        if (!cancelled) {
-          setCommunityItems(data?.feedback || []);
-          setCommunityStats(data?.stats || null);
-        }
+    Promise.resolve().then(() => {
+      if (cancelled) return;
+      setLoadingCommunity(true);
+      getPublicFeedback({
+        type: communityTypeFilter,
+        rating: communityStarFilter || '',
+        limit: 30,
       })
-      .catch(() => {
-        if (!cancelled) {
-          setCommunityItems([]);
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setLoadingCommunity(false);
-      });
+        .then((data) => {
+          if (!cancelled) {
+            setCommunityItems(data?.feedback || []);
+            setCommunityStats(data?.stats || null);
+          }
+        })
+        .catch(() => {
+          if (!cancelled) {
+            setCommunityItems([]);
+          }
+        })
+        .finally(() => {
+          if (!cancelled) setLoadingCommunity(false);
+        });
+    });
     return () => {
       cancelled = true;
     };
@@ -259,17 +270,20 @@ export function FeedbackModal({
   useEffect(() => {
     if (!isOpen || activeView !== 'history') return;
     let cancelled = false;
-    setLoadingHistory(true);
-    getMyFeedback(20)
-      .then((data) => {
-        if (!cancelled) setHistoryItems(data?.feedback || []);
-      })
-      .catch(() => {
-        if (!cancelled) setHistoryItems([]);
-      })
-      .finally(() => {
-        if (!cancelled) setLoadingHistory(false);
-      });
+    Promise.resolve().then(() => {
+      if (cancelled) return;
+      setLoadingHistory(true);
+      getMyFeedback(20)
+        .then((data) => {
+          if (!cancelled) setHistoryItems(data?.feedback || []);
+        })
+        .catch(() => {
+          if (!cancelled) setHistoryItems([]);
+        })
+        .finally(() => {
+          if (!cancelled) setLoadingHistory(false);
+        });
+    });
     return () => {
       cancelled = true;
     };
@@ -519,7 +533,7 @@ export function FeedbackModal({
         <div className="p-5 overflow-y-auto">
           {activeView === 'community' ? (
             <div className="space-y-4">
-              {/* Flipkart-Style 5-Star Ratings Breakdown Card */}
+              {/* 5-Star Ratings Breakdown Card */}
               <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800 grid grid-cols-1 sm:grid-cols-[135px_1fr] gap-4 items-center">
                 {/* Average Rating Left Block */}
                 <div className="flex flex-col items-center justify-center sm:border-r border-slate-200 dark:border-slate-800 sm:pr-4 text-center">

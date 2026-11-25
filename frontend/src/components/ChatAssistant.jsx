@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
-  MessageSquare,
   X,
   Send,
   Sparkles,
@@ -8,7 +7,6 @@ import {
   User,
   Copy,
   Check,
-  ChevronDown,
   RefreshCw,
   FileCode,
   ShieldAlert,
@@ -257,15 +255,19 @@ function MarkdownMessageContent({ content, isUser }) {
   );
 }
 
+function formatChatTimestamp() {
+  return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
 export function ChatAssistant({ analysisId, selectedNodeId, isSimulating, simulatedFile }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState([
+  const [messages, setMessages] = useState(() => [
     {
       role: 'assistant',
       content:
-        '👋 **Hello! I am ChangeLens AI.**\n\nI have the complete AST dependency graph and blast radius analysis loaded in memory. You can ask me about import relationships ("Kon kisko import kar raha hai?"), potential regression risks, or what tests to run before merging.',
+        '👋 **Hello! I am ChangeLens AI.**\n\nI have the complete AST dependency graph and blast radius analysis loaded in memory. You can ask me about import relationships ("Who imports what?"), potential regression risks, or what tests to run before merging.',
       provider: 'ChangeLens',
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      timestamp: formatChatTimestamp(),
     },
   ]);
   const [input, setInput] = useState('');
@@ -296,7 +298,6 @@ export function ChatAssistant({ analysisId, selectedNodeId, isSimulating, simula
   const [size, setSize] = useState(() => computeInitialGeometry().size);
   const [position, setPosition] = useState(() => computeInitialGeometry().position); // { x, y }
   const [isMaximized, setIsMaximized] = useState(false);
-  const [preMaximizeState, setPreMaximizeState] = useState(null);
   const preMaximizeStateRef = useRef(null);
 
   // Responsive mobile screen detection
@@ -595,7 +596,6 @@ export function ChatAssistant({ analysisId, selectedNodeId, isSimulating, simula
         position: { ...posRef.current },
         size: { ...sizeRef.current },
       };
-      setPreMaximizeState(currentState);
       preMaximizeStateRef.current = currentState;
 
       setIsMaximized(true);
@@ -626,7 +626,7 @@ export function ChatAssistant({ analysisId, selectedNodeId, isSimulating, simula
     const userMsg = {
       role: 'user',
       content: query,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      timestamp: formatChatTimestamp(),
     };
 
     setMessages((prev) => [...prev, userMsg]);
@@ -650,7 +650,7 @@ export function ChatAssistant({ analysisId, selectedNodeId, isSimulating, simula
         role: 'assistant',
         content: res.message,
         provider: res.provider === 'gemini' ? 'Gemini 1.5 Flash' : 'Deterministic AST',
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        timestamp: formatChatTimestamp(),
       };
 
       setMessages((prev) => [...prev, botMsg]);
@@ -661,7 +661,7 @@ export function ChatAssistant({ analysisId, selectedNodeId, isSimulating, simula
           role: 'assistant',
           content: `⚠️ **Notice:** ${err.message || 'Failed to process request.'}`,
           provider: 'Error',
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          timestamp: formatChatTimestamp(),
         },
       ]);
     } finally {
@@ -676,8 +676,8 @@ export function ChatAssistant({ analysisId, selectedNodeId, isSimulating, simula
   };
 
   const quickPrompts = [
-    { label: 'Kon kisko import kar raha hai?', icon: GitFork, prompt: 'kon kisko import kar raha hai' },
-    { label: 'Direct vs Transitive impact', icon: Layers, prompt: 'Direct vs Transitive impact mein kya farak hai?' },
+    { label: 'Who imports what?', icon: GitFork, prompt: 'who imports what' },
+    { label: 'Direct vs Transitive impact', icon: Layers, prompt: 'What is the difference between direct and transitive impact?' },
     { label: 'Why is this high risk?', icon: ShieldAlert, prompt: 'Why is this change classified as this risk level?' },
     { label: 'What tests to run?', icon: TestTube, prompt: 'What specific unit and integration tests should I write for these affected files?' },
   ];

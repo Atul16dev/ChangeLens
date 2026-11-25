@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext.jsx';
+import { useAuth } from '../../context/auth-context.js';
 import {
   ArrowRight,
   Layers,
   FileCode2,
   Cpu,
   Activity,
-  Sparkles,
 } from 'lucide-react';
 import { ScrollReveal } from './ScrollReveal.jsx';
 import { ChangeLensPrism3D } from './ChangeLensPrism3D.jsx';
@@ -286,7 +285,7 @@ export function HeroSection() {
 
                 {/* Graph Node Chain (2 columns on mobile, 4 on desktop for compact viewing) */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 relative">
-                  {activeDemo.impactedNodes.map((node, idx) => (
+                  {activeDemo.impactedNodes.map((node) => (
                     <div
                       key={node.name}
                       className={`p-2.5 sm:p-3.5 rounded-xl border transition-all ${

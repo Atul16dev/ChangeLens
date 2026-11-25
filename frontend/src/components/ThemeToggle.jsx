@@ -1,6 +1,6 @@
 import React from 'react';
 import { Sun, Moon } from 'lucide-react';
-import { useTheme } from '../context/ThemeContext.jsx';
+import { useTheme } from '../context/theme-context.js';
 
 export function ThemeToggle({
   className = '',
@@ -8,7 +8,7 @@ export function ThemeToggle({
   size = 'md',
   variant = 'default',
 }) {
-  const { theme, toggleTheme, isDark } = useTheme();
+  const { toggleTheme, isDark } = useTheme();
 
   const isDock = variant === 'dock';
 

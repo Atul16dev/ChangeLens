@@ -1,7 +1,6 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { getCurrentUser, loginUser, logoutUser, registerUser, verifyEmailOtp, updateUserProfile } from '../services/authApi.js';
-
-const AuthContext = createContext(null);
+import { AuthContext } from './auth-context.js';
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -15,7 +14,7 @@ export function AuthProvider({ children }) {
       const res = await getCurrentUser();
       setUser(res.data?.user || null);
       setError(null);
-    } catch (err) {
+    } catch {
       // 401 just means visitor is not logged in; clean state
       setUser(null);
     } finally {
@@ -24,7 +23,13 @@ export function AuthProvider({ children }) {
   }, []);
 
   useEffect(() => {
-    refreshUser();
+    let active = true;
+    Promise.resolve().then(() => {
+      if (active) refreshUser();
+    });
+    return () => {
+      active = false;
+    };
   }, [refreshUser]);
 
   const login = useCallback(async (email, password) => {
@@ -86,12 +91,4 @@ export function AuthProvider({ children }) {
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-}
-
-export function useAuth() {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
 }

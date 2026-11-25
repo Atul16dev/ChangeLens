@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 /**
  * Custom React hook to detect when an element scrolls into the viewport.
  */
-export function useInView(options = {}) {
+function useInView(options = {}) {
   const { threshold = 0.15, rootMargin = '0px 0px -50px 0px', once = true } = options;
   const [isInView, setIsInView] = useState(false);
   const ref = useRef(null);

@@ -3,7 +3,7 @@ import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { verifyResetOtp, resetPassword } from '../services/authApi.js';
 import { BrandLogo } from '../components/BrandLogo.jsx';
 import { ThemeToggle } from '../components/ThemeToggle.jsx';
-import { Lock, Mail, Eye, EyeOff, AlertCircle, CheckCircle2, ArrowLeft, RefreshCw, KeyRound, XCircle } from 'lucide-react';
+import { Lock, Mail, Eye, EyeOff, AlertCircle, CheckCircle2, ArrowLeft, RefreshCw, XCircle } from 'lucide-react';
 
 export function ResetPasswordPage() {
   const [searchParams] = useSearchParams();

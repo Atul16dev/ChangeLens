@@ -109,7 +109,17 @@ export async function streamJobEvents(req, res, next) {
       }
     };
 
+    const heartbeatTimer = setInterval(() => {
+      if (!res.writableEnded) {
+        res.write(": keep-alive\n\n");
+      }
+    }, 20000);
+    if (typeof heartbeatTimer.unref === "function") {
+      heartbeatTimer.unref();
+    }
+
     const cleanup = () => {
+      clearInterval(heartbeatTimer);
       analysisQueue.off("progress", onProgress);
       analysisQueue.off("completed", onCompleted);
       analysisQueue.off("failed", onFailed);
